@@ -1,0 +1,19 @@
+@PACKAGE_INIT@
+
+find_package(xtl REQUIRED)
+find_package(xtensor REQUIRED)
+find_package(xtensor-blas REQUIRED)
+
+if (WIN32)
+    find_package(OpenBLAS REQUIRED)
+    set(BLAS_LIBRARIES ${CMAKE_INSTALL_PREFIX}${OpenBLAS_LIBRARIES})
+else()
+    find_package(BLAS REQUIRED)
+    find_package(LAPACK REQUIRED)
+endif()
+
+# set_and_check(@PROJECT_NAME@ "@PACKAGE_@PROJECT_NAME@_INCLUDE_DIRS@")
+
+if(NOT TARGET @PROJECT_NAME@)
+    include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+endif(NOT TARGET @PROJECT_NAME@)
