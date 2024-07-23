@@ -1,16 +1,6 @@
 @PACKAGE_INIT@
 
-find_package(xtl REQUIRED)
-find_package(xtensor REQUIRED)
-find_package(xtensor-blas REQUIRED)
-
-if (WIN32)
-    find_package(OpenBLAS REQUIRED)
-    set(BLAS_LIBRARIES ${CMAKE_INSTALL_PREFIX}${OpenBLAS_LIBRARIES})
-else()
-    find_package(BLAS REQUIRED)
-    find_package(LAPACK REQUIRED)
-endif()
+find_package(Eigen3 REQUIRED)
 
 # set_and_check(@PROJECT_NAME@ "@PACKAGE_@PROJECT_NAME@_INCLUDE_DIRS@")
 
