@@ -1,3 +1,11 @@
+/*
+|========================================== typing.hpp ============================================|
+|                                                                                                  |
+|   @file     include/navtools/types.hpp                                                          |
+|   @brief    Useful type definitions.                                                             |
+|                                                                                                  |
+|==================================================================================================|
+*/
 #ifndef NAVTOOLS_TYPES_HPP
 #define NAVTOOLS_TYPES_HPP
 

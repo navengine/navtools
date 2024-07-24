@@ -1,12 +1,10 @@
-/**
+/*
 |======================================== constants.hpp ===========================================|
 |                                                                                                  |
 |   @file     include/navtools/constants.hpp                                                       |
 |   @brief    Useful navigation constants.                                                         |
 |   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
 |               - (2013) Paul D. Groves                                                            |
-|   @author   Daniel Sturdivant <sturdivant20@gmail.com>                                           |
-|   @date     July 2024                                                                            |
 |                                                                                                  |
 |==================================================================================================|
 */

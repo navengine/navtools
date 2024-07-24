@@ -1,3 +1,13 @@
+/*
+|========================================= attitude.hpp ===========================================|
+|                                                                                                  |
+|   @file     include/navtools/attitude.hpp                                                        |
+|   @brief    Attitude representations and conversions between them.                               |
+|   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
+|               - (2013) Paul D. Groves                                                            |
+|                                                                                                  |
+|==================================================================================================|
+*/
 #ifndef NAVTOOLS_ATTITUDE_HPP
 #define NAVTOOLS_ATTITUDE_HPP
 
