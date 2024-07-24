@@ -62,7 +62,7 @@ Vec3<Float> DeSkew(const Mat3x3<Float> &M) {
 /// @param y    value to take modulus about
 /// @returns    modulus of number
 template <typename Float>
-constexpr void circ_fmod(Float &x, const Float y) {
+constexpr void CircMod(Float &x, const Float y) {
     x -= std::floor(x / y) * y;
 }
 // template <typename Float>
