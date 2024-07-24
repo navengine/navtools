@@ -1,19 +1,3 @@
-/**
-|========================================== typing.hpp ============================================|
-|                                                                                                  |
-|   Property of Daniel Sturdivant. Unauthorized copying of this file via any medium is would be    |
-|   super sad and unfortunate for me. Proprietary and confidential.                                |
-|                                                                                                  |
-|--------------------------------------------------------------------------------------------------|
-|                                                                                                  |
-|   @file     include/navtools/typing.hpp                                                          |
-|   @brief    Useful type definitions.                                                             |
-|   @author   Daniel Sturdivant <sturdivant20@gmail.com>                                           |
-|   @date     July 2024                                                                            |
-|                                                                                                  |
-|==================================================================================================|
-*/
-
 #ifndef NAVTOOLS_TYPING_HPP
 #define NAVTOOLS_TYPING_HPP
 

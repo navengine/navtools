@@ -1,21 +1,3 @@
-/**
-|========================================== frames.hpp ============================================|
-|                                                                                                  |
-|   Property of Daniel Sturdivant. Unauthorized copying of this file via any medium is would be    |
-|   super sad and unfortunate for me. Proprietary and confidential.                                |
-|                                                                                                  |
-|--------------------------------------------------------------------------------------------------|
-|                                                                                                  |
-|   @file     include/navtools/frames.hpp                                                          |
-|   @brief    Common coordinate frame transformations.                                             |
-|   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
-|               - (2013) Paul D. Groves                                                            |
-|   @author   Daniel Sturdivant <sturdivant20@gmail.com>                                           |
-|   @date     July 2024                                                                            |
-|                                                                                                  |
-|==================================================================================================|
-*/
-
 #ifndef NAVTOOLS_FRAMES_HPP
 #define NAVTOOLS_FRAMES_HPP
 

@@ -1,21 +1,3 @@
-/**
-|========================================= attitude.hpp ===========================================|
-|                                                                                                  |
-|   Property of Daniel Sturdivant. Unauthorized copying of this file via any medium is would be    |
-|   super sad and unfortunate for me. Proprietary and confidential.                                |
-|                                                                                                  |
-|--------------------------------------------------------------------------------------------------|
-|                                                                                                  |
-|   @file     include/navtools/attitude.hpp                                                        |
-|   @brief    Attitude representations and conversions between them.                               |
-|   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
-|               - (2013) Paul D. Groves                                                            |
-|   @author   Daniel Sturdivant <sturdivant20@gmail.com>                                           |
-|   @date     July 2024                                                                            |
-|                                                                                                  |
-|==================================================================================================|
-*/
-
 #ifndef NAVTOOLS_ATTITUDE_HPP
 #define NAVTOOLS_ATTITUDE_HPP
 
