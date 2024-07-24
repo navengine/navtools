@@ -18,13 +18,13 @@ namespace navtools {
 /// @param M    3x3 skew symmetric matrix
 /// @returns    3x3 skew symmetric form of v
 template <typename Float = double>
-void skew(Mat3x3<Float> &M, const Vec3<Float> &v) {
+void Skew(Mat3x3<Float> &M, const Vec3<Float> &v) {
     M << 0.0, -v(2), v(1), v(2), 0.0, -v(0), -v(1), v(0), 0.0;
 }
 template <typename Float = double>
-Mat3x3<Float> skew(const Vec3<Float> &v) {
+Mat3x3<Float> Skew(const Vec3<Float> &v) {
     Mat3x3<Float> M;
-    skew(M, v);
+    Skew(M, v);
     return M;
 }
 
@@ -34,24 +34,24 @@ Mat3x3<Float> skew(const Vec3<Float> &v) {
 /// @param v    3x1 vector
 /// @returns    3x1 vector form of M
 template <typename Float = double>
-void deskew(Vec3<Float> &v, const Mat3x3<Float> &M) {
+void DeSkew(Vec3<Float> &v, const Mat3x3<Float> &M) {
     v << M(2, 1), M(0, 2), M(1, 0);
 }
 template <typename Float = double>
-Vec3<Float> deskew(const Mat3x3<Float> &M) {
+Vec3<Float> DeSkew(const Mat3x3<Float> &M) {
     Vec3<Float> v;
-    deskew(v, M);
+    DeSkew(v, M);
     return v;
 }
 
 //* ===== Modulus Operations =================================================================== *//
 //! === CIRCFMOD ===
 /// @brief      Modulus of floating point number
-/// @param x    user input
+/// @param x    user input and output
 /// @param y    value to take modulus about
 /// @returns    modulus of number
 template <typename Float>
-constexpr void circfmod(Float &x, const Float y) {
+constexpr void circ_fmod(Float &x, const Float y) {
     x -= std::floor(x / y) * y;
 }
 // template <typename Float>
@@ -67,7 +67,7 @@ constexpr void circfmod(Float &x, const Float y) {
 /// @returns    Wrapped/normalized angles [radians]
 template <typename Float = double>
 void wrapTo2Pi(Float &x) {
-    circfmod(x, TWOPI<Float>);
+    circfmod(x, TWO_PI<Float>);
 }
 
 //! === WRAPPITOPI ===
@@ -78,7 +78,7 @@ template <typename Float = double>
 void wrapPiToPi(Float &x) {
     wrapTo2Pi(x);
     if (x > PI<Float>) {
-        x -= TWOPI<Float>;
+        x -= TWO_PI<Float>;
     }
 }
 
@@ -88,11 +88,11 @@ void wrapPiToPi(Float &x) {
 /// @returns    Correctly wrapped Euler angles
 template <typename Float = double>
 void wrapEulerAngles(Vec3<Float> &x) {
-    if (x(1) > PIO2<Float>) {
+    if (x(1) > HALF_PI<Float>) {
         x(0) += PI<Float>;
         x(1) = PI<Float> - x(1);
         x(2) += PI<Float>;
-    } else if (x(1) < -PIO2<Float>) {
+    } else if (x(1) < -HALF_PI<Float>) {
         x(0) += PI<Float>;
         x(1) = -PI<Float> - x(1);
         x(2) += PI<Float>;
@@ -223,43 +223,43 @@ void dcmnorm(Mat3x3<Float> &R) {
 
 //* ===== Matrix Exponential =================================================================== *//
 
-//! === RODRIQUES ===
+//! === RODRIGUES ===
 /// @brief      Rodrigues formula for the approximation of a matrix exponential
 /// @param vec          size 3 vector
 /// @param vec_norm     2-norm of vec
 /// @returns    matrix exponential
 template <typename Float = double>
-Mat3x3<Float> rodrigues(const Vec3<Float> &vec) {
+Mat3x3<Float> Rodrigues(const Vec3<Float> &vec) {
     Float vec_norm = vec.norm();
-    Mat3x3<Float> skew_sym = skew(vec / vec_norm);
+    Mat3x3<Float> skew_sym = Skew(vec / vec_norm);
     return Eigen::Matrix<Float, 3, 3>::Identity() + (std::sin(vec_norm) * skew_sym) +
            ((1.0 - std::cos(vec_norm)) * skew_sym * skew_sym);
 }
 template <typename Float = double>
-Mat3x3<Float> rodrigues(const Vec3<Float> &vec, const Float &vec_norm) {
-    Mat3x3<Float> skew_sym = skew(vec / vec_norm);
+Mat3x3<Float> Rodrigues(const Vec3<Float> &vec, const Float &vec_norm) {
+    Mat3x3<Float> skew_sym = Skew(vec / vec_norm);
     return Eigen::Matrix<Float, 3, 3>::Identity() + (std::sin(vec_norm) * skew_sym) +
            ((1.0 - std::cos(vec_norm)) * skew_sym * skew_sym);
 }
 
-//! === RODRIQUES4 ===
+//! === RODRIGUES4 ===
 /// @brief      Rodrigues formula for the 4-th order approximation of a matrix exponential
 /// @param vec          size 3 vector
 /// @param vec_norm     2-norm of vec
 /// @returns    matrix exponential
 template <typename Float = double>
-Mat3x3<Float> rodrigues4(const Vec3<Float> &vec) {
+Mat3x3<Float> Rodrigues4(const Vec3<Float> &vec) {
     Float vec_norm = vec.norm();
-    Mat3x3<Float> skew_sym = SkewSymmetrize(vec);
+    Mat3x3<Float> skew_sym = Skew(vec);
     Float norm_squared = vec_norm * vec_norm;
-    return Eigen::Matrix<Scalar, 3, 3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
+    return Eigen::Matrix<Float,3,3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
            ((0.5 - (norm_squared / 24.0)) * skew_sym * skew_sym);
 }
 template <typename Float = double>
-Mat3x3<Float> rodrigues4(const Vec3<Float> &vec, const Float &vec_norm) {
-    Mat3x3<Float> skew_sym = SkewSymmetrize(vec);
+Mat3x3<Float> Rodrigues4(const Vec3<Float> &vec, const Float &vec_norm) {
+    Mat3x3<Float> skew_sym = Skew(vec);
     Float norm_squared = vec_norm * vec_norm;
-    return Eigen::Matrix<Scalar, 3, 3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
+    return Eigen::Matrix<Float,3,3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
            ((0.5 - (norm_squared / 24.0)) * skew_sym * skew_sym);
 }
 
@@ -271,9 +271,9 @@ template <typename Float = double>
 Mat3x3<Float> vec2expm(const Vec3<Float> &vec) {
     Float vec_norm = vec.norm();
     if (vec_norm < 0.02) {
-        return rodriques4(vec, vec_norm);
+        return Rodrigues4(vec, vec_norm);
     } else {
-        return rodrigues(vec, vec_norm);
+        return Rodrigues(vec, vec_norm);
     }
 }
 
@@ -282,12 +282,12 @@ Mat3x3<Float> vec2expm(const Vec3<Float> &vec) {
 /// @param mat  3x3 matrix exponential
 /// @returns    size 3 vector
 template <typename Float = double>
-Vec3<Float> expm2vec(const mat3x3<Float> &mat) {
+Vec3<Float> expm2vec(const Mat3x3<Float> &mat) {
     Float phi = std::acos((mat.trace() - 1.0) / 2.0);
     if (phi == 0.0) {
-        return Eigen::Vector<Scalar, 3>::Zero();
+        return Eigen::Vector<Float, 3>::Zero();
     }
-    return phi * deskew(mat - mat.transpose()) / (2.0 * std::sin(phi));
+    return phi * DeSkew(mat - mat.transpose()) / (2.0 * std::sin(phi));
 }
 
 //* ===== Signal to Noise ====================================================================== *//
@@ -347,8 +347,8 @@ Float volt2db(const Float &v) {
 /// @param v    Output sqrt-power
 /// @returns    unit of sqrt-power
 template <typename Float = double>
-void db2volt(Float &v, const Float &db) {
-    w = std::pow(10.0, db / 20.0);
+void db2volt(Float &v, const Float db) {
+    v = std::pow(10.0, db / 20.0);
 }
 template <typename Float = double>
 Float db2volt(const Float &db) {

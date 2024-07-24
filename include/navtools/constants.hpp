@@ -1,3 +1,16 @@
+/**
+|======================================== constants.hpp ===========================================|
+|                                                                                                  |
+|   @file     include/navtools/constants.hpp                                                       |
+|   @brief    Useful navigation constants.                                                         |
+|   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
+|               - (2013) Paul D. Groves                                                            |
+|   @author   Daniel Sturdivant <sturdivant20@gmail.com>                                           |
+|   @date     July 2024                                                                            |
+|                                                                                                  |
+|==================================================================================================|
+*/
+
 #ifndef NAVTOOLS_CONSTANTS_HPP
 #define NAVTOOLS_CONSTANTS_HPP
 
@@ -5,7 +18,7 @@
 #include <complex>
 #include <numbers>
 
-#include "navtools/typing.hpp"
+#include "navtools/types.hpp"
 
 namespace navtools {
 
@@ -15,35 +28,44 @@ namespace navtools {
 
 //* ===== Physical Constants =================================================================== *//
 
-template <typename T = double>                                             //
-inline constexpr std::complex<T> J{static_cast<T>(0), static_cast<T>(1)};  //! imaginary value
-template <typename T = double>                                             //
-inline constexpr T PI = std::numbers::pi_v<T>;                             //! pi
-template <typename T = double>                                             //
-inline constexpr T PIO2 = std::numbers::pi_v<T> / static_cast<T>(2);       //! pi/2
-template <typename T = double>                                             //
-inline constexpr T X3PIO2 =                                                //
-        static_cast<T>(3) * std::numbers::pi_v<T> / static_cast<T>(2);     //! 3*pi/2
-template <typename T = double>                                             //
-inline constexpr T TWOPI = static_cast<T>(2) * std::numbers::pi_v<T>;      //! 2*pi
-template <typename T = double>                                             //
-inline constexpr T PISQ = std::pow(std::numbers::pi_v<T>, 2);              //! pi^2
-template <typename T = double>                                             //
-inline constexpr T SQRTPI = std::sqrt(std::numbers::pi_v<T>);              //! sqrt(pi)
-template <typename T = double>                                             //
-inline constexpr T RAD2DEG = 180.0 / std::numbers::pi_v<T>;                //! radians to degrees
-template <typename T = double>                                             //
-inline constexpr T DEG2RAD = std::numbers::pi_v<T> / 180.0;                //! degrees to radians
-template <typename T = double>                                             //
-inline static const Vec3<T> LLA_RAD2DEG{RAD2DEG<T>, RAD2DEG<T>, 1.0};      //
-template <typename T = double>                                             //
-inline static const Vec3<T> LLA_DEG2RAD{DEG2RAD<T>, DEG2RAD<T>, 1.0};      //
-DEFINE_FP_CONSTANT(TOTHRD, 2.0 / 3.0);                                     //! 2/3
-DEFINE_FP_CONSTANT(LIGHT_SPEED, 299792458.0);                              //! speed of light [m/s]
-DEFINE_FP_CONSTANT(BOLTZMANN, 1.38e-23);  //! Boltsman constant [J/K]
-DEFINE_FP_CONSTANT(G2T, 1e-4);            //! Gauss to Tesla
-DEFINE_FP_CONSTANT(FT2M, 0.3048);         //! Feet to meters
-DEFINE_FP_CONSTANT(DAY2MIN, 1440.0);      //! minutes per day
+template <typename T = double>
+inline constexpr std::complex<T> COMPLEX_I{static_cast<T>(0), static_cast<T>(1)};  //! imaginary value
+template <typename T = double>
+inline constexpr T PI = std::numbers::pi_v<T>;                                //! pi
+template <typename T = double>
+inline constexpr T HALF_PI = std::numbers::pi_v<T> / static_cast<T>(2);       //! pi/2
+template <typename T = double>
+inline constexpr T TWO_PI = static_cast<T>(2) * std::numbers::pi_v<T>;        //! 2*pi
+template <typename T = double>
+inline constexpr T PI_SQU = std::pow(std::numbers::pi_v<T>, 2);               //! pi^2
+template <typename T = double>
+inline constexpr T SQRT_PI = std::sqrt(std::numbers::pi_v<T>);                //! sqrt(pi)
+template <typename T = double>
+inline constexpr T RAD2DEG = 180.0 / std::numbers::pi_v<T>;                   //! radians to degrees
+template <typename T = double>
+inline constexpr T DEG2RAD = std::numbers::pi_v<T> / 180.0;                   //! degrees to radians
+template <typename T = double>
+inline static const Vec3<T> LLA_RAD2DEG{RAD2DEG<T>, RAD2DEG<T>, 1.0}; 
+template <typename T = double>
+inline static const Vec3<T> LLA_DEG2RAD{DEG2RAD<T>, DEG2RAD<T>, 1.0};
+
+template<int Numerator, int Denominator, typename T = double>
+constexpr T PiFraction()
+{
+  return static_cast<T>(Numerator) * PI<T> / static_cast<T>(Denominator);
+}
+
+template<int Numerator, int Denominator, typename T = double>
+constexpr T Fraction()
+{
+  return static_cast<T>(Numerator) / static_cast<T>(Denominator);
+}
+
+DEFINE_FP_CONSTANT(LIGHT_SPEED, 299792458.0);        //! speed of light [m/s]
+DEFINE_FP_CONSTANT(BOLTZMANN, 1.38e-23);             //! Boltsman constant [J/K]
+DEFINE_FP_CONSTANT(GAUSS_TO_TESLA, 1e-4);            //! Gauss to Tesla
+DEFINE_FP_CONSTANT(METERS_PER_FOOT, 0.3048);         //! Feet to meters
+DEFINE_FP_CONSTANT(MINUTES_PER_DAY, 1440.0);         //! minutes per day
 
 //* ===== Earth Info =========================================================================== *//
 

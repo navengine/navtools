@@ -1,10 +1,12 @@
 #ifndef NAVTOOLS_FRAMES_HPP
 #define NAVTOOLS_FRAMES_HPP
 
+#include <cmath>
+
 #include <Eigen/Dense>
 
 #include "navtools/constants.hpp"
-#include "navtools/typing.hpp"
+#include "navtools/types.hpp"
 
 namespace navtools {
 

@@ -4,7 +4,7 @@
 #include <Eigen/Dense>
 
 #include "navtools/constants.hpp"
-#include "navtools/typing.hpp"
+#include "navtools/types.hpp"
 
 namespace navtools {
 
@@ -97,7 +97,7 @@ void quat2euler(Vec3<Float> &e, const Vec4<Float> &q, const std::string frame = 
     } else if (frame == "enu") {
         e(0) = PI<Float> + std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
         e(1) = -std::asin(2.0 * (w * y - x * z));
-        e(2) = PIO2<Float> - std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
+        e(2) = HALF_PI<Float> - std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
     }
 }
 template <typename Float = double>

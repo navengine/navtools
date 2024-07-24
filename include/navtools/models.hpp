@@ -142,7 +142,7 @@ Vec3<Float> earthRate(const Float &phi, const std::string frame = "ned") {
 }
 template <typename Float = double>
 void earthRateSkew(Mat3x3<Float> &W_ie_n, const Float &phi, const std::string frame = "ned") {
-    W_ie_n = skew(earthRate(phi, frame));
+    W_ie_n = Skew(earthRate(phi, frame));
 }
 template <typename Float = double>
 Mat3x3<Float> earthRateSkew(const Float &phi, const std::string frame = "ned") {
@@ -191,7 +191,7 @@ void transportRateSkew(
         const Vec3<Float> &lla,
         const Vec3<Float> &v_nb_e,
         const std::string frame = "ned") {
-    W_en_n = skew(transportRate(lla, v_nb_e, frame));
+    W_en_n = Skew(transportRate(lla, v_nb_e, frame));
 }
 template <typename Float = double>
 Mat3x3<Float> transportRateSkew(
@@ -234,16 +234,16 @@ Vec3<Float> coriolisRate(
 /// @param g0   Somigliana gravity
 /// @returns Somgiliana gravity
 template <typename Float = double>
-void somigliana(Float &g0, const Float &phi) {
+void Somigliana(Float &g0, const Float &phi) {
     Float sin_phi2 = std::sin(phi);
     sin_phi2 *= sin_phi2;
     g0 = 9.7803253359 *
          ((1.0 + 0.001931853 * sin_phi2) / std::sqrt(1.0 - WGS84_E2<Float> * sin_phi2));
 }
 template <typename Float = double>
-Float somigliana(const Float &phi) {
+Float Somigliana(const Float &phi) {
     Float g0;
-    somigliana(g0, phi);
+    Somigliana(g0, phi);
     return g0;
 }
 

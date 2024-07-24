@@ -44,7 +44,7 @@ set(NAVTOOLS_HDRS
     include/navtools/frames.hpp
     include/navtools/math.hpp
     include/navtools/models.hpp
-    include/navtools/typing.hpp
+    include/navtools/types.hpp
 )
 
 # --- Create the C++ Library ---
