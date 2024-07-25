@@ -1,10 +1,11 @@
-/*
+/**
 |========================================== math.hpp ==============================================|
 |                                                                                                  |
 |   @file     include/navtools/math.hpp                                                            |
 |   @brief    Common mathematical operations.                                                      |
 |   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
 |               - (2013) Paul D. Groves                                                            |
+|   @date     July 2024                                                                            |
 |                                                                                                  |
 |==================================================================================================|
 */
@@ -55,7 +56,27 @@ Vec3<Float> DeSkew(const Mat3x3<Float> &M) {
     return v;
 }
 
-//* ===== Modulus Operations =================================================================== *//
+//* ===== Sorting ============================================================================== *//
+
+//! === MINPOSITIVEIDX ===
+/// @brief find the index of the minimum value in vector greater than 0
+template <typename Float = double>
+size_t MinPositiveIdx(const std::vector<Float> &arr, const Float &set_point = 0.0) {
+    size_t result = 0;
+    Float tmp;
+    Float max_val = std::numeric_limits<Float>::max();
+    for (size_t i = 0; i < arr.size(); i++) {
+        tmp = arr[i] - set_point;
+        if ((0 < tmp) && (tmp < max_val)) {
+            max_val = tmp;
+            result = i;
+        }
+    }
+    return result;
+}
+
+//* ===== Modulus Operations ===================================================================
+//*//
 //! === CIRCFMOD ===
 /// @brief      Modulus of floating point number
 /// @param x    user input and output
@@ -70,7 +91,8 @@ constexpr void CircMod(Float &x, const Float y) {
 //     return x - std::floor(x / y) * y;
 // }
 
-//* ===== Pi Wrapping ========================================================================== *//
+//* ===== Pi Wrapping ==========================================================================
+//*//
 
 //! === WRAPTO2PI ===
 /// @brief      Wraps angles from [0, 2*pi]
@@ -138,7 +160,8 @@ Float deg2rad(Float x) {
     return x * DEG2RAD<Float>;
 }
 
-//* ===== Matrix Products/Normalization ======================================================== *//
+//* ===== Matrix Products/Normalization ========================================================
+//*//
 
 //! === QUATMAT ===
 /// @brief      convert quaternion into its 4x4 matrix view
@@ -232,7 +255,8 @@ void dcmnorm(Mat3x3<Float> &R) {
     R.col(2) = c3;
 }
 
-//* ===== Matrix Exponential =================================================================== *//
+//* ===== Matrix Exponential ===================================================================
+//*//
 
 //! === RODRIGUES ===
 /// @brief      Rodrigues formula for the approximation of a matrix exponential
@@ -263,14 +287,14 @@ Mat3x3<Float> Rodrigues4(const Vec3<Float> &vec) {
     Float vec_norm = vec.norm();
     Mat3x3<Float> skew_sym = Skew(vec);
     Float norm_squared = vec_norm * vec_norm;
-    return Eigen::Matrix<Float,3,3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
+    return Eigen::Matrix<Float, 3, 3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
            ((0.5 - (norm_squared / 24.0)) * skew_sym * skew_sym);
 }
 template <typename Float = double>
 Mat3x3<Float> Rodrigues4(const Vec3<Float> &vec, const Float &vec_norm) {
     Mat3x3<Float> skew_sym = Skew(vec);
     Float norm_squared = vec_norm * vec_norm;
-    return Eigen::Matrix<Float,3,3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
+    return Eigen::Matrix<Float, 3, 3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
            ((0.5 - (norm_squared / 24.0)) * skew_sym * skew_sym);
 }
 
@@ -301,7 +325,8 @@ Vec3<Float> expm2vec(const Mat3x3<Float> &mat) {
     return phi * DeSkew(mat - mat.transpose()) / (2.0 * std::sin(phi));
 }
 
-//* ===== Signal to Noise ====================================================================== *//
+//* ===== Signal to Noise ======================================================================
+//*//
 // https://insidegnss.com/wp-content/uploads/2018/01/novdec10-Solutions.pdf
 
 //! === WATT2DB ===

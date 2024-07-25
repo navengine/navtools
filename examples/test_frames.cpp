@@ -1,21 +1,3 @@
-/**
-|======================================== test_frames.cpp =========================================|
-|                                                                                                  |
-|   Property of Daniel Sturdivant. Unauthorized copying of this file via any medium is would be    |
-|   super sad and unfortunate for me. Proprietary and confidential.                                |
-|                                                                                                  |
-|--------------------------------------------------------------------------------------------------|
-|                                                                                                  |
-|   @file     examples/test_frames.hpp                                                             |
-|   @brief    Shows how to use the "navframes" library.                                            |
-|   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
-|               - (2013) Paul D. Groves                                                            |
-|   @author   Daniel Sturdivant <sturdivant20@gmail.com>                                           |
-|   @date     July 2024                                                                            |
-|                                                                                                  |
-|==================================================================================================|
-*/
-
 #include <iomanip>
 #include <iostream>
 

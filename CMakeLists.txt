@@ -36,10 +36,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Ofast -ffast-math")
 # --- Packages ---
 find_package(Eigen3 REQUIRED)
 
-
 # --- Add Library Soruce Files ---
 set(NAVTOOLS_HDRS
     include/navtools/attitude.hpp
+    include/navtools/binary-ops.hpp
     include/navtools/constants.hpp
     include/navtools/frames.hpp
     include/navtools/math.hpp

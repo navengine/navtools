@@ -1,10 +1,11 @@
-/*
+/**
 |========================================== models.hpp ============================================|
 |                                                                                                  |
 |   @file     include/navtools/models.hpp                                                          |
 |   @brief    Simple models commonly used in navigation equations.                                 |
 |   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
 |               - (2013) Paul D. Groves                                                            |
+|   @date     July 2024                                                                            |
 |                                                                                                  |
 |==================================================================================================|
 */

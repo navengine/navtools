@@ -1,0 +1,18 @@
+Language: Cpp
+BasedOnStyle: Google
+
+AlignAfterOpenBracket: AlwaysBreak
+BinPackArguments: False
+BinPackParameters: False
+ContinuationIndentWidth: 8
+
+IndentWidth: 4
+AccessModifierOffset: -2
+ColumnLimit: 100
+PointerAlignment: Left
+MaxEmptyLinesToKeep: 1
+SpacesBeforeTrailingComments: 2
+FixNamespaceComments: true
+AlignTrailingComments: true
+AllowShortFunctionsOnASingleLine: None
+# PenaltyBreakBeforeFirstCallParameter: 9999

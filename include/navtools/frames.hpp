@@ -1,19 +1,20 @@
-/*
+/**
 |========================================== frames.hpp ============================================|
 |                                                                                                  |
 |   @file     include/navtools/frames.hpp                                                          |
 |   @brief    Common coordinate frame transformations.                                             |
 |   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
 |               - (2013) Paul D. Groves                                                            |
+|   @date     July 2024                                                                            |
 |                                                                                                  |
 |==================================================================================================|
 */
+
 #ifndef NAVTOOLS_FRAMES_HPP
 #define NAVTOOLS_FRAMES_HPP
 
-#include <cmath>
-
 #include <Eigen/Dense>
+#include <cmath>
 
 #include "navtools/constants.hpp"
 #include "navtools/types.hpp"

@@ -1,15 +1,21 @@
-/*
+/**
 |========================================== typing.hpp ============================================|
 |                                                                                                  |
-|   @file     include/navtools/types.hpp                                                          |
+|   @file     include/navtools/types.hpp                                                           |
 |   @brief    Useful type definitions.                                                             |
+|   @date     July 2024                                                                            |
 |                                                                                                  |
 |==================================================================================================|
 */
+
 #ifndef NAVTOOLS_TYPES_HPP
 #define NAVTOOLS_TYPES_HPP
 
 #include <Eigen/Dense>
+
+#define DEFINE_FP_CONSTANT(name, value) \
+    template <typename T = double>      \
+    inline constexpr T name = static_cast<T>(value)
 
 namespace navtools {
 
@@ -30,11 +36,11 @@ template <typename T = double>
 using Mat4 = Eigen::Matrix<T, 4, 4>;  // 4x4 matrix of Ts
 
 template <typename T = double>
-using Vec2 = Eigen::Vector<T, 2>;       // size 2 vector of Ts
+using Vec2 = Eigen::Vector<T, 2>;  // size 2 vector of Ts
 template <typename T = double>
-using Vec3 = Eigen::Vector<T, 3>;       // size 3 vector of Ts
+using Vec3 = Eigen::Vector<T, 3>;  // size 3 vector of Ts
 template <typename T = double>
-using Vec4 = Eigen::Vector<T, 4>;       // size 4 vector of Ts
+using Vec4 = Eigen::Vector<T, 4>;  // size 4 vector of Ts
 
 }  // namespace navtools
 
