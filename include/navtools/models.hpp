@@ -28,15 +28,15 @@ namespace navtools {
 /// @param Re   Transverse radius [m]
 /// @returns    Earth's transverse radius at Latitude
 template <typename Float = double>
-void transverseRadius(Float &Re, const Float &phi) {
+void TransverseRadius(Float &Re, const Float &phi) {
     Float sin_phi = std::sin(phi);
     Float t = 1.0 - WGS84_E2<Float> * sin_phi * sin_phi;
     Re = WGS84_R0<Float> / std::sqrt(t);
 }
 template <typename Float = double>
-Float transverseRadius(const Float &phi) {
+Float TransverseRadius(const Float &phi) {
     Float Re;
-    transverseRadius(Re, phi);
+    TransverseRadius(Re, phi);
     return Re;
 }
 
@@ -46,15 +46,15 @@ Float transverseRadius(const Float &phi) {
 /// @param Rn   Meridian radius [m]
 /// @returns    Earth's meridian radius at Latitude
 template <typename Float = double>
-void meridianRadius(Float &Rn, const Float &phi) {
+void MeridianRadius(Float &Rn, const Float &phi) {
     Float sin_phi = std::sin(phi);
     Float t = 1.0 - WGS84_E2<Float> * sin_phi * sin_phi;
     Rn = WGS84_R0<Float> * (1.0 - WGS84_E2<Float>) / std::pow(t, 1.5);
 }
 template <typename Float = double>
-Float meridianRadius(const Float &phi) {
+Float MeridianRadius(const Float &phi) {
     Float Rn;
-    meridianRadius(Rn, phi);
+    MeridianRadius(Rn, phi);
     return Rn;
 }
 
@@ -64,7 +64,7 @@ Float meridianRadius(const Float &phi) {
 /// @param R_es_e   Geocentric radius [m]
 /// @returns    Earth's geocentric radius at Latitude
 template <typename Float = double>
-void geocentricRadius(Float &R_es_e, const Float &phi) {
+void GeocentricRadius(Float &R_es_e, const Float &phi) {
     Float sin_phi2 = std::sin(phi);
     sin_phi2 *= sin_phi2;
     Float cos_phi = std::cos(phi);
@@ -74,9 +74,9 @@ void geocentricRadius(Float &R_es_e, const Float &phi) {
     R_es_e = Re * std::sqrt(cos_phi * cos_phi + o_e2 * o_e2 * sin_phi2);
 }
 template <typename Float = double>
-Float geocentricRadius(const Float &phi) {
+Float GeocentricRadius(const Float &phi) {
     Float R_es_e;
-    geocentricRadius(R_es_e, phi);
+    GeocentricRadius(R_es_e, phi);
     return R_es_e;
 }
 
@@ -86,7 +86,7 @@ Float geocentricRadius(const Float &phi) {
 /// @param radii    vector containing {Transverse, Meridian} radii [m]
 /// @returns    Earth's {Transverse, Meridian} radii at Latitude
 template <typename Float = double>
-void transAndMerRadii(Vec2<Float> &radii, const Float &phi) {
+void TransAndMerRadii(Vec2<Float> &radii, const Float &phi) {
     Float sin_phi = std::sin(phi);
     Float t = 1.0 - WGS84_E2<Float> * sin_phi * sin_phi;
 
@@ -94,9 +94,9 @@ void transAndMerRadii(Vec2<Float> &radii, const Float &phi) {
     radii(1) = WGS84_R0<Float> * (1.0 - WGS84_E2<Float>) / std::pow(t, 1.5);
 }
 template <typename Float = double>
-Vec2<Float> transAndMerRadii(const Float &phi) {
+Vec2<Float> TransAndMerRadii(const Float &phi) {
     Vec2<Float> radii;
-    transAndMerRadii(radii, phi);
+    TransAndMerRadii(radii, phi);
     return radii;
 }
 
@@ -106,7 +106,7 @@ Vec2<Float> transAndMerRadii(const Float &phi) {
 /// @param radii    vector containing {Transverse, Meridian, Geocentric} radii [m]
 /// @returns    Earth's {Transverse, Meridian, Geocentric} radii at Latitude
 template <typename Float = double>
-void radiiOfCurvature(Vec3<Float> &radii, const Float &phi) {
+void RadiiOfCurvature(Vec3<Float> &radii, const Float &phi) {
     Float sin_phi2 = std::sin(phi);
     sin_phi2 *= sin_phi2;
     Float cos_phi = std::cos(phi);
@@ -118,9 +118,9 @@ void radiiOfCurvature(Vec3<Float> &radii, const Float &phi) {
     radii(2) = radii(0) * std::sqrt(cos_phi * cos_phi + o_e2 * o_e2 * sin_phi2);
 }
 template <typename Float = double>
-Vec3<Float> radiiOfCurvature(const Float &phi) {
+Vec3<Float> RadiiOfCurvature(const Float &phi) {
     Vec3<Float> radii;
-    radiiOfCurvature(radii, phi);
+    RadiiOfCurvature(radii, phi);
     return radii;
 }
 
@@ -134,7 +134,7 @@ Vec3<Float> radiiOfCurvature(const Float &phi) {
 /// @param W_ie_n   3x3 skew-symmetric matrix of earth's rotation in the 'NAV' frame
 /// @returns    earth's rotation in the 'NAV' frame
 template <typename Float = double>
-void earthRate(Vec3<Float> &w_ie_n, const Float &phi, const std::string frame = "ned") {
+void EarthRate(Vec3<Float> &w_ie_n, const Float &phi, const std::string frame = "ned") {
     if (frame == "ned") {
         w_ie_n(0) = WGS84_OMEGA<Float> * std::cos(phi);
         w_ie_n(1) = 0.0;
@@ -146,19 +146,19 @@ void earthRate(Vec3<Float> &w_ie_n, const Float &phi, const std::string frame = 
     }
 }
 template <typename Float = double>
-Vec3<Float> earthRate(const Float &phi, const std::string frame = "ned") {
+Vec3<Float> EarthRate(const Float &phi, const std::string frame = "ned") {
     Vec3<Float> w_ie_n;
-    earthRate(w_ie_n, phi, frame);
+    EarthRate(w_ie_n, phi, frame);
     return w_ie_n;
 }
 template <typename Float = double>
-void earthRateSkew(Mat3x3<Float> &W_ie_n, const Float &phi, const std::string frame = "ned") {
-    W_ie_n = Skew(earthRate(phi, frame));
+void EarthRateSkew(Mat3x3<Float> &W_ie_n, const Float &phi, const std::string frame = "ned") {
+    W_ie_n = Skew(EarthRate(phi, frame));
 }
 template <typename Float = double>
-Mat3x3<Float> earthRateSkew(const Float &phi, const std::string frame = "ned") {
+Mat3x3<Float> EarthRateSkew(const Float &phi, const std::string frame = "ned") {
     Mat3x3<Float> W_ie_n;
-    earthRateSkew(W_ie_n, phi, frame);
+    EarthRateSkew(W_ie_n, phi, frame);
     return W_ie_n;
 }
 
@@ -171,12 +171,12 @@ Mat3x3<Float> earthRateSkew(const Float &phi, const std::string frame = "ned") {
 /// @param W_en_n   3x3 skew-symmetric matrix of earth's rotation in the 'NAV' frame
 /// @returns    Transport rate in the 'NAV' frame
 template <typename Float = double>
-void transportRate(
+void TransportRate(
         Vec3<Float> &w_en_n,
         const Vec3<Float> &lla,
         const Vec3<Float> &v_nb_e,
         const std::string frame = "ned") {
-    Vec2<Float> radii = transAndMerRadii(lla(0));
+    Vec2<Float> radii = TransAndMerRadii(lla(0));
     if (frame == "ned") {
         Float ve_Reh = v_nb_e(1) / (radii(0) + lla(2));  // ve / (Re + h)
         w_en_n(0) = ve_Reh;                              // ve / (Re + h)
@@ -190,25 +190,25 @@ void transportRate(
     }
 }
 template <typename Float = double>
-Vec3<Float> transportRate(
+Vec3<Float> TransportRate(
         const Vec3<Float> &lla, const Vec3<Float> &v_nb_e, const std::string frame = "ned") {
     Vec3<Float> w_en_n;
-    transportRate(w_en_n, lla, v_nb_e, frame);
+    TransportRate(w_en_n, lla, v_nb_e, frame);
     return w_en_n;
 }
 template <typename Float = double>
-void transportRateSkew(
+void TransportRateSkew(
         Mat3x3<Float> &W_en_n,
         const Vec3<Float> &lla,
         const Vec3<Float> &v_nb_e,
         const std::string frame = "ned") {
-    W_en_n = Skew(transportRate(lla, v_nb_e, frame));
+    W_en_n = Skew(TransportRate(lla, v_nb_e, frame));
 }
 template <typename Float = double>
-Mat3x3<Float> transportRateSkew(
+Mat3x3<Float> TransportRateSkew(
         const Vec3<Float> &lla, const Vec3<Float> &v_nb_e, const std::string frame = "ned") {
     Mat3x3<Float> W_en_n;
-    transportRateSkew(W_en_n, lla, v_nb_e, frame);
+    TransportRateSkew(W_en_n, lla, v_nb_e, frame);
     return W_en_n;
 }
 
@@ -220,20 +220,20 @@ Mat3x3<Float> transportRateSkew(
 /// @param coriolis size 3 coriolis effect
 /// @returns    Coriolis effect
 template <typename Float = double>
-void coriolisRate(
+void CoriolisRate(
         Vec3<Float> &coriolis,
         const Vec3<Float> &lla,
         const Vec3<Float> &v_nb_e,
         const std::string frame = "ned") {
-    Vec3<Float> w_ie_n = earthRate(lla(0), frame);
-    Vec3<Float> w_en_n = transportRate(lla, v_nb_e, frame);
+    Vec3<Float> w_ie_n = EarthRate(lla(0), frame);
+    Vec3<Float> w_en_n = TransportRate(lla, v_nb_e, frame);
     coriolis = skew(w_en_n + 2.0 * w_ie_n) * v_nb_e;
 }
 template <typename Float = double>
-Vec3<Float> coriolisRate(
+Vec3<Float> CoriolisRate(
         const Vec3<Float> &lla, const Vec3<Float> &v_nb_e, const std::string frame = "ned") {
     Vec3<Float> coriolis;
-    coriolisRate(coriolis, lla, v_nb_e, frame);
+    CoriolisRate(coriolis, lla, v_nb_e, frame);
     return coriolis;
 }
 
@@ -265,7 +265,7 @@ Float Somigliana(const Float &phi) {
 /// @param g        size 3 Local/NAV frame gravity vector
 /// @returns    Local/NAV frame gravity
 template <typename Float = double>
-void localGravity(Vec3<Float> &g, const Vec3<Float> &lla, const std::string frame = "ned") {
+void LocalGravity(Vec3<Float> &g, const Vec3<Float> &lla, const std::string frame = "ned") {
     Float sin_phi2 = std::sin(lla(0));
     sin_phi2 *= sin_phi2;
     Float g0 = 9.7803253359 *
@@ -294,9 +294,9 @@ void localGravity(Vec3<Float> &g, const Vec3<Float> &lla, const std::string fram
     }
 }
 template <typename Float = double>
-Vec3<Float> localGravity(const Vec3<Float> &lla, const std::string frame = "ned") {
+Vec3<Float> LocalGravity(const Vec3<Float> &lla, const std::string frame = "ned") {
     Vec3<Float> g;
-    localGravity(g, lla, frame);
+    LocalGravity(g, lla, frame);
     return g;
 }
 
@@ -307,7 +307,7 @@ Vec3<Float> localGravity(const Vec3<Float> &lla, const std::string frame = "ned"
 /// @param gamma    size 3 ECEF frame gravitational acceleration
 /// @returns    ECEF frame gravity
 template <typename Float = double>
-void ecefGravity(Vec3<Float> &g, Vec3<Float> &gamma, const Vec3<Float> &xyz) {
+void EcefGravity(Vec3<Float> &g, Vec3<Float> &gamma, const Vec3<Float> &xyz) {
     Float mag_r = xyz.norm();
     if (mag_r == 0.0) {
         g << 0.0, 0.0, 0.0;
@@ -324,14 +324,14 @@ void ecefGravity(Vec3<Float> &g, Vec3<Float> &gamma, const Vec3<Float> &xyz) {
     }
 }
 template <typename Float = double>
-void ecefGravity(Vec3<Float> &g, const Vec3<Float> &xyz) {
+void EcefGravity(Vec3<Float> &g, const Vec3<Float> &xyz) {
     Vec3<Float> gamma;
-    ecefGravity(g, gamma, xyz);
+    EcefGravity(g, gamma, xyz);
 }
 template <typename Float = double>
-Vec3<Float> ecefGravity(const Vec3<Float> &xyz) {
+Vec3<Float> EcefGravity(const Vec3<Float> &xyz) {
     Vec3<Float> g;
-    ecefGravity(g, xyz);
+    EcefGravity(g, xyz);
     return g;
 }
 
@@ -344,13 +344,13 @@ Vec3<Float> ecefGravity(const Vec3<Float> &xyz) {
 /// @param r        Calculated range [m]
 /// @returns    Range
 template <typename Float = double>
-void calcRange(Float &r, const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
+void CalcRange(Float &r, const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
     r = (user_xyz - sv_xyz).norm();
 }
 template <typename Float = double>
-Float calcRange(const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
+Float CalcRange(const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
     Float r;
-    calcRange(r, sv_xyz, user_xyz);
+    CalcRange(r, sv_xyz, user_xyz);
     return r;
 }
 
@@ -361,14 +361,14 @@ Float calcRange(const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
 /// @param u        Calculated unit vector [m]
 /// @returns    Unit vector
 template <typename Float = double>
-void calcUnitVec(Vec3<Float> &u, const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
+void CalcUnitVec(Vec3<Float> &u, const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
     Vec3<Float> dr = user_xyz - sv_xyz;
     u = dr / dr.norm();
 }
 template <typename Float = double>
-Vec3<Float> calcUnitVec(const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
+Vec3<Float> CalcUnitVec(const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
     Vec3<Float> u;
-    calcUnitVec(u, sv_xyz, user_xyz);
+    CalcUnitVec(u, sv_xyz, user_xyz);
     return u;
 }
 
@@ -380,7 +380,7 @@ Vec3<Float> calcUnitVec(const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) 
 /// @param u        Calculated unit vector [m]
 /// @returns    Range and unit vector
 template <typename Float = double>
-void calcRangeAndUnitVec(
+void CalcRangeAndUnitVec(
         Float &r, Vec3<Float> &u, const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
     Vec3<Float> dr = user_xyz - sv_xyz;
     r = dr.norm();
@@ -394,15 +394,15 @@ void calcRangeAndUnitVec(
 /// @param user_vel User velocity [m/s]
 /// @param rr       Calculated range-rate [m/s]
 template <typename Float = double>
-void calcRangeRate(
+void CalcRangeRate(
         Float &rr, const Vec3<Float> &u, const Vec3<Float> &sv_vel, const Vec3<Float> &user_vel) {
     Vec3<Float> dv = user_vel - sv_vel;
     rr = u(0) * dv(0) + u(1) * dv(1) + u(2) * dv(2);
 }
 template <typename Float = double>
-Float calcRangeRate(const Vec3<Float> &u, const Vec3<Float> &sv_vel, const Vec3<Float> &user_vel) {
+Float CalcRangeRate(const Vec3<Float> &u, const Vec3<Float> &sv_vel, const Vec3<Float> &user_vel) {
     Float rr;
-    calcRangeRate(rr, u, sv_vel, user_vel);
+    CalcRangeRate(rr, u, sv_vel, user_vel);
     return rr;
 }
 

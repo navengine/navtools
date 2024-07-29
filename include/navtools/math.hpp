@@ -87,20 +87,20 @@ constexpr void CircMod(Float &x, const Float y) {
     x -= std::floor(x / y) * y;
 }
 // template <typename Float>
-// constexpr Float circfmod(Float x, const Float y) {
+// constexpr Float CircMod(Float x, const Float y) {
 //     return x - std::floor(x / y) * y;
 // }
 
 //* ===== Pi Wrapping ==========================================================================
 //*//
 
-//! === WRAPTO2PI ===
+//! === CIRCMOD2PI ===
 /// @brief      Wraps angles from [0, 2*pi]
 /// @param x    Inputs containing angles in radians
 /// @returns    Wrapped/normalized angles [radians]
 template <typename Float = double>
-void wrapTo2Pi(Float &x) {
-    circfmod(x, TWO_PI<Float>);
+void CircMod2Pi(Float &x) {
+    CircMod(x, TWO_PI<Float>);
 }
 
 //! === WRAPPITOPI ===
@@ -108,8 +108,8 @@ void wrapTo2Pi(Float &x) {
 /// @param x    Inputs containing angles in radians
 /// @returns    Wrapped/normalized angles [radians]
 template <typename Float = double>
-void wrapPiToPi(Float &x) {
-    wrapTo2Pi(x);
+void WrapPiToPi(Float &x) {
+    CircMod2Pi(x);
     if (x > PI<Float>) {
         x -= TWO_PI<Float>;
     }
@@ -120,7 +120,7 @@ void wrapPiToPi(Float &x) {
 /// @param x    Euler angles [radians]
 /// @returns    Correctly wrapped Euler angles
 template <typename Float = double>
-void wrapEulerAngles(Vec3<Float> &x) {
+void WrapEulerAngles(Vec3<Float> &x) {
     if (x(1) > HALF_PI<Float>) {
         x(0) += PI<Float>;
         x(1) = PI<Float> - x(1);
@@ -130,8 +130,8 @@ void wrapEulerAngles(Vec3<Float> &x) {
         x(1) = -PI<Float> - x(1);
         x(2) += PI<Float>;
     }
-    wrapPiToPi(x(0));
-    wrapPiToPi(x(2));
+    WrapPiToPi(x(0));
+    WrapPiToPi(x(2));
 }
 
 //! === RAD2DEG ===
@@ -143,7 +143,7 @@ void rad2deg(Float &x) {
     x *= RAD2DEG<Float>;
 }
 template <typename Float>
-Float rad2deg(Float x) {
+Float rad2deg(const Float x) {
     return x * RAD2DEG<Float>;
 }
 
@@ -156,7 +156,7 @@ void deg2rad(Float &x) {
     x *= DEG2RAD<Float>;
 }
 template <typename Float>
-Float deg2rad(Float x) {
+Float deg2rad(const Float x) {
     return x * DEG2RAD<Float>;
 }
 
