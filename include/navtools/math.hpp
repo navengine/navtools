@@ -143,7 +143,7 @@ void rad2deg(Float &x) {
     x *= RAD2DEG<Float>;
 }
 template <typename Float>
-Float rad2deg(const Float x) {
+constexpr Float rad2deg(const Float& x) {
     return x * RAD2DEG<Float>;
 }
 
@@ -156,7 +156,7 @@ void deg2rad(Float &x) {
     x *= DEG2RAD<Float>;
 }
 template <typename Float>
-Float deg2rad(const Float x) {
+constexpr Float deg2rad(const Float& x) {
     return x * DEG2RAD<Float>;
 }
 
@@ -272,7 +272,7 @@ Mat3x3<Float> Rodrigues(const Vec3<Float> &vec) {
 }
 template <typename Float = double>
 Mat3x3<Float> Rodrigues(const Vec3<Float> &vec, const Float &vec_norm) {
-    Mat3x3<Float> skew_sym = Skew(vec / vec_norm);
+    Mat3x3<Float> skew_sym = Skew<Float>(vec / vec_norm);
     return Eigen::Matrix<Float, 3, 3>::Identity() + (std::sin(vec_norm) * skew_sym) +
            ((1.0 - std::cos(vec_norm)) * skew_sym * skew_sym);
 }

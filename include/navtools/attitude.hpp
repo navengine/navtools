@@ -208,15 +208,15 @@ Vec4<Float> dcm2quat(const Mat3x3<Float> &R) {
 /// @param x    euler angle ]radians]
 /// @returns    3x3 x-axis DCM rotation
 template <typename Float = double>
-void rotX(Mat3x3<Float> &C, const Float &x) {
+void RotX(Mat3x3<Float> &C, const Float &x) {
     Float sx = std::sin(x);
     Float cx = std::cos(x);
     C << 1.0, 0.0, 0.0, 0.0, cx, -sx, 0.0, sx, cx;
 }
 template <typename Float = double>
-Mat3x3<Float> rotX(const Float &x) {
+Mat3x3<Float> RotX(const Float &x) {
     Mat3x3<Float> C;
-    rotX(C, x);
+    RotX(C, x);
     return C;
 }
 
@@ -226,15 +226,15 @@ Mat3x3<Float> rotX(const Float &x) {
 /// @param y    euler angle ]radians]
 /// @returns    3x3 y-axis DCM rotation
 template <typename Float = double>
-void rotY(Mat3x3<Float> &C, const Float &y) {
+void RotY(Mat3x3<Float> &C, const Float &y) {
     Float sy = std::sin(y);
     Float cy = std::cos(y);
     C = {{cy, 0.0, sy}, {0.0, 1.0, 0.0}, {-sy, 0.0, cy}};
 }
 template <typename Float = double>
-Mat3x3<Float> rotY(const Float &y) {
+Mat3x3<Float> RotY(const Float &y) {
     Mat3x3<Float> C;
-    rotY(C, y);
+    RotY(C, y);
     return C;
 }
 
@@ -244,15 +244,15 @@ Mat3x3<Float> rotY(const Float &y) {
 /// @param z    euler angle ]radians]
 /// @returns    3x3 z-axis DCM rotation
 template <typename Float = double>
-void rotZ(Mat3x3<Float> &C, const Float &z) {
+void RotZ(Mat3x3<Float> &C, const Float &z) {
     Float sz = std::sin(z);
     Float cz = std::cos(z);
     C = {{cz, -sz, 0.0}, {sz, cz, 0.0}, {0.0, 0.0, 1.0}};
 }
 template <typename Float = double>
-Mat3x3<Float> rotZ(const Float &z) {
+Mat3x3<Float> RotZ(const Float &z) {
     Mat3x3<Float> C;
-    rotZ(C, z);
+    RotZ(C, z);
     return C;
 }
 

@@ -23,7 +23,7 @@ namespace navtools {
 //* ===== Physical Constants =================================================================== *//
 
 template <typename T = double>
-inline constexpr std::complex<T> J{static_cast<T>(0), static_cast<T>(1)};  //! imaginary value
+inline constexpr std::complex<T> COMPLEX_I{static_cast<T>(0), static_cast<T>(1)};  //! imaginary value
 template <typename T = double>                                             //
 inline constexpr T PI = std::numbers::pi_v<T>;                             //! pi
 template <typename T = double>                                             //
@@ -43,12 +43,12 @@ inline static const Vec3<T> LLA_RAD2DEG{RAD2DEG<T>, RAD2DEG<T>, 1.0};
 template <typename T = double>
 inline static const Vec3<T> LLA_DEG2RAD{DEG2RAD<T>, DEG2RAD<T>, 1.0};
 
-template <int Numerator, int Denominator, typename T = double>
+template <int Numerator, int Denominator = 1, typename T = double>
 constexpr T PiFraction() {
     return static_cast<T>(Numerator) * PI<T> / static_cast<T>(Denominator);
 }
 
-template <int Numerator, int Denominator, typename T = double>
+template <int Numerator, int Denominator = 1, typename T = double>
 constexpr T Fraction() {
     return static_cast<T>(Numerator) / static_cast<T>(Denominator);
 }
@@ -63,7 +63,7 @@ DEFINE_FP_CONSTANT(MINUTES_PER_DAY, 1440.0);   //! minutes per day
 
 DEFINE_FP_CONSTANT(GRAVITY, 9.80665);     //! Earth's gravity constant [m/s^2]
 DEFINE_FP_CONSTANT(RE, 6378.1363e3);      //! Earth equatorial radius [m]
-DEFINE_FP_CONSTANT(GM, 3.986004415e14);   //! (mu) Gravitational constant [m^3/s^2]
+DEFINE_FP_CONSTANT(WGS84_MU, 3.986004415e14);   //! (mu) Gravitational constant [m^3/s^2]
 DEFINE_FP_CONSTANT(J2, 1.0826269e-03);    //! Earth second zonal harmonic coefficient
 DEFINE_FP_CONSTANT(J3, -2.5323000e-06);   //! Earth third zonal harmonic coefficient
 DEFINE_FP_CONSTANT(J4, -1.6204000e-06);   //! Earth fourth zonal harmonic coefficient
