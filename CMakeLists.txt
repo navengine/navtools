@@ -31,7 +31,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wunused -pedantic")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -W")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Ofast -ffast-math")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Ofast -ffast-math -fomit-frame-pointer -fstrict-aliasing -flto -DNDEBUG -march=native")
 
 # --- Packages ---
 find_package(Eigen3 REQUIRED)
