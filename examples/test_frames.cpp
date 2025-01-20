@@ -35,10 +35,13 @@ int main() {
   Eigen::Vector<double, 3> starting_xyz{422596.629, -5362864.287, 3415493.797};
   Eigen::Vector<double, 3> moved_xyz = starting_xyz + o;
   Eigen::Vector<double, 3> eci =
-      ecef2eci(starting_xyz, dt);  //! {-2913450.7570, -4517890.5814, 3421252.4798}
-  Eigen::Vector<double, 3> lla = ecef2lla(starting_xyz);    //! {32.586279, -85.494372, 194.83}
-  Eigen::Vector<double, 3> ned = ecef2ned(moved_xyz, lla);  //! depends on correct lla {0,0,0}
-  Eigen::Vector<double, 3> enu = ecef2enu(moved_xyz, lla);  //! depends on correct lla {0,0,0}
+      ecef2eci<double>(starting_xyz, dt);  //! {-2913450.7570, -4517890.5814, 3421252.4798}
+  Eigen::Vector<double, 3> lla =
+      ecef2lla<double>(starting_xyz);  //! {32.586279, -85.494372, 194.83}
+  Eigen::Vector<double, 3> ned =
+      ecef2ned<double>(moved_xyz, lla);  //! depends on correct lla {0,0,0}
+  Eigen::Vector<double, 3> enu =
+      ecef2enu<double>(moved_xyz, lla);  //! depends on correct lla {0,0,0}
 
   std::cout << BGRN << "Starting ECEF = " << starting_xyz.transpose() << RST << std::endl;
   std::cout << "ECI = " << eci.transpose() << std::endl;
@@ -47,10 +50,10 @@ int main() {
   std::cout << "ENU = " << enu.transpose() << std::endl << std::endl;
 
   // Rotate back to ECEF
-  Eigen::Vector<double, 3> eciToxyz = eci2ecef(eci, dt);
-  Eigen::Vector<double, 3> llaToxyz = lla2ecef(lla);
-  Eigen::Vector<double, 3> nedToxyz = ned2ecef(ned, lla);
-  Eigen::Vector<double, 3> enuToxyz = enu2ecef(enu, lla);
+  Eigen::Vector<double, 3> eciToxyz = eci2ecef<double>(eci, dt);
+  Eigen::Vector<double, 3> llaToxyz = lla2ecef<double>(lla);
+  Eigen::Vector<double, 3> nedToxyz = ned2ecef<double>(ned, lla);
+  Eigen::Vector<double, 3> enuToxyz = enu2ecef<double>(enu, lla);
 
   std::cout << BGRN << "Starting ECEF = " << starting_xyz.transpose() << RST << std::endl;
   std::cout << "From ECI = " << eciToxyz.transpose() << std::endl;
@@ -63,18 +66,18 @@ int main() {
             << std::endl;
 
   Eigen::Vector<double, 3> starting_nedv{1.0, 2.0, 3.0};
-  Eigen::Vector<double, 3> eciv = ned2eciv(ned, starting_nedv, lla, dt);
-  Eigen::Vector<double, 3> xyzv = ned2ecefv(starting_nedv, lla);
-  Eigen::Vector<double, 3> enuv = ned2enuDcm() * starting_nedv;
+  Eigen::Vector<double, 3> eciv = ned2eciv<double>(ned, starting_nedv, lla, dt);
+  Eigen::Vector<double, 3> xyzv = ned2ecefv<double>(starting_nedv, lla);
+  Eigen::Vector<double, 3> enuv = ned2enuDcm<double>() * starting_nedv;
 
   std::cout << BCYN << "Starting NEDV = " << starting_nedv.transpose() << RST << std::endl;
   std::cout << "ECIV = " << eciv.transpose() << std::endl;
   std::cout << "ECEFV = " << xyzv.transpose() << std::endl;
   std::cout << "ENUV = " << enuv.transpose() << std::endl << std::endl;
 
-  Eigen::Vector<double, 3> eciTonedv = eci2nedv(eci, eciv, lla, dt);
-  Eigen::Vector<double, 3> xyzTonedv = ecef2nedv(xyzv, lla);
-  Eigen::Vector<double, 3> enuTonedv = enu2nedDcm() * enuv;
+  Eigen::Vector<double, 3> eciTonedv = eci2nedv<double>(eci, eciv, lla, dt);
+  Eigen::Vector<double, 3> xyzTonedv = ecef2nedv<double>(xyzv, lla);
+  Eigen::Vector<double, 3> enuTonedv = enu2nedDcm<double>() * enuv;
 
   std::cout << BCYN << "Starting NEDV = " << starting_nedv.transpose() << RST << std::endl;
   std::cout << "From ECIV = " << eciTonedv.transpose() << std::endl;

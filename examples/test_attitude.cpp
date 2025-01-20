@@ -42,13 +42,13 @@ int main() {
   std::cout << "C_enu = " << std::endl << Renu.transpose() << std::endl;
   std::cout << "C_ned = " << std::endl << Rned.transpose() << std::endl << std::endl;
 
-  Eigen::Matrix<double, 3, 3> q2Renu = quat2dcm(qenu);
+  Eigen::Matrix<double, 3, 3> q2Renu = quat2dcm<double>(qenu);
   // dcmnorm(q2Renu);
-  Eigen::Matrix<double, 3, 3> q2Rned = quat2dcm(qned);
+  Eigen::Matrix<double, 3, 3> q2Rned = quat2dcm<double>(qned);
   // dcmnorm(q2Rned);
-  Eigen::Vector<double, 4> R2qenu = dcm2quat(Renu);
+  Eigen::Vector<double, 4> R2qenu = dcm2quat<double>(Renu);
   // quatnorm(R2qenu);
-  Eigen::Vector<double, 4> R2qned = dcm2quat(Rned);
+  Eigen::Vector<double, 4> R2qned = dcm2quat<double>(Rned);
   // quatnorm(R2qned);
 
   std::cout << "C_enu from q_enu = " << std::endl << q2Renu << std::endl;

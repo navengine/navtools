@@ -30,11 +30,11 @@ namespace navtools {
 /// @param M    3x3 skew symmetric matrix
 /// @returns    3x3 skew symmetric form of v
 template <typename T = double>
-void Skew(Eigen::Matrix<T, 3, 3> &M, const Eigen::Vector<T, 3> &v) {
+void Skew(Eigen::Ref<Eigen::Matrix<T, 3, 3>> M, const Eigen::Ref<const Eigen::Vector<T, 3>> &v) {
   M << 0.0, -v(2), v(1), v(2), 0.0, -v(0), -v(1), v(0), 0.0;
 }
 template <typename T = double>
-Eigen::Matrix<T, 3, 3> Skew(const Eigen::Vector<T, 3> &v) {
+Eigen::Matrix<T, 3, 3> Skew(const Eigen::Ref<const Eigen::Vector<T, 3>> &v) {
   Eigen::Matrix<T, 3, 3> M;
   Skew<T>(M, v);
   return M;
@@ -46,11 +46,11 @@ Eigen::Matrix<T, 3, 3> Skew(const Eigen::Vector<T, 3> &v) {
 /// @param v    3x1 vector
 /// @returns    3x1 vector form of M
 template <typename T = double>
-void DeSkew(Eigen::Vector<T, 3> &v, const Eigen::Matrix<T, 3, 3> &M) {
+void DeSkew(Eigen::Ref<Eigen::Vector<T, 3>> v, const Eigen::Ref<const Eigen::Matrix<T, 3, 3>> &M) {
   v << M(2, 1), M(0, 2), M(1, 0);
 }
 template <typename T = double>
-Eigen::Vector<T, 3> DeSkew(const Eigen::Matrix<T, 3, 3> &M) {
+Eigen::Vector<T, 3> DeSkew(const Eigen::Ref<const Eigen::Matrix<T, 3, 3>> &M) {
   Eigen::Vector<T, 3> v;
   DeSkew<T>(v, M);
   return v;
@@ -120,7 +120,7 @@ void WrapPiToPi(T &x) {
 /// @param x    Euler angles [radians]
 /// @returns    Correctly wrapped Euler angles
 template <typename T = double>
-void WrapEulerAngles(Eigen::Vector<T, 3> &x) {
+void WrapEulerAngles(Eigen::Ref<Eigen::Vector<T, 3>> x) {
   if (x(1) > HALF_PI<T>) {
     x(0) += PI<T>;
     x(1) = PI<T> - x(1);
@@ -166,7 +166,7 @@ constexpr T deg2rad(const T &x) {
 //! === QUATMAT ===
 /// @brief      convert quaternion into its 4x4 matrix view
 template <typename T>
-Eigen::Matrix<T, 4, 4> quatmat(const Eigen::Vector<T, 4> &q) {
+Eigen::Matrix<T, 4, 4> quatmat(const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
   return Eigen::Matrix<T, 4, 4>{
       {q(0), -q(1), -q(2), -q(3)},
       {q(1), q(0), q(3), -q(2)},
@@ -177,7 +177,9 @@ Eigen::Matrix<T, 4, 4> quatmat(const Eigen::Vector<T, 4> &q) {
 //! === QUATDOT ===
 /// @brief      quaternion product
 template <typename T = double>
-Eigen::Vector<T, 4> quatdot(const Eigen::Vector<T, 4> &p, const Eigen::Vector<T, 4> &q) {
+Eigen::Vector<T, 4> quatdot(
+    const Eigen::Ref<const Eigen::Vector<T, 4>> &p,
+    const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
   // p o q
   return Eigen::Vector<T, 4>{
       p(0) * q(0) - p(1) * q(1) - p(2) * q(2) - p(3) * q(3),
@@ -185,35 +187,39 @@ Eigen::Vector<T, 4> quatdot(const Eigen::Vector<T, 4> &p, const Eigen::Vector<T,
       p(0) * q(2) - p(1) * q(3) + p(2) * q(0) + p(3) * q(1),
       p(0) * q(3) + p(1) * q(2) - p(2) * q(1) + p(3) * q(0)};
 }
-template <typename T = double>
-Eigen::Vector<T, 4> quatdot(const Eigen::Vector<T, 3> &a, const Eigen::Vector<T, 4> &q) {
-  // a o q
-  return Eigen::Vector<T, 4>{
-      -a(0) * q(1) - a(1) * q(2) - a(2) * q(3),
-      a(0) * q(0) + a(1) * q(3) - a(2) * q(2),
-      -a(0) * q(3) + a(1) * q(0) + a(2) * q(1),
-      a(0) * q(2) - a(1) * q(1) + a(2) * q(0)};
-}
-template <typename T = double>
-Eigen::Vector<T, 4> quatdot(const Eigen::Vector<T, 4> &p, const Eigen::Vector<T, 3> &a) {
-  // p o a
-  return Eigen::Vector<T, 4>{
-      -p(1) * a(0) - p(2) * a(1) - p(3) * a(2),
-      p(0) * a(0) + p(2) * a(2) - p(3) * a(1),
-      p(0) * a(1) - p(1) * a(2) + p(3) * a(0),
-      p(0) * a(2) + p(1) * a(1) - p(2) * a(0)};
-}
+// template <typename T = double>
+// Eigen::Vector<T, 4> quatdot(
+//     const Eigen::Ref<const Eigen::Vector<T, 3>> &a,
+//     const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
+//   // a o q
+//   return Eigen::Vector<T, 4>{
+//       -a(0) * q(1) - a(1) * q(2) - a(2) * q(3),
+//       a(0) * q(0) + a(1) * q(3) - a(2) * q(2),
+//       -a(0) * q(3) + a(1) * q(0) + a(2) * q(1),
+//       a(0) * q(2) - a(1) * q(1) + a(2) * q(0)};
+// }
+// template <typename T = double>
+// Eigen::Vector<T, 4> quatdot(
+//     const Eigen::Ref<const Eigen::Vector<T, 4>> &p,
+//     const Eigen::Ref<const Eigen::Vector<T, 3>> &a) {
+//   // p o a
+//   return Eigen::Vector<T, 4>{
+//       -p(1) * a(0) - p(2) * a(1) - p(3) * a(2),
+//       p(0) * a(0) + p(2) * a(2) - p(3) * a(1),
+//       p(0) * a(1) - p(1) * a(2) + p(3) * a(0),
+//       p(0) * a(2) + p(1) * a(1) - p(2) * a(0)};
+// }
 
 //! === QUATCONJ/QUATINV ===
 /// @brief      quaternion conjugate/inverse
 template <typename T = double>
-void quatconj(Eigen::Vector<T, 4> &q) {
+void quatconj(Eigen::Ref<Eigen::Vector<T, 4>> q) {
   q(1) *= -1.0;
   q(2) *= -1.0;
   q(3) *= -1.0;
 }
 template <typename T = double>
-void quatinv(Eigen::Vector<T, 4> &q) {
+void quatinv(Eigen::Ref<Eigen::Vector<T, 4>> q) {
   q(1) *= -1.0;
   q(2) *= -1.0;
   q(3) *= -1.0;
@@ -222,14 +228,14 @@ void quatinv(Eigen::Vector<T, 4> &q) {
 //! === QUATNORM ===
 /// @brief      quaternion normalization
 template <typename T = double>
-void quatnorm(Eigen::Vector<T, 4> &q) {
+void quatnorm(Eigen::Ref<Eigen::Vector<T, 4>> q) {
   q /= q.norm();
 }
 
 //! === DCMNORM ===
 /// @brief      DCM normalization
 template <typename T = double>
-void dcmnorm(Eigen::Matrix<T, 3, 3> &R) {
+void dcmnorm(Eigen::Ref<Eigen::Matrix<T, 3, 3>> R) {
   // Groves 5.79, 5.80
   Eigen::Vector<T, 3> c1 = R.col(0);
   Eigen::Vector<T, 3> c2 = R.col(1);
@@ -260,14 +266,15 @@ void dcmnorm(Eigen::Matrix<T, 3, 3> &R) {
 /// @param vec_norm     2-norm of vec
 /// @returns    matrix exponential
 template <typename T = double>
-Eigen::Matrix<T, 3, 3> Rodrigues(const Eigen::Vector<T, 3> &vec) {
+Eigen::Matrix<T, 3, 3> Rodrigues(const Eigen::Ref<const Eigen::Vector<T, 3>> &vec) {
   T vec_norm = vec.norm();
   Eigen::Matrix<T, 3, 3> skew_sym = Skew<T>(vec / vec_norm);
   return Eigen::Matrix<T, 3, 3>::Identity() + (std::sin(vec_norm) * skew_sym) +
          ((1.0 - std::cos(vec_norm)) * skew_sym * skew_sym);
 }
 template <typename T = double>
-Eigen::Matrix<T, 3, 3> Rodrigues(const Eigen::Vector<T, 3> &vec, const T &vec_norm) {
+Eigen::Matrix<T, 3, 3> Rodrigues(
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &vec, const T &vec_norm) {
   Eigen::Matrix<T, 3, 3> skew_sym = Skew<T>(vec / vec_norm);
   return Eigen::Matrix<T, 3, 3>::Identity() + (std::sin(vec_norm) * skew_sym) +
          ((1.0 - std::cos(vec_norm)) * skew_sym * skew_sym);
@@ -279,7 +286,7 @@ Eigen::Matrix<T, 3, 3> Rodrigues(const Eigen::Vector<T, 3> &vec, const T &vec_no
 /// @param vec_norm     2-norm of vec
 /// @returns    matrix exponential
 template <typename T = double>
-Eigen::Matrix<T, 3, 3> Rodrigues4(const Eigen::Vector<T, 3> &vec) {
+Eigen::Matrix<T, 3, 3> Rodrigues4(const Eigen::Ref<const Eigen::Vector<T, 3>> &vec) {
   T vec_norm = vec.norm();
   Eigen::Matrix<T, 3, 3> skew_sym = Skew<T>(vec);
   T norm_squared = vec_norm * vec_norm;
@@ -287,7 +294,8 @@ Eigen::Matrix<T, 3, 3> Rodrigues4(const Eigen::Vector<T, 3> &vec) {
          ((0.5 - (norm_squared / 24.0)) * skew_sym * skew_sym);
 }
 template <typename T = double>
-Eigen::Matrix<T, 3, 3> Rodrigues4(const Eigen::Vector<T, 3> &vec, const T &vec_norm) {
+Eigen::Matrix<T, 3, 3> Rodrigues4(
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &vec, const T &vec_norm) {
   Eigen::Matrix<T, 3, 3> skew_sym = Skew<T>(vec);
   T norm_squared = vec_norm * vec_norm;
   return Eigen::Matrix<T, 3, 3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
@@ -311,7 +319,7 @@ Eigen::Matrix<T, 2, 2> scalar2expm(const T &scalar) {
 /// @param vec  size 3 vector
 /// @returns    3x3 matrix exponential
 template <typename T = double>
-Eigen::Matrix<T, 3, 3> vec2expm(const Eigen::Vector<T, 3> &vec) {
+Eigen::Matrix<T, 3, 3> vec2expm(const Eigen::Ref<const Eigen::Vector<T, 3>> &vec) {
   T vec_norm = vec.norm();
   if (vec_norm < 0.02) {
     return Rodrigues4<T>(vec, vec_norm);
@@ -329,7 +337,7 @@ auto vec2expm(const T &scalar) {
 /// @param mat  3x3 matrix exponential
 /// @returns    size 3 vector
 template <typename T = double>
-Eigen::Vector<T, 3> expm2vec(const Eigen::Matrix<T, 3, 3> &mat) {
+Eigen::Vector<T, 3> expm2vec(const Eigen::Ref<const Eigen::Matrix<T, 3, 3>> &mat) {
   T phi = std::acos((mat.trace() - 1.0) / 2.0);
   if (phi == 0.0) {
     return Eigen::Vector<T, 3>::Zero();

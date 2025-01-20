@@ -26,7 +26,7 @@ namespace navtools {
 /// @param q        size 4 quaternion rotation
 /// @returns    4x1 ZYX quaternion
 template <bool IsNed = true, typename T = double>
-void euler2quat(Eigen::Vector<T, 4> &q, const Eigen::Vector<T, 3> &e) {
+void euler2quat(Eigen::Ref<Eigen::Vector<T, 4>> q, const Eigen::Ref<const Eigen::Vector<T, 3>> &e) {
   Eigen::Vector<T, 3> x = e / 2.0;
   T Sr = std::sin(x(0));
   T Sp = std::sin(x(1));
@@ -50,7 +50,7 @@ void euler2quat(Eigen::Vector<T, 4> &q, const Eigen::Vector<T, 3> &e) {
   }
 }
 template <bool IsNed = true, typename T = double>
-Eigen::Vector<T, 4> euler2quat(const Eigen::Vector<T, 3> &e) {
+Eigen::Vector<T, 4> euler2quat(const Eigen::Ref<const Eigen::Vector<T, 3>> &e) {
   Eigen::Vector<T, 4> q;
   euler2quat<IsNed, T>(q, e);
   return q;
@@ -63,7 +63,8 @@ Eigen::Vector<T, 4> euler2quat(const Eigen::Vector<T, 3> &e) {
 /// @param R        3x3 DCM
 /// @returns    3x3 ZYX DCM
 template <bool IsNed = true, typename T = double>
-void euler2dcm(Eigen::Matrix<T, 3, 3> &R, const Eigen::Vector<T, 3> &e) {
+void euler2dcm(
+    Eigen::Ref<Eigen::Matrix<T, 3, 3>> R, const Eigen::Ref<const Eigen::Vector<T, 3>> &e) {
   T Sr = std::sin(e(0));
   T Sp = std::sin(e(1));
   T Sy = std::sin(e(2));
@@ -85,7 +86,7 @@ void euler2dcm(Eigen::Matrix<T, 3, 3> &R, const Eigen::Vector<T, 3> &e) {
   }
 }
 template <bool IsNed = true, typename T = double>
-Eigen::Matrix<T, 3, 3> euler2dcm(const Eigen::Vector<T, 3> &e) {
+Eigen::Matrix<T, 3, 3> euler2dcm(const Eigen::Ref<const Eigen::Vector<T, 3>> &e) {
   Eigen::Matrix<T, 3, 3> R;
   euler2dcm<IsNed, T>(R, e);
   return R;
@@ -98,7 +99,7 @@ Eigen::Matrix<T, 3, 3> euler2dcm(const Eigen::Vector<T, 3> &e) {
 /// @param e        size 3 RPY euler angles [radians]
 /// @returns    3x1 RPY euler angles [radians]
 template <bool IsNed = true, typename T = double>
-void quat2euler(Eigen::Vector<T, 3> &e, const Eigen::Vector<T, 4> &q) {
+void quat2euler(Eigen::Ref<Eigen::Vector<T, 3>> e, const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
   T w = q(0);
   T x = q(1);
   T y = q(2);
@@ -123,7 +124,7 @@ void quat2euler(Eigen::Vector<T, 3> &e, const Eigen::Vector<T, 4> &q) {
   }
 }
 template <bool IsNed = true, typename T = double>
-Eigen::Vector<T, 3> quat2euler(const Eigen::Vector<T, 4> &q) {
+Eigen::Vector<T, 3> quat2euler(const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
   Eigen::Vector<T, 3> e;
   quat2euler<IsNed, T>(e, q);
   return e;
@@ -135,7 +136,8 @@ Eigen::Vector<T, 3> quat2euler(const Eigen::Vector<T, 4> &q) {
 /// @param R        3x3 DCM
 /// @returns    3x3 ZYX DCM
 template <typename T = double>
-void quat2dcm(Eigen::Matrix<T, 3, 3> &R, const Eigen::Vector<T, 4> &q) {
+void quat2dcm(
+    Eigen::Ref<Eigen::Matrix<T, 3, 3>> R, const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
   T w = q(0);
   T x = q(1);
   T y = q(2);
@@ -160,9 +162,9 @@ void quat2dcm(Eigen::Matrix<T, 3, 3> &R, const Eigen::Vector<T, 4> &q) {
   // clang-format on
 }
 template <typename T = double>
-Eigen::Matrix<T, 3, 3> quat2dcm(const Eigen::Vector<T, 4> &q) {
+Eigen::Matrix<T, 3, 3> quat2dcm(const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
   Eigen::Matrix<T, 3, 3> R;
-  quat2dcm(R, q);
+  quat2dcm<T>(R, q);
   return R;
 }
 
@@ -173,7 +175,8 @@ Eigen::Matrix<T, 3, 3> quat2dcm(const Eigen::Vector<T, 4> &q) {
 /// @param e        size 3 RPY euler angles [radians]
 /// @returns    3x1 RPY euler angles [radians]
 template <bool IsNed = true, typename T = double>
-void dcm2euler(Eigen::Vector<T, 3> &e, const Eigen::Matrix<T, 3, 3> &R) {
+void dcm2euler(
+    Eigen::Ref<Eigen::Vector<T, 3>> e, const Eigen::Ref<const Eigen::Matrix<T, 3, 3>> &R) {
   if constexpr (IsNed) {
     e(0) = std::atan2(R(2, 1), R(2, 2));
     e(1) = -std::asin(R(2, 0));
@@ -185,7 +188,7 @@ void dcm2euler(Eigen::Vector<T, 3> &e, const Eigen::Matrix<T, 3, 3> &R) {
   }
 }
 template <bool IsNed = true, typename T = double>
-Eigen::Vector<T, 3> dcm2euler(const Eigen::Matrix<T, 3, 3> &R) {
+Eigen::Vector<T, 3> dcm2euler(const Eigen::Ref<const Eigen::Matrix<T, 3, 3>> &R) {
   Eigen::Vector<T, 3> e;
   dcm2euler<IsNed, T>(e, R);
   return e;
@@ -197,7 +200,8 @@ Eigen::Vector<T, 3> dcm2euler(const Eigen::Matrix<T, 3, 3> &R) {
 /// @param q        size 4 quaternion rotation
 /// @returns    4x1 ZYX quaternion
 template <typename T = double>
-void dcm2quat(Eigen::Vector<T, 4> &q, const Eigen::Matrix<T, 3, 3> &R) {
+void dcm2quat(
+    Eigen::Ref<Eigen::Vector<T, 4>> q, const Eigen::Ref<const Eigen::Matrix<T, 3, 3>> &R) {
   T q_w = std::sqrt(1.0 + R(0, 0) + R(1, 1) + R(2, 2)) / 2.0;
   if (q_w > 0.01) {
     T q_w_4 = 4.0 * q_w;
@@ -214,9 +218,9 @@ void dcm2quat(Eigen::Vector<T, 4> &q, const Eigen::Matrix<T, 3, 3> &R) {
   }
 }
 template <typename T = double>
-Eigen::Vector<T, 4> dcm2quat(const Eigen::Matrix<T, 3, 3> &R) {
+Eigen::Vector<T, 4> dcm2quat(const Eigen::Ref<const Eigen::Matrix<T, 3, 3>> &R) {
   Eigen::Vector<T, 4> q;
-  dcm2quat(q, R);
+  dcm2quat<T>(q, R);
   return q;
 }
 
@@ -228,7 +232,7 @@ Eigen::Vector<T, 4> dcm2quat(const Eigen::Matrix<T, 3, 3> &R) {
 /// @param x    euler angle ]radians]
 /// @returns    3x3 x-axis DCM rotation
 template <typename T = double>
-void RotX(Eigen::Matrix<T, 3, 3> &C, const T &x) {
+void RotX(Eigen::Ref<Eigen::Matrix<T, 3, 3>> C, const T &x) {
   T sx = std::sin(x);
   T cx = std::cos(x);
   C << 1.0, 0.0, 0.0, 0.0, cx, -sx, 0.0, sx, cx;
@@ -236,7 +240,7 @@ void RotX(Eigen::Matrix<T, 3, 3> &C, const T &x) {
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> RotX(const T &x) {
   Eigen::Matrix<T, 3, 3> C;
-  RotX(C, x);
+  RotX<T>(C, x);
   return C;
 }
 
@@ -246,7 +250,7 @@ Eigen::Matrix<T, 3, 3> RotX(const T &x) {
 /// @param y    euler angle ]radians]
 /// @returns    3x3 y-axis DCM rotation
 template <typename T = double>
-void RotY(Eigen::Matrix<T, 3, 3> &C, const T &y) {
+void RotY(Eigen::Ref<Eigen::Matrix<T, 3, 3>> C, const T &y) {
   T sy = std::sin(y);
   T cy = std::cos(y);
   C = {{cy, 0.0, sy}, {0.0, 1.0, 0.0}, {-sy, 0.0, cy}};
@@ -254,7 +258,7 @@ void RotY(Eigen::Matrix<T, 3, 3> &C, const T &y) {
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> RotY(const T &y) {
   Eigen::Matrix<T, 3, 3> C;
-  RotY(C, y);
+  RotY<T>(C, y);
   return C;
 }
 
@@ -264,7 +268,7 @@ Eigen::Matrix<T, 3, 3> RotY(const T &y) {
 /// @param z    euler angle ]radians]
 /// @returns    3x3 z-axis DCM rotation
 template <typename T = double>
-void RotZ(Eigen::Matrix<T, 3, 3> &C, const T &z) {
+void RotZ(Eigen::Ref<Eigen::Matrix<T, 3, 3>> C, const T &z) {
   T sz = std::sin(z);
   T cz = std::cos(z);
   C = {{cz, -sz, 0.0}, {sz, cz, 0.0}, {0.0, 0.0, 1.0}};
@@ -272,7 +276,7 @@ void RotZ(Eigen::Matrix<T, 3, 3> &C, const T &z) {
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> RotZ(const T &z) {
   Eigen::Matrix<T, 3, 3> C;
-  RotZ(C, z);
+  RotZ<T>(C, z);
   return C;
 }
 
