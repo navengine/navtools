@@ -1109,7 +1109,7 @@ void enu2eciv(
     const T &dt) {
   Eigen::Matrix<T, 3, 3> C_n_i = enu2eciDcm<T>(lla0, dt);
   Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
-  Eigen::Vector<T, 3> xyz = ned2ecef<T>(r_nb_e, lla0);
+  Eigen::Vector<T, 3> xyz = enu2ecef<T>(r_nb_e, lla0);
   eci = C_n_i * v_nb_e + C_e_i * WGS84_OMEGA_SKEW<T> * xyz;
 }
 template <typename T = double>
