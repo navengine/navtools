@@ -67,20 +67,13 @@ if (NOT DEFINED INSTALL_NAVTOOLS_EXAMPLES OR NOT INSTALL_NAVTOOLS_EXAMPLES)
     # message(STATUS "${BoldCyan}INSTALL_NAVTOOLS_EXAMPLES is false${Reset}")
 else()
     # message(STATUS "${BoldCyan}INSTALL_NAVTOOLS_EXAMPLES is true${Reset}")
-
-    add_executable(test_frames examples/test_frames.cpp)
-    target_link_libraries(test_frames PUBLIC ${PROJECT_NAME})
-    add_executable(test_attitude examples/test_attitude.cpp)
-    target_link_libraries(test_attitude PUBLIC ${PROJECT_NAME})
-
-    # list(APPEND NAVTOOLS_EXAMPLES
-    #     test_frames
-    #     test_attitude
-    # )
-    # install(
-    #     TARGETS ${NAVTOOLS_EXAMPLES}
-    #     DESTINATION bin
-    # )
+    file(GLOB testfiles "${CMAKE_CURRENT_SOURCE_DIR}/examples/*.cpp")
+    foreach(file ${testfiles})
+        # message(${file})
+        get_filename_component(testname ${file} NAME_WE)
+        add_executable(${testname} ${file})
+        target_link_libraries( ${testname} PUBLIC ${PROJECT_NAME})
+    endforeach(file ${testfiles})
 endif()
 
 # --- Make Library 'Findable' for other CMake Packages ---

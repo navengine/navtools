@@ -114,6 +114,15 @@ void WrapPiToPi(T &x) {
     x -= TWO_PI<T>;
   }
 }
+template <typename T = double>
+T WrapPiToPiFunc(T x) {
+  CircMod2Pi<T>(x);
+  if (x > PI<T>) {
+    return x - TWO_PI<T>;
+  } else {
+    return x;
+  }
+}
 
 //! === WRAPEULERANGLES ===
 /// @brief      Auto wrap euler angles depending on pitch angle
