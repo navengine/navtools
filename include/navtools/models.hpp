@@ -1,14 +1,15 @@
 /**
-|========================================== models.hpp ============================================|
-|                                                                                                  |
-|   @file     include/navtools/models.hpp                                                          |
-|   @brief    Simple models commonly used in navigation equations.                                 |
-|   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
-|               - (2013) Paul D. Groves                                                            |
-|   @date     July 2024                                                                            |
-|                                                                                                  |
-|==================================================================================================|
-*/
+ * *models.hpp*
+ *
+ * =======  ========================================================================================
+ * @file    include/navtools/models.hpp
+ * @brief   Simple Earth models commonly used in navigation equations.
+ * @author  Daniel Sturdivant, Blake Baker
+ * @ref     Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems
+ *            - (2013) Paul D. Groves
+ * @date    March 2025
+ * =======  ========================================================================================
+ */
 // TODO: maybe split into earth_models
 
 #ifndef NAVTOOLS_MODELS_HPP
@@ -94,6 +95,14 @@ void TransAndMerRadii(Eigen::Ref<Eigen::Vector<T, 2>> radii, const T &phi) {
   radii(1) = WGS84_R0<T> * (1.0 - WGS84_E2<T>) / std::pow(t, 1.5);
 }
 template <typename T = double>
+void TransAndMerRadii(T &Re, T &Rn, const T &phi) {
+  T sin_phi = std::sin(phi);
+  T t = 1.0 - WGS84_E2<T> * sin_phi * sin_phi;
+
+  Re = WGS84_R0<T> / std::sqrt(t);
+  Rn = WGS84_R0<T> * (1.0 - WGS84_E2<T>) / std::pow(t, 1.5);
+}
+template <typename T = double>
 Eigen::Vector<T, 2> TransAndMerRadii(const T &phi) {
   Eigen::Vector<T, 2> radii;
   TransAndMerRadii<T>(radii, phi);
@@ -118,6 +127,18 @@ void RadiiOfCurvature(Eigen::Ref<Eigen::Vector<T, 3>> radii, const T &phi) {
   radii(2) = radii(0) * std::sqrt(cos_phi * cos_phi + o_e2 * o_e2 * sin_phi2);
 }
 template <typename T = double>
+void RadiiOfCurvature(T &Re, T &Rn, T &R_es_e, const T &phi) {
+  T sin_phi2 = std::sin(phi);
+  sin_phi2 *= sin_phi2;
+  T cos_phi = std::cos(phi);
+  T t = 1.0 - WGS84_E2<T> * sin_phi2;
+  T o_e2 = 1.0 - WGS84_E2<T>;
+
+  Re = WGS84_R0<T> / std::sqrt(t);
+  Rn = WGS84_R0<T> * o_e2 / std::pow(t, 1.5);
+  R_es_e = Re * std::sqrt(cos_phi * cos_phi + o_e2 * o_e2 * sin_phi2);
+}
+template <typename T = double>
 Eigen::Vector<T, 3> RadiiOfCurvature(const T &phi) {
   Eigen::Vector<T, 3> radii;
   RadiiOfCurvature<T>(radii, phi);
@@ -133,9 +154,9 @@ Eigen::Vector<T, 3> RadiiOfCurvature(const T &phi) {
 /// @param w_ie_n   size 3 vector of earth's rotation in the 'NAV' frame
 /// @param W_ie_n   3x3 skew-symmetric matrix of earth's rotation in the 'NAV' frame
 /// @returns    earth's rotation in the 'NAV' frame
-template <bool isNed = true, typename T = double>
-void EarthRate(Eigen::Ref<Eigen::Vector<T, 3>> w_ie_n, const T &phi) {
-  if constexpr (isNed) {
+template <typename T = double>
+void EarthRate(Eigen::Ref<Eigen::Vector<T, 3>> w_ie_n, const T &phi, const bool isNed = true) {
+  if (isNed) {
     w_ie_n(0) = WGS84_OMEGA<T> * std::cos(phi);
     w_ie_n(1) = 0.0;
     w_ie_n(2) = WGS84_OMEGA<T> * std::sin(phi);
@@ -145,20 +166,20 @@ void EarthRate(Eigen::Ref<Eigen::Vector<T, 3>> w_ie_n, const T &phi) {
     w_ie_n(2) = -WGS84_OMEGA<T> * std::sin(phi);
   }
 }
-template <bool isNed = true, typename T = double>
-Eigen::Vector<T, 3> EarthRate(const T &phi) {
+template <typename T = double>
+Eigen::Vector<T, 3> EarthRate(const T &phi, const bool isNed = true) {
   Eigen::Vector<T, 3> w_ie_n;
-  EarthRate<isNed, T>(w_ie_n, phi);
+  EarthRate<T>(w_ie_n, phi, isNed);
   return w_ie_n;
 }
-template <bool isNed = true, typename T = double>
-void EarthRateSkew(Eigen::Matrix<T, 3, 3> &W_ie_n, const T &phi) {
-  W_ie_n = Skew<isNed, T>(EarthRate<T>(phi));
+template <typename T = double>
+void EarthRateSkew(Eigen::Matrix<T, 3, 3> &W_ie_n, const T &phi, const bool isNed = true) {
+  W_ie_n = Skew<T>(EarthRate<T>(phi, isNed));
 }
-template <bool isNed = true, typename T = double>
-Eigen::Matrix<T, 3, 3> EarthRateSkew(const T &phi) {
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> EarthRateSkew(const T &phi, const bool isNed = true) {
   Eigen::Matrix<T, 3, 3> W_ie_n;
-  EarthRateSkew<isNed, T>(W_ie_n, phi);
+  EarthRateSkew<T>(W_ie_n, phi, isNed);
   return W_ie_n;
 }
 
@@ -170,13 +191,14 @@ Eigen::Matrix<T, 3, 3> EarthRateSkew(const T &phi) {
 /// @param w_en_n   size 3 vector of earth's rotation in the 'NAV' frame
 /// @param W_en_n   3x3 skew-symmetric matrix of earth's rotation in the 'NAV' frame
 /// @returns    Transport rate in the 'NAV' frame
-template <bool isNed = true, typename T = double>
+template <typename T = double>
 void TransportRate(
     Eigen::Ref<Eigen::Vector<T, 3>> w_en_n,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e) {
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e,
+    const bool isNed = true) {
   Eigen::Vector<T, 2> radii = TransAndMerRadii<T>(lla(0));
-  if constexpr (isNed) {
+  if (isNed) {
     T ve_Reh = v_nb_e(1) / (radii(0) + lla(2));    // ve / (Re + h)
     w_en_n(0) = ve_Reh;                            // ve / (Re + h)
     w_en_n(1) = -v_nb_e(0) / (radii(1) + lla(2));  // -vn / (Rn + h)
@@ -188,27 +210,30 @@ void TransportRate(
     w_en_n(2) = ve_Reh * std::tan(lla(0));         // ve * tan(phi) / (Re + h)
   }
 }
-template <bool isNed = true, typename T = double>
+template <typename T = double>
 Eigen::Vector<T, 3> TransportRate(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e) {
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e,
+    const bool isNed = true) {
   Eigen::Vector<T, 3> w_en_n;
-  TransportRate<isNed, T>(w_en_n, lla, v_nb_e);
+  TransportRate<T>(w_en_n, lla, v_nb_e, isNed);
   return w_en_n;
 }
-template <bool isNed = true, typename T = double>
+template <typename T = double>
 void TransportRateSkew(
     Eigen::Matrix<T, 3, 3> &W_en_n,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e) {
-  W_en_n = Skew<isNed, T>(TransportRate<T>(lla, v_nb_e));
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e,
+    const bool isNed = true) {
+  W_en_n = Skew<T>(TransportRate<T>(lla, v_nb_e, isNed));
 }
-template <bool isNed = true, typename T = double>
+template <typename T = double>
 Eigen::Matrix<T, 3, 3> TransportRateSkew(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e) {
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e,
+    const bool isNed = true) {
   Eigen::Matrix<T, 3, 3> W_en_n;
-  TransportRateSkew<isNed, T>(W_en_n, lla, v_nb_e);
+  TransportRateSkew<T>(W_en_n, lla, v_nb_e, isNed);
   return W_en_n;
 }
 
@@ -219,21 +244,23 @@ Eigen::Matrix<T, 3, 3> TransportRateSkew(
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param coriolis size 3 coriolis effect
 /// @returns    Coriolis effect
-template <bool isNed = true, typename T = double>
+template <typename T = double>
 void CoriolisRate(
     Eigen::Ref<Eigen::Vector<T, 3>> coriolis,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e) {
-  Eigen::Vector<T, 3> w_ie_n = EarthRate<isNed, T>(lla(0));
-  Eigen::Vector<T, 3> w_en_n = TransportRate<isNed, T>(lla, v_nb_e);
-  coriolis = skew<T>(w_en_n + 2.0 * w_ie_n) * v_nb_e;
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e,
+    const bool isNed = true) {
+  Eigen::Vector<T, 3> w_ie_n = EarthRate<T>(lla(0), isNed);
+  Eigen::Vector<T, 3> w_en_n = TransportRate<T>(lla, v_nb_e, isNed);
+  coriolis = Skew<T>(w_en_n + 2.0 * w_ie_n) * v_nb_e;
 }
-template <bool isNed = true, typename T = double>
+template <typename T = double>
 Eigen::Vector<T, 3> CoriolisRate(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e) {
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e,
+    const bool isNed = true) {
   Eigen::Vector<T, 3> coriolis;
-  CoriolisRate<isNed, T>(coriolis, lla, v_nb_e);
+  CoriolisRate<T>(coriolis, lla, v_nb_e, isNed);
   return coriolis;
 }
 
@@ -263,16 +290,18 @@ T Somigliana(const T &phi) {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param g        size 3 Local/NAV frame gravity vector
 /// @returns    Local/NAV frame gravity
-template <bool isNed = true, typename T = double>
+template <typename T = double>
 void LocalGravity(
-    Eigen::Ref<Eigen::Vector<T, 3>> g, const Eigen::Ref<const Eigen::Vector<T, 3>> &lla) {
+    Eigen::Ref<Eigen::Vector<T, 3>> g,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla,
+    const bool isNed = true) {
   T sin_phi2 = std::sin(lla(0));
   sin_phi2 *= sin_phi2;
   T g0 = 9.7803253359 * ((1.0 + 0.001931853 * sin_phi2) / std::sqrt(1.0 - WGS84_E2<T> * sin_phi2));
   T R02 = WGS84_R0<T> * WGS84_R0<T>;
   T OMEGA2 = WGS84_OMEGA<T> * WGS84_OMEGA<T>;
   T h2 = lla(2) * lla(2);
-  if constexpr (isNed) {
+  if (isNed) {
     // clang-format off
         g(0) = -8.08e-9 * lla(2) * std::sin(2.0 * lla(0));
         g(1) = 0.0;
@@ -294,9 +323,9 @@ void LocalGravity(
 }
 template <typename T = double>
 Eigen::Vector<T, 3> LocalGravity(
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla, const std::string frame = "ned") {
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla, const bool isNed = true) {
   Eigen::Vector<T, 3> g;
-  LocalGravity<T>(g, lla, frame);
+  LocalGravity<T>(g, lla, isNed);
   return g;
 }
 
@@ -320,8 +349,9 @@ void EcefGravity(
     T omega2 = WGS84_OMEGA<T> * WGS84_OMEGA<T>;
     Eigen::Vector<T, 3> v{1.0 - zeta, 1.0 - zeta, 3.0 - zeta};
 
-    gamma = -WGS84_MU<T> / std::pow(mag_r, 3.0) *
-            (xyz + 1.5 * J2<T> * std::pow(WGS84_R0<T> / mag_r, 2.0) * v * xyz);
+    gamma =
+        -WGS84_MU<T> / std::pow(mag_r, 3.0) *
+        (xyz.array() + 1.5 * J2<T> * std::pow(WGS84_R0<T> / mag_r, 2.0) * v.array() * xyz.array());
     v << xyz(0) * omega2, xyz(1) * omega2, 0.0;
     g = gamma + v;
   }

@@ -1,14 +1,15 @@
 /**
-|========================================== frames.hpp ============================================|
-|                                                                                                  |
-|   @file     include/navtools/frames.hpp                                                          |
-|   @brief    Common coordinate frame transformations.                                             |
-|   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
-|               - (2013) Paul D. Groves                                                            |
-|   @date     July 2024                                                                            |
-|                                                                                                  |
-|==================================================================================================|
-*/
+ * *frames.hpp*
+ *
+ * =======  ========================================================================================
+ * @file    include/navtools/frames.hpp
+ * @brief   Common coordinate frame transformations.
+ * @author  Daniel Sturdivant, Blake Baker
+ * @ref     Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems
+ *            - (2013) Paul D. Groves
+ * @date    March 2025
+ * =======  ========================================================================================
+ */
 
 #ifndef NAVTOOLS_FRAMES_HPP
 #define NAVTOOLS_FRAMES_HPP
@@ -94,7 +95,7 @@ void eci2enuDcm(
           // clang-format off
 }
 template <typename T = double>
-Eigen::Matrix<T,3,3> eci2enuDcm(const Eigen::Vector<T,3> &lla, const T &dt)
+Eigen::Matrix<T,3,3> eci2enuDcm(const Eigen::Ref<const Eigen::Vector<T, 3>> &lla, const T &dt)
 {
   Eigen::Matrix<T,3,3> C;
   eci2enuDcm<T>(C, lla, dt);
@@ -106,7 +107,7 @@ Eigen::Matrix<T,3,3> eci2enuDcm(const Eigen::Vector<T,3> &lla, const T &dt)
 /// @param dt   time elapsed between frames [s]
 /// @returns    3x3 ECEF->ECI direction cosine matrix
 template <typename T = double>
-void ecef2eciDcm(Eigen::Matrix<T,3,3> &C, const T &dt)
+void ecef2eciDcm(Eigen::Ref<Eigen::Matrix<T,3,3>> C, const T &dt)
 {
   T omega_dt = WGS84_OMEGA<T> * dt;
   T sin_omega_dt = std::sin(omega_dt);
@@ -306,28 +307,6 @@ Eigen::Matrix<T, 3, 3> enu2nedDcm() {
 
 //* ===== Position Transformations ============================================================= *//
 
-//! --- LLA2ECI ---
-/// @brief      Latitude-Longitude-Height to Earth-Centered-Inertial position coordinates
-/// @param eci  3x1 ECI position [m]
-/// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
-/// @param dt   time elapsed between frames [s]
-/// @returns    ECI position
-template <typename T = double>
-void lla2eci(
-    Eigen::Ref<Eigen::Vector<T, 3>> eci,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla,
-    const T &dt) {
-  Eigen::Vector<T, 3> xyz = lla2ecef<T>(lla);
-  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
-  eci = C_e_i * xyz;
-}
-template <typename T = double>
-Eigen::Vector<T, 3> lla2eci(const Eigen::Ref<const Eigen::Vector<T, 3>> &lla, const T &dt) {
-  Eigen::Vector<T, 3> eci;
-  lla2eci<T>(eci, lla, dt);
-  return eci;
-}
-
 //! --- LLA2ECEF ---
 /// @brief      Latitude-Longitude-Height to Earth-Centered-Earth-Fixed position coordinates
 /// @param xyz  3x1 ECEF position [m]
@@ -352,6 +331,161 @@ Eigen::Vector<T, 3> lla2ecef(const Eigen::Ref<const Eigen::Vector<T, 3>> &lla) {
   Eigen::Vector<T, 3> xyz;
   lla2ecef<T>(xyz, lla);
   return xyz;
+}
+
+//! --- ECEF2LLA ---
+/// @brief      Earth-Centered-Earth-Fixed to Latitude-Longitude-Height position coordinates
+/// @param xyz  3x1 ECEF position [m]
+/// @param lla  3x1 LLA position [rad, rad, m]
+/// @returns    lla position
+template <typename T = double>
+void ecef2lla(
+    Eigen::Ref<Eigen::Vector<T, 3>> lla, const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz) {
+  const T &x = xyz(0);
+  const T &y = xyz(1);
+  const T &z = xyz(2);
+
+  T sign_z = std::copysign(1.0, z);
+  T sqrt_1_e2 = std::sqrt(1.0 - WGS84_E2<T>);
+
+  T beta = std::sqrt(x * x + y * y);  // (Groves C.18)
+  T a = sqrt_1_e2 * std::abs(z);
+  T b = WGS84_E2<T> * WGS84_R0<T>;
+  T E = (a - b) / beta;             // (Groves C.29)
+  T F = (a + b) / beta;             // (Groves C.30)
+  T P = 4.0 / 3.0 * (E * F + 1.0);  // (Groves C.31)
+  T Q = 2.0 * (E * E - F * F);      // (Groves C.32)
+  T D = P * P * P + Q * Q;          // (Groves C.33)
+  T sqrt_D = std::sqrt(D);
+  T V = std::pow(sqrt_D - Q, 1.0 / 3.0) - std::pow(sqrt_D + Q, 1.0 / 3.0);  // (Groves C.34)
+  T G = 0.5 * (std::sqrt(E * E + V) + E);                                   // (Groves C.35)
+  T t = std::sqrt(G * G + ((F - V * G) / (2.0 * G - E))) - G;               // (Groves C.36)
+  lla(0) = sign_z * std::atan((1.0 - t * t) / (2.0 * t * sqrt_1_e2));       // (Groves C.37)
+  lla(1) = std::atan2(y, x);
+  lla(2) = (beta - WGS84_R0<T> * t) * std::cos(lla(0)) +
+           (z - sign_z * WGS84_R0<T> * sqrt_1_e2) * std::sin(lla(0));  // (Groves C.38)
+}
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2lla(const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz) {
+  Eigen::Vector<T, 3> lla;
+  ecef2lla<T>(lla, xyz);
+  return lla;
+}
+
+//! --- ECEF2NED ---
+/// @brief      Earth-Centered-Earth-Fixed to North-East-Down position coordinates
+/// @param xyz  3x1 ECEF position [m]
+/// @param ned  3x1 NED position [m]
+/// @param lla0 3x1 Reference LLA position [rad, rad, m]
+/// @returns    NED position
+template <typename T = double>
+void ecef2ned(
+    Eigen::Ref<Eigen::Vector<T, 3>> ned,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm<T>(lla0);
+  Eigen::Vector<T, 3> xyz0 = lla2ecef<T>(lla0);
+  ned = C_e_n * (xyz - xyz0);
+}
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2ned(
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
+  Eigen::Vector<T, 3> ned;
+  ecef2ned<T>(ned, xyz, lla0);
+  return ned;
+}
+
+//! --- ECEF2ENU ---
+/// @brief      Earth-Centered-Earth-Fixed to East-North-Up position coordinates
+/// @param xyz  3x1 ECEF position [m]
+/// @param enu  3x1 ENU position [m]
+/// @param lla0 3x1 Reference LLA position [rad, rad, m]
+/// @returns    ENU position
+template <typename T = double>
+void ecef2enu(
+    Eigen::Ref<Eigen::Vector<T, 3>> enu,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm<T>(lla0);
+  Eigen::Vector<T, 3> xyz0 = lla2ecef<T>(lla0);
+  enu = C_e_n * (xyz - xyz0);
+}
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2enu(
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
+  Eigen::Vector<T, 3> enu;
+  ecef2enu<T>(enu, xyz, lla0);
+  return enu;
+}
+
+//! --- NED2ECEF ---
+/// @brief      North-East-Down to Earth-Centered-Earth-Fixed position coordinates
+/// @param ned  3x1 NED position [m]
+/// @param xyz  3x1 ECEF position [m]
+/// @param lla0 3x1 Reference LLA position [rad, rad, m]
+/// @returns    ECEF position
+template <typename T = double>
+void ned2ecef(
+    Eigen::Ref<Eigen::Vector<T, 3>> xyz,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &ned,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm<T>(lla0);
+  xyz = lla2ecef<T>(lla0) + C_n_e * ned;
+}
+template <typename T = double>
+Eigen::Vector<T, 3> ned2ecef(
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &ned,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
+  Eigen::Vector<T, 3> xyz;
+  ned2ecef<T>(xyz, ned, lla0);
+  return xyz;
+}
+
+//! --- ENU2ECEF ---
+/// @brief      East-North-Up to Earth-Centered-Earth-Fixed position coordinates
+/// @param enu  3x1 ENU position [m]
+/// @param xyz  3x1 ECEF position [m]
+/// @param lla0 3x1 Reference LLA position [rad, rad, m]
+/// @returns    ECEF position
+template <typename T = double>
+void enu2ecef(
+    Eigen::Ref<Eigen::Vector<T, 3>> xyz,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &enu,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm<T>(lla0);
+  xyz = lla2ecef<T>(lla0) + C_n_e * enu;
+}
+template <typename T = double>
+Eigen::Vector<T, 3> enu2ecef(
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &enu,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
+  Eigen::Vector<T, 3> xyz;
+  enu2ecef<T>(xyz, enu, lla0);
+  return xyz;
+}
+
+//! --- LLA2ECI ---
+/// @brief      Latitude-Longitude-Height to Earth-Centered-Inertial position coordinates
+/// @param eci  3x1 ECI position [m]
+/// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
+/// @param dt   time elapsed between frames [s]
+/// @returns    ECI position
+template <typename T = double>
+void lla2eci(
+    Eigen::Ref<Eigen::Vector<T, 3>> eci,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla,
+    const T &dt) {
+  Eigen::Vector<T, 3> xyz = lla2ecef<T>(lla);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
+  eci = C_e_i * xyz;
+}
+template <typename T = double>
+Eigen::Vector<T, 3> lla2eci(const Eigen::Ref<const Eigen::Vector<T, 3>> &lla, const T &dt) {
+  Eigen::Vector<T, 3> eci;
+  lla2eci<T>(eci, lla, dt);
+  return eci;
 }
 
 //! --- LLA2NED ---
@@ -448,6 +582,55 @@ Eigen::Vector<T, 3> eci2ecef(const Eigen::Ref<const Eigen::Vector<T, 3>> &eci, c
   Eigen::Vector<T, 3> xyz;
   eci2ecef<T>(xyz, eci, dt);
   return xyz;
+}
+
+//! --- ECEF2ECI ---
+/// @brief      Earth-Centered-Earth-Fixed to Earth-Centered-Inertial position coordinates
+/// @param xyz  3x1 ECEF position [m]
+/// @param eci  3x1 ECI position [m]
+/// @param dt   time elapsed between frames [s]
+/// @returns    ECEF position
+template <typename T = double>
+void ecef2eci(
+    Eigen::Ref<Eigen::Vector<T, 3>> eci,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz,
+    const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
+  eci = C_e_i * xyz;
+}
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2eci(const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz, const T &dt) {
+  Eigen::Vector<T, 3> eci;
+  ecef2eci<T>(eci, xyz, dt);
+  return eci;
+}
+
+//! --- ECEF2AER ---
+/// @brief      Earth-Centered-Earth-Fixed to Azimuth-Elevation-Range position coordinates
+/// @param aer  3x1 AER position [rad, rad, m]
+/// @param xyzR 3x1 Reference ECEF position [m]
+/// @param xyzT 3x1 Target ECEF position [m]
+/// @returns    AER position
+template <typename T = double>
+void ecef2aer(
+    Eigen::Ref<Eigen::Vector<T, 3>> aer,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyzR,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyzT) {
+  Eigen::Vector<T, 3> lla0 = ecef2lla<T>(xyzR);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm<T>(lla0);
+  Eigen::Vector<T, 3> enu = C_e_n * (xyzT - xyzR);
+
+  aer(2) = enu.norm();
+  aer(1) = std::asin(enu(2) / aer(2));
+  aer(0) = std::atan2(enu(0), enu(1));
+}
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2aer(
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyzR,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyzT) {
+  Eigen::Vector<T, 3> aer;
+  ecef2aer<T>(aer, xyzR, xyzT);
+  return aer;
 }
 
 //! --- ECI2LLA ---
@@ -548,142 +731,6 @@ Eigen::Vector<T, 3> eci2aer(
   return aer;
 }
 
-//! --- ECEF2ECI ---
-/// @brief      Earth-Centered-Earth-Fixed to Earth-Centered-Inertial position coordinates
-/// @param xyz  3x1 ECEF position [m]
-/// @param eci  3x1 ECI position [m]
-/// @param dt   time elapsed between frames [s]
-/// @returns    ECEF position
-template <typename T = double>
-void ecef2eci(
-    Eigen::Ref<Eigen::Vector<T, 3>> eci,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz,
-    const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
-  eci = C_e_i * xyz;
-}
-template <typename T = double>
-Eigen::Vector<T, 3> ecef2eci(const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz, const T &dt) {
-  Eigen::Vector<T, 3> eci;
-  ecef2eci<T>(eci, xyz, dt);
-  return eci;
-}
-
-//! --- ECEF2LLA ---
-/// @brief      Earth-Centered-Earth-Fixed to Latitude-Longitude-Height position coordinates
-/// @param xyz  3x1 ECEF position [m]
-/// @param lla  3x1 LLA position [rad, rad, m]
-/// @returns    lla position
-template <typename T = double>
-void ecef2lla(
-    Eigen::Ref<Eigen::Vector<T, 3>> lla, const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz) {
-  const T &x = xyz(0);
-  const T &y = xyz(1);
-  const T &z = xyz(2);
-
-  T sign_z = std::copysign(1.0, z);
-  T sqrt_1_e2 = std::sqrt(1.0 - WGS84_E2<T>);
-
-  T beta = std::sqrt(x * x + y * y);  // (Groves C.18)
-  T a = sqrt_1_e2 * std::abs(z);
-  T b = WGS84_E2<T> * WGS84_R0<T>;
-  T E = (a - b) / beta;             // (Groves C.29)
-  T F = (a + b) / beta;             // (Groves C.30)
-  T P = 4.0 / 3.0 * (E * F + 1.0);  // (Groves C.31)
-  T Q = 2.0 * (E * E - F * F);      // (Groves C.32)
-  T D = P * P * P + Q * Q;          // (Groves C.33)
-  T sqrt_D = std::sqrt(D);
-  T V = std::pow(sqrt_D - Q, 1.0 / 3.0) - std::pow(sqrt_D + Q, 1.0 / 3.0);  // (Groves C.34)
-  T G = 0.5 * (std::sqrt(E * E + V) + E);                                   // (Groves C.35)
-  T t = std::sqrt(G * G + ((F - V * G) / (2.0 * G - E))) - G;               // (Groves C.36)
-  lla(0) = sign_z * std::atan((1.0 - t * t) / (2.0 * t * sqrt_1_e2));       // (Groves C.37)
-  lla(1) = std::atan2(y, x);
-  lla(2) = (beta - WGS84_R0<T> * t) * std::cos(lla(0)) +
-           (z - sign_z * WGS84_R0<T> * sqrt_1_e2) * std::sin(lla(0));  // (Groves C.38)
-}
-template <typename T = double>
-Eigen::Vector<T, 3> ecef2lla(const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz) {
-  Eigen::Vector<T, 3> lla;
-  ecef2lla<T>(lla, xyz);
-  return lla;
-}
-
-//! --- ECEF2NED ---
-/// @brief      Earth-Centered-Earth-Fixed to North-East-Down position coordinates
-/// @param xyz  3x1 ECEF position [m]
-/// @param ned  3x1 NED position [m]
-/// @param lla0 3x1 Reference LLA position [rad, rad, m]
-/// @returns    NED position
-template <typename T = double>
-void ecef2ned(
-    Eigen::Ref<Eigen::Vector<T, 3>> ned,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm<T>(lla0);
-  Eigen::Vector<T, 3> xyz0 = lla2ecef<T>(lla0);
-  ned = C_e_n * (xyz - xyz0);
-}
-template <typename T = double>
-Eigen::Vector<T, 3> ecef2ned(
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
-  Eigen::Vector<T, 3> ned;
-  ecef2ned<T>(ned, xyz, lla0);
-  return ned;
-}
-
-//! --- ECEF2ENU ---
-/// @brief      Earth-Centered-Earth-Fixed to East-North-Up position coordinates
-/// @param xyz  3x1 ECEF position [m]
-/// @param enu  3x1 ENU position [m]
-/// @param lla0 3x1 Reference LLA position [rad, rad, m]
-/// @returns    ENU position
-template <typename T = double>
-void ecef2enu(
-    Eigen::Ref<Eigen::Vector<T, 3>> enu,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm<T>(lla0);
-  Eigen::Vector<T, 3> xyz0 = lla2ecef<T>(lla0);
-  enu = C_e_n * (xyz - xyz0);
-}
-template <typename T = double>
-Eigen::Vector<T, 3> ecef2enu(
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyz,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
-  Eigen::Vector<T, 3> enu;
-  ecef2enu<T>(enu, xyz, lla0);
-  return enu;
-}
-
-//! --- ECEF2AER ---
-/// @brief      Earth-Centered-Earth-Fixed to Azimuth-Elevation-Range position coordinates
-/// @param aer  3x1 AER position [rad, rad, m]
-/// @param xyzR 3x1 Reference ECEF position [m]
-/// @param xyzT 3x1 Target ECEF position [m]
-/// @returns    AER position
-template <typename T = double>
-void ecef2aer(
-    Eigen::Ref<Eigen::Vector<T, 3>> aer,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyzR,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyzT) {
-  Eigen::Vector<T, 3> lla0 = ecef2lla<T>(xyzR);
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm<T>(lla0);
-  Eigen::Vector<T, 3> enu = C_e_n * (xyzT - xyzR);
-
-  aer(2) = enu.norm();
-  aer(1) = std::asin(enu(2) / aer(2));
-  aer(0) = std::atan2(enu(0), enu(1));
-}
-template <typename T = double>
-Eigen::Vector<T, 3> ecef2aer(
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyzR,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &xyzT) {
-  Eigen::Vector<T, 3> aer;
-  ecef2aer<T>(aer, xyzR, xyzT);
-  return aer;
-}
-
 //! --- NED2ECI ---
 /// @brief      North-East-Down to Earth-Centered-Inertial position coordinates
 /// @param ned  3x1 NED position [m]
@@ -709,29 +756,6 @@ Eigen::Vector<T, 3> ned2eci(
   Eigen::Vector<T, 3> eci;
   ned2eci<T>(eci, ned, lla0, dt);
   return eci;
-}
-
-//! --- NED2ECEF ---
-/// @brief      North-East-Down to Earth-Centered-Earth-Fixed position coordinates
-/// @param ned  3x1 NED position [m]
-/// @param xyz  3x1 ECEF position [m]
-/// @param lla0 3x1 Reference LLA position [rad, rad, m]
-/// @returns    ECEF position
-template <typename T = double>
-void ned2ecef(
-    Eigen::Ref<Eigen::Vector<T, 3>> xyz,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &ned,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm<T>(lla0);
-  xyz = lla2ecef<T>(lla0) + C_n_e * ned;
-}
-template <typename T = double>
-Eigen::Vector<T, 3> ned2ecef(
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &ned,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
-  Eigen::Vector<T, 3> xyz;
-  ned2ecef<T>(xyz, ned, lla0);
-  return xyz;
 }
 
 //! --- NED2LLA ---
@@ -807,29 +831,6 @@ Eigen::Vector<T, 3> enu2eci(
   Eigen::Vector<T, 3> eci;
   enu2eci<T>(eci, enu, lla0, dt);
   return eci;
-}
-
-//! --- ENU2ECEF ---
-/// @brief      East-North-Up to Earth-Centered-Earth-Fixed position coordinates
-/// @param enu  3x1 ENU position [m]
-/// @param xyz  3x1 ECEF position [m]
-/// @param lla0 3x1 Reference LLA position [rad, rad, m]
-/// @returns    ECEF position
-template <typename T = double>
-void enu2ecef(
-    Eigen::Ref<Eigen::Vector<T, 3>> xyz,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &enu,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm<T>(lla0);
-  xyz = lla2ecef<T>(lla0) + C_n_e * enu;
-}
-template <typename T = double>
-Eigen::Vector<T, 3> enu2ecef(
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &enu,
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
-  Eigen::Vector<T, 3> xyz;
-  enu2ecef<T>(xyz, enu, lla0);
-  return xyz;
 }
 
 //! --- ENU2LLA ---
@@ -979,7 +980,7 @@ void ecef2eciv(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &r_eb_e,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &v_eb_e,
     const T &dt) {
-  Eigen::Vector<T, 3> C_e_i = ecef2eciDcm<T>(dt);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
   eci = C_e_i * (v_eb_e - WGS84_OMEGA_SKEW<T> * r_eb_e);
 }
 template <typename T = double>
@@ -1186,7 +1187,7 @@ void eci2nedw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &v_ib_i,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> C_i_n = eci2nedDcm<T>(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_i_n = eci2nedDcm<T>(lla0, dt);
 
   Eigen::Vector<T, 3> v_nb_e = eci2nedv(r_ib_i, v_ib_i, lla0, dt);
   T vn = v_nb_e(0);
@@ -1210,7 +1211,7 @@ Eigen::Vector<T, 3> eci2nedw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> ned;
-  eci2nedw(ned, w_ib_i, r_ib_i, v_ib_i, lla0, dt);
+  eci2nedw<T>(ned, w_ib_i, r_ib_i, v_ib_i, lla0, dt);
   return ned;
 }
 
@@ -1231,7 +1232,7 @@ void eci2enuw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &v_ib_i,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> C_i_n = eci2enuDcm<T>(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_i_n = eci2enuDcm<T>(lla0, dt);
 
   Eigen::Vector<T, 3> v_nb_e = eci2enuv(r_ib_i, v_ib_i, lla0, dt);
   T vn = v_nb_e(0);
@@ -1255,7 +1256,7 @@ Eigen::Vector<T, 3> eci2enuw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> enu;
-  eci2enuw(enu, w_ib_i, r_ib_i, v_ib_i, lla0, dt);
+  eci2enuw<T>(enu, w_ib_i, r_ib_i, v_ib_i, lla0, dt);
   return enu;
 }
 
@@ -1276,7 +1277,7 @@ void ecef2eciw(
 template <typename T = double>
 Eigen::Vector<T, 3> ecef2eciw(const Eigen::Ref<const Eigen::Vector<T, 3>> &w_eb_e, const T &dt) {
   Eigen::Vector<T, 3> eci;
-  ecef2eciw(eci, w_eb_e, dt);
+  ecef2eciw<T>(eci, w_eb_e, dt);
   return eci;
 }
 
@@ -1299,7 +1300,7 @@ Eigen::Vector<T, 3> ecef2nedw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &w_eb_e,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
   Eigen::Vector<T, 3> ned;
-  ecef2nedw(ned, w_eb_e, lla0);
+  ecef2nedw<T>(ned, w_eb_e, lla0);
   return ned;
 }
 
@@ -1322,7 +1323,7 @@ Eigen::Vector<T, 3> ecef2enuw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &w_eb_e,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
   Eigen::Vector<T, 3> enu;
-  ecef2nedw(enu, w_eb_e, lla0);
+  ecef2nedw<T>(enu, w_eb_e, lla0);
   return enu;
 }
 
@@ -1341,7 +1342,7 @@ void ned2eciw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> C_n_i = ned2eciDcm<T>(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_n_i = ned2eciDcm<T>(lla0, dt);
 
   T vn = v_nb_e(0);
   T ve = v_nb_e(1);
@@ -1363,7 +1364,7 @@ Eigen::Vector<T, 3> ned2eciw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> eci;
-  ned2eciw(eci, w_nb_e, v_nb_e, lla0, dt);
+  ned2eciw<T>(eci, w_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
 
@@ -1386,7 +1387,7 @@ Eigen::Vector<T, 3> ned2ecefw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &w_nb_e,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
   Eigen::Vector<T, 3> xyz;
-  ned2ecefw(xyz, w_nb_e, lla0);
+  ned2ecefw<T>(xyz, w_nb_e, lla0);
   return xyz;
 }
 
@@ -1405,7 +1406,7 @@ void enu2eciw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> C_n_i = ned2eciDcm<T>(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_n_i = ned2eciDcm<T>(lla0, dt);
 
   T vn = v_nb_e(0);
   T ve = v_nb_e(1);
@@ -1427,7 +1428,7 @@ Eigen::Vector<T, 3> enu2eciw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> eci;
-  enu2eciw(eci, w_nb_e, v_nb_e, lla0, dt);
+  enu2eciw<T>(eci, w_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
 
@@ -1450,7 +1451,7 @@ Eigen::Vector<T, 3> enu2ecefw(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &w_nb_e,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0) {
   Eigen::Vector<T, 3> xyz;
-  enu2ecefw(xyz, w_nb_e, lla0);
+  enu2ecefw<T>(xyz, w_nb_e, lla0);
   return xyz;
 }
 
@@ -1482,7 +1483,7 @@ Eigen::Vector<T, 3> eci2ecefa(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &v_ib_i,
     const T &dt) {
   Eigen::Vector<T, 3> xyz;
-  eci2ecefa(xyz, a_ib_i, r_ib_i, v_ib_i, dt);
+  eci2ecefa<T>(xyz, a_ib_i, r_ib_i, v_ib_i, dt);
   return xyz;
 }
 
@@ -1515,7 +1516,7 @@ Eigen::Vector<T, 3> eci2neda(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> ned;
-  eci2enua(ned, a_ib_i, r_ib_i, v_ib_i, lla0, dt);
+  eci2neda<T>(ned, a_ib_i, r_ib_i, v_ib_i, lla0, dt);
   return ned;
 }
 
@@ -1657,7 +1658,7 @@ void ned2ecia(
   Eigen::Vector<T, 3> a_eb_e = C_n_e * a_nb_e;
   Eigen::Vector<T, 3> v_eb_e = C_n_e * v_nb_e;
   eci = C_n_i * (a_eb_e + 2.0 * omega_ie_n * v_eb_e +
-                 C_e_i * (WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T>, *r_eb_e));
+                 C_e_i * (WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T> * r_eb_e));
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ned2ecia(
@@ -1759,11 +1760,6 @@ Eigen::Vector<T, 3> enu2ecefa(
   enu2ecefa<T>(xyz, a_nb_e, lla0);
   return xyz;
 }
-
-//! --- VECEXP ---
-/// @brief
-
-//! --- VECLOG ---
 
 }  // namespace navtools
 

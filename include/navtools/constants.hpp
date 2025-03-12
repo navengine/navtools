@@ -1,13 +1,15 @@
 /**
-|======================================== constants.hpp ===========================================|
-|                                                                                                  |
-|   @file     include/navtools/constants.hpp                                                       |
-|   @brief    Useful navigation constants.                                                         |
-|   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
-|               - (2013) Paul D. Groves                                                            |
-|                                                                                                  |
-|==================================================================================================|
-*/
+ * *constants.hpp*
+ *
+ * =======  ========================================================================================
+ * @file    include/navtools/constants.hpp
+ * @brief   Useful navigation constants.
+ * @author  Blake Baker, Daniel Sturdivant
+ * @ref     Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems
+ *            - (2013) Paul D. Groves
+ * @date    March 2025
+ * =======  ========================================================================================
+ */
 
 #ifndef NAVTOOLS_CONSTANTS_HPP
 #define NAVTOOLS_CONSTANTS_HPP
@@ -25,14 +27,14 @@ namespace navtools {
 // DEFINE_FP_CONSTANT(PI, 3.141592653589793238462643383279502884);  //! pi
 template <typename T = double>
 inline constexpr std::complex<T> COMPLEX_I{
-    static_cast<T>(0), static_cast<T>(1)};      //! imaginary value
-DEFINE_FP_CONSTANT(PI, std::numbers::pi_v<T>);  //! pi
-DEFINE_FP_CONSTANT(HALF_PI, 0.5 * PI<T>);       //! pi/2
-DEFINE_FP_CONSTANT(TWO_PI, 2.0 * PI<T>);        //! 2*pi
-DEFINE_FP_CONSTANT(PI_SQU, PI<T>* PI<T>);       //! pi^2
-DEFINE_FP_CONSTANT(SQRT_PI, std::sqrt(PI<T>));  //! sqrt(pi)
-DEFINE_FP_CONSTANT(RAD2DEG, 180.0 / PI<T>);     //! radians to degrees
-DEFINE_FP_CONSTANT(DEG2RAD, PI<T> / 180.0);     //! degrees to radians
+    static_cast<T>(0), static_cast<T>(1)};                         //! imaginary value
+DEFINE_FP_CONSTANT(PI, std::numbers::pi_v<T>);                     //! pi
+DEFINE_FP_CONSTANT(HALF_PI, 0.5 * PI<T>);                          //! pi/2
+DEFINE_FP_CONSTANT(TWO_PI, 2.0 * PI<T>);                           //! 2*pi
+DEFINE_FP_CONSTANT(PI_SQU, PI<T>* PI<T>);                          //! pi^2
+DEFINE_FP_CONSTANT(SQRT_PI, 1.0 / std::numbers::inv_sqrtpi_v<T>);  //! sqrt(pi)
+DEFINE_FP_CONSTANT(RAD2DEG, 180.0 / PI<T>);                        //! radians to degrees
+DEFINE_FP_CONSTANT(DEG2RAD, PI<T> / 180.0);                        //! degrees to radians
 template <typename T = double>
 inline static const Eigen::Vector<T, 3> LLA_RAD2DEG{RAD2DEG<T>, RAD2DEG<T>, 1.0};
 template <typename T = double>

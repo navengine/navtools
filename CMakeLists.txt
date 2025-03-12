@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.4...3.18)
 project(navtools)
 
 string(ASCII 27 Esc)
@@ -20,19 +20,19 @@ set(BoldCyan    "${Esc}[1;36m")
 set(BoldWhite   "${Esc}[1;37m")
 
 # --- Version Control ---
-set(NAVTOOLS_MAJOR_VERSION 0)
+set(NAVTOOLS_MAJOR_VERSION 1)
 set(NAVTOOLS_MINOR_VERSION 0)
-set(NAVTOOLS_PATCH_VERSION 1)
+set(NAVTOOLS_PATCH_VERSION 0)
 set(PROJECT_VERSION ${NAVTOOLS_MAJOR_VERSION}.${NAVTOOLS_MINOR_VERSION}.${NAVTOOLS_PATCH_VERSION})
 message(STATUS "${BoldCyan}${PROJECT_NAME} version ${PROJECT_VERSION}${Reset}")
 
 # # --- Compiler Flags ---
-# set(CMAKE_CXX_STANDARD 20)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wunused -pedantic")
-# set(CMAKE_CXX_FLAGS_DEBUG "-g -W")
-# # set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Ofast -ffast-math -fomit-frame-pointer -fstrict-aliasing -flto -DNDEBUG -march=native")
-# set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Ofast -ffast-math")
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wunused -pedantic")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -W")
+# set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Ofast -ffast-math -fomit-frame-pointer -fstrict-aliasing -flto -DNDEBUG -march=native")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Ofast -ffast-math")
 
 # --- Packages ---
 find_package(Eigen3 REQUIRED)
@@ -61,6 +61,7 @@ target_link_libraries(
     ${PROJECT_NAME} INTERFACE
     Eigen3::Eigen
 )
+set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # --- Build Executables ---
 if (NOT DEFINED INSTALL_NAVTOOLS_EXAMPLES OR NOT INSTALL_NAVTOOLS_EXAMPLES)
@@ -114,3 +115,16 @@ install(
     FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
     DESTINATION lib/cmake/${PROJECT_NAME}
 )
+
+# --- Python ---
+if (NOT DEFINED INSTALL_NAVTOOLS_PYTHON OR INSTALL_NAVTOOLS_PYTHON)
+    # add_subdirectory(pybind11)
+    # pybind11_add_module(navtools_python src/navtools-pybind11.cpp)
+    # target_link_libraries(navtools_python PRIVATE ${PROJECT_NAME})
+    find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
+    find_package(pybind11 CONFIG REQUIRED)
+    python_add_library(_core MODULE src/navtools-python.cpp WITH_SOABI)
+    target_link_libraries(_core PRIVATE pybind11::headers ${PROJECT_NAME})
+    target_compile_definitions(_core PRIVATE VERSION_INFO=${PROJECT_VERSION})
+    install(TARGETS _core DESTINATION navtools)
+endif()

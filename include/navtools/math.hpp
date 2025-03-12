@@ -1,14 +1,15 @@
 /**
-|========================================== math.hpp ==============================================|
-|                                                                                                  |
-|   @file     include/navtools/math.hpp                                                            |
-|   @brief    Common mathematical operations.                                                      |
-|   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
-|               - (2013) Paul D. Groves                                                            |
-|   @date     July 2024                                                                            |
-|                                                                                                  |
-|==================================================================================================|
-*/
+ * *math.hpp*
+ *
+ * =======  ========================================================================================
+ * @file    include/navtools/math.hpp
+ * @brief   Common mathematical operations.
+ * @author  Blake Baker, Daniel Sturdivant
+ * @ref     Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems
+ *            - (2013) Paul D. Groves
+ * @date    March 2025
+ * =======  ========================================================================================
+ */
 
 // TODO: move conversions
 

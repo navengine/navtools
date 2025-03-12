@@ -1,12 +1,13 @@
 /**
-|========================================== typing.hpp ============================================|
-|                                                                                                  |
-|   @file     include/navtools/types.hpp                                                           |
-|   @brief    Useful type definitions.                                                             |
-|   @date     July 2024                                                                            |
-|                                                                                                  |
-|==================================================================================================|
-*/
+ * *types.hpp*
+ *
+ * =======  ========================================================================================
+ * @file    include/navtools/types.hpp
+ * @brief   Useful type definitions.
+ * @author  Blake Baker, Daniel Sturdivant
+ * @date    March 2025
+ * =======  ========================================================================================
+ */
 
 #ifndef NAVTOOLS_TYPES_HPP
 #define NAVTOOLS_TYPES_HPP

@@ -1,14 +1,15 @@
 /**
-|========================================= attitude.hpp ===========================================|
-|                                                                                                  |
-|   @file     include/navtools/attitude.hpp                                                        |
-|   @brief    Attitude representations and conversions between them.                               |
-|   @ref      Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems          |
-|               - (2013) Paul D. Groves                                                            |
-|   @date     July 2024                                                                            |
-|                                                                                                  |
-|==================================================================================================|
-*/
+ * *attitude.hpp*
+ *
+ * =======  ========================================================================================
+ * @file    include/navtools/attitude.hpp
+ * @brief   Attitude representations and conversions between them.
+ * @author  Daniel Sturdivant, Blake Baker
+ * @ref     Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems
+ *            - (2013) Paul D. Groves
+ * @date    March 2025
+ * =======  ========================================================================================
+ */
 
 #ifndef NAVTOOLS_ATTITUDE_HPP
 #define NAVTOOLS_ATTITUDE_HPP
@@ -25,8 +26,11 @@ namespace navtools {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param q        size 4 quaternion rotation
 /// @returns    4x1 ZYX quaternion
-template <bool IsNed = true, typename T = double>
-void euler2quat(Eigen::Ref<Eigen::Vector<T, 4>> q, const Eigen::Ref<const Eigen::Vector<T, 3>> &e) {
+template <typename T = double>
+void euler2quat(
+    Eigen::Ref<Eigen::Vector<T, 4>> q,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &e,
+    const bool IsNed = true) {
   Eigen::Vector<T, 3> x = e / 2.0;
   T Sr = std::sin(x(0));
   T Sp = std::sin(x(1));
@@ -36,7 +40,7 @@ void euler2quat(Eigen::Ref<Eigen::Vector<T, 4>> q, const Eigen::Ref<const Eigen:
   T b = Cp * Sr;
   T c = Sp * Sr;
   T d = Cp * Cr;
-  if constexpr (IsNed) {
+  if (IsNed) {
     // ned frame
     T Cy = std::cos(x(2));
     T Sy = std::sin(x(2));
@@ -49,10 +53,11 @@ void euler2quat(Eigen::Ref<Eigen::Vector<T, 4>> q, const Eigen::Ref<const Eigen:
         a * Sy_pio4 - b * Cy_pio4;
   }
 }
-template <bool IsNed = true, typename T = double>
-Eigen::Vector<T, 4> euler2quat(const Eigen::Ref<const Eigen::Vector<T, 3>> &e) {
+template <typename T = double>
+Eigen::Vector<T, 4> euler2quat(
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &e, const bool IsNed = true) {
   Eigen::Vector<T, 4> q;
-  euler2quat<IsNed, T>(q, e);
+  euler2quat<T>(q, e, IsNed);
   return q;
 }
 
@@ -62,16 +67,18 @@ Eigen::Vector<T, 4> euler2quat(const Eigen::Ref<const Eigen::Vector<T, 3>> &e) {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param R        3x3 DCM
 /// @returns    3x3 ZYX DCM
-template <bool IsNed = true, typename T = double>
+template <typename T = double>
 void euler2dcm(
-    Eigen::Ref<Eigen::Matrix<T, 3, 3>> R, const Eigen::Ref<const Eigen::Vector<T, 3>> &e) {
+    Eigen::Ref<Eigen::Matrix<T, 3, 3>> R,
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &e,
+    const bool IsNed = true) {
   T Sr = std::sin(e(0));
   T Sp = std::sin(e(1));
   T Sy = std::sin(e(2));
   T Cr = std::cos(e(0));
   T Cp = std::cos(e(1));
   T Cy = std::cos(e(2));
-  if constexpr (IsNed) {
+  if (IsNed) {
     // clang-format off
         R << Cp * Cy, Sr * Sp * Cy - Cr * Sy, Cr * Sp * Cy + Sr * Sy,
              Cp * Sy, Sr * Sp * Sy + Cr * Cy, Cr * Sp * Sy - Cy * Sr,
@@ -85,10 +92,11 @@ void euler2dcm(
     // clang-format on
   }
 }
-template <bool IsNed = true, typename T = double>
-Eigen::Matrix<T, 3, 3> euler2dcm(const Eigen::Ref<const Eigen::Vector<T, 3>> &e) {
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> euler2dcm(
+    const Eigen::Ref<const Eigen::Vector<T, 3>> &e, const bool IsNed = true) {
   Eigen::Matrix<T, 3, 3> R;
-  euler2dcm<IsNed, T>(R, e);
+  euler2dcm<T>(R, e, IsNed);
   return R;
 }
 
@@ -98,8 +106,11 @@ Eigen::Matrix<T, 3, 3> euler2dcm(const Eigen::Ref<const Eigen::Vector<T, 3>> &e)
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param e        size 3 RPY euler angles [radians]
 /// @returns    3x1 RPY euler angles [radians]
-template <bool IsNed = true, typename T = double>
-void quat2euler(Eigen::Ref<Eigen::Vector<T, 3>> e, const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
+template <typename T = double>
+void quat2euler(
+    Eigen::Ref<Eigen::Vector<T, 3>> e,
+    const Eigen::Ref<const Eigen::Vector<T, 4>> &q,
+    const bool IsNed = true) {
   T w = q(0);
   T x = q(1);
   T y = q(2);
@@ -113,7 +124,7 @@ void quat2euler(Eigen::Ref<Eigen::Vector<T, 3>> e, const Eigen::Ref<const Eigen:
   T yw = y * w;
   T yz = y * z;
   T zw = z * w;
-  if constexpr (IsNed) {
+  if (IsNed) {
     e(0) = std::atan2(2.0 * (xw + yz), 1.0 - 2.0 * (x2 + y2));
     e(1) = std::asin(2.0 * (yw - xz));
     e(2) = std::atan2(2.0 * (zw + xy), 1.0 - 2.0 * (y2 + z2));
@@ -123,10 +134,11 @@ void quat2euler(Eigen::Ref<Eigen::Vector<T, 3>> e, const Eigen::Ref<const Eigen:
     e(2) = HALF_PI<T> - std::atan2(2.0 * (zw + xy), 1.0 - 2.0 * (y2 + z2));
   }
 }
-template <bool IsNed = true, typename T = double>
-Eigen::Vector<T, 3> quat2euler(const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
+template <typename T = double>
+Eigen::Vector<T, 3> quat2euler(
+    const Eigen::Ref<const Eigen::Vector<T, 4>> &q, const bool IsNed = true) {
   Eigen::Vector<T, 3> e;
-  quat2euler<IsNed, T>(e, q);
+  quat2euler<T>(e, q, IsNed);
   return e;
 }
 
@@ -174,10 +186,12 @@ Eigen::Matrix<T, 3, 3> quat2dcm(const Eigen::Ref<const Eigen::Vector<T, 4>> &q) 
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param e        size 3 RPY euler angles [radians]
 /// @returns    3x1 RPY euler angles [radians]
-template <bool IsNed = true, typename T = double>
+template <typename T = double>
 void dcm2euler(
-    Eigen::Ref<Eigen::Vector<T, 3>> e, const Eigen::Ref<const Eigen::Matrix<T, 3, 3>> &R) {
-  if constexpr (IsNed) {
+    Eigen::Ref<Eigen::Vector<T, 3>> e,
+    const Eigen::Ref<const Eigen::Matrix<T, 3, 3>> &R,
+    const bool IsNed = true) {
+  if (IsNed) {
     e(0) = std::atan2(R(2, 1), R(2, 2));
     e(1) = -std::asin(R(2, 0));
     e(2) = std::atan2(R(1, 0), R(0, 0));
@@ -187,10 +201,11 @@ void dcm2euler(
     e(2) = std::atan2(R(0, 0), R(1, 0));
   }
 }
-template <bool IsNed = true, typename T = double>
-Eigen::Vector<T, 3> dcm2euler(const Eigen::Ref<const Eigen::Matrix<T, 3, 3>> &R) {
+template <typename T = double>
+Eigen::Vector<T, 3> dcm2euler(
+    const Eigen::Ref<const Eigen::Matrix<T, 3, 3>> &R, const bool IsNed = true) {
   Eigen::Vector<T, 3> e;
-  dcm2euler<IsNed, T>(e, R);
+  dcm2euler<T>(e, R, IsNed);
   return e;
 }
 
@@ -253,7 +268,7 @@ template <typename T = double>
 void RotY(Eigen::Ref<Eigen::Matrix<T, 3, 3>> C, const T &y) {
   T sy = std::sin(y);
   T cy = std::cos(y);
-  C = {{cy, 0.0, sy}, {0.0, 1.0, 0.0}, {-sy, 0.0, cy}};
+  C << cy, 0.0, sy, 0.0, 1.0, 0.0, -sy, 0.0, cy;
 }
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> RotY(const T &y) {
@@ -271,7 +286,7 @@ template <typename T = double>
 void RotZ(Eigen::Ref<Eigen::Matrix<T, 3, 3>> C, const T &z) {
   T sz = std::sin(z);
   T cz = std::cos(z);
-  C = {{cz, -sz, 0.0}, {sz, cz, 0.0}, {0.0, 0.0, 1.0}};
+  C << cz, -sz, 0.0, sz, cz, 0.0, 0.0, 0.0, 1.0;
 }
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> RotZ(const T &z) {

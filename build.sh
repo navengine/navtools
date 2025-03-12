@@ -24,13 +24,11 @@ cd build
 
 echo -e "${BoldMagenta}-- BUILDING NAVTOOLS${Reset}";
 
-# -DCMAKE_C_COMPILER=/usr/local/gcc-14.1.0/bin/gcc-14.1.0 \
-# -DCMAKE_CXX_COMPILER=/usr/local/gcc-14.1.0/bin/g++-14.1.0 \
-
-build_type='Debug'
-c_compiler='clang'
-cpp_compiler='clang++'
+build_type='Release'
+c_compiler='clang-18'
+cpp_compiler='clang++-18'
 build_examples='True'
+build_python='True'
 
 case "$OSTYPE" in
   linux*)
@@ -39,8 +37,10 @@ case "$OSTYPE" in
         -DCMAKE_C_COMPILER=$c_compiler \
         -DCMAKE_CXX_COMPILER=$cpp_compiler \
         -DINSTALL_NAVTOOLS_EXAMPLES=$build_examples \
+        -DINSTALL_NAVTOOLS_PYTHON=$build_python \
         -DCMAKE_INSTALL_PREFIX=../build \
-        -DCMAKE_BUILD_TYPE=$build_type
+        -DCMAKE_BUILD_TYPE=$build_type \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
         ;;
   darwin*)
     echo -e "${BoldMagenta}-- OS: mac${Reset}"; 
@@ -48,8 +48,10 @@ case "$OSTYPE" in
         -DCMAKE_C_COMPILER=$c_compiler \
         -DCMAKE_CXX_COMPILER=$cpp_compiler \
         -DINSTALL_NAVTOOLS_EXAMPLES=$build_examples \
+        -DINSTALL_NAVTOOLS_PYTHON=$build_python \
         -DCMAKE_INSTALL_PREFIX=../build \
-        -DCMAKE_BUILD_TYPE=$build_type
+        -DCMAKE_BUILD_TYPE=$build_type \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
         ;;
   msys*)
     echo -e "${BoldMagenta}-- OS: windows${Reset}";
@@ -58,8 +60,10 @@ case "$OSTYPE" in
         -DCMAKE_CXX_COMPILER=C:/MinGW/bin/g++.exe \
         -DCMAKE_C_COMPILER=C:/MinGW/bin/gcc.exe \
         -DINSTALL_NAVTOOLS_EXAMPLES=$build_examples \
+        -DINSTALL_NAVTOOLS_PYTHON=$build_python \
         -DCMAKE_INSTALL_PREFIX=../build \
-        -DCMAKE_BUILD_TYPE=$build_type
+        -DCMAKE_BUILD_TYPE=$build_type \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
         ;;
   solaris*)
     echo -e "${BoldMagenta}-- OS: solaris${Reset}";;

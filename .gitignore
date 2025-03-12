@@ -6,3 +6,5 @@ log/
 install/
 *.yaml
 *.yml
+.cache/
+.venv/

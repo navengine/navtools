@@ -28,10 +28,10 @@ int main() {
   Eigen::Vector<double, 3> starting_e{0.0, 5.0, -30.0};
   starting_e *= DEG2RAD<double>;
 
-  Eigen::Vector<double, 4> qenu = euler2quat<true, double>(starting_e);
-  Eigen::Vector<double, 4> qned = euler2quat<false, double>(starting_e);
-  Eigen::Matrix<double, 3, 3> Renu = euler2dcm<true, double>(starting_e);
-  Eigen::Matrix<double, 3, 3> Rned = euler2dcm<false, double>(starting_e);
+  Eigen::Vector<double, 4> qenu = euler2quat<double>(starting_e, false);
+  Eigen::Vector<double, 4> qned = euler2quat<double>(starting_e, true);
+  Eigen::Matrix<double, 3, 3> Renu = euler2dcm<double>(starting_e, false);
+  Eigen::Matrix<double, 3, 3> Rned = euler2dcm<double>(starting_e, true);
 
   std::cout << BYEL << "#####* TESTING ATTITUDE TRANSFORMATIONS *#####" << RST << std::endl
             << std::endl;
@@ -56,10 +56,10 @@ int main() {
   std::cout << "q_enu from C_enu = " << R2qenu << std::endl;
   std::cout << "q_ned from C_ned = " << R2qned << std::endl << std::endl;
 
-  Eigen::Vector<double, 3> e_Renu = dcm2euler<true, double>(q2Renu);
-  Eigen::Vector<double, 3> e_Rned = dcm2euler<false, double>(q2Rned);
-  Eigen::Vector<double, 3> e_qenu = quat2euler<true, double>(R2qenu);
-  Eigen::Vector<double, 3> e_qned = quat2euler<false, double>(R2qned);
+  Eigen::Vector<double, 3> e_Renu = dcm2euler<double>(q2Renu, false);
+  Eigen::Vector<double, 3> e_Rned = dcm2euler<double>(q2Rned, true);
+  Eigen::Vector<double, 3> e_qenu = quat2euler<double>(R2qenu, false);
+  Eigen::Vector<double, 3> e_qned = quat2euler<double>(R2qned, true);
 
   std::cout << "e from q_enu = " << e_qenu.transpose() << std::endl;
   std::cout << "e from q_ned = " << e_qned.transpose() << std::endl;

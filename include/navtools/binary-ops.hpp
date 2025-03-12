@@ -1,12 +1,13 @@
 /**
-|======================================== binary-ops.hpp ==========================================|
-|                                                                                                  |
-|   @file     include/navtools/binary-ops.hpp                                                      |
-|   @brief    Useful binary operations.                                                            |
-|   @date     July 2024                                                                            |
-|                                                                                                  |
-|==================================================================================================|
-*/
+ * *binary-ops.hpp*
+ *
+ * =======  ========================================================================================
+ * @file    include/navtools/binary-ops.hpp
+ * @brief   Useful binary operations.
+ * @author  Blake Baker, Daniel Sturdivant
+ * @date    March 2025
+ * =======  ========================================================================================
+ */
 
 #ifndef NAVTOOLS_BINARY_OPS_HPP
 #define NAVTOOLS_BINARY_OPS_HPP
@@ -121,6 +122,14 @@ bool MultiXor(const uint32_t &x, const uint8_t n[]) {
 }
 template <int Size, bool LsbIsZero = false>
 bool MultiXor(const uint32_t &x, const std::array<uint8_t, Size> n[Size]) {
+  bool r = CheckBit<LsbIsZero>(x, n[0]);
+  for (uint8_t i = 1; i < Size; i++) {
+    r ^= CheckBit<LsbIsZero>(x, n[i]);
+  }
+  return r;
+}
+template <bool LsbIsZero = false>
+bool MultiXor(const uint32_t &x, const uint8_t n[], const int Size) {
   bool r = CheckBit<LsbIsZero>(x, n[0]);
   for (uint8_t i = 1; i < Size; i++) {
     r ^= CheckBit<LsbIsZero>(x, n[i]);
