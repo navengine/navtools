@@ -1,4 +1,4 @@
-from ._core import (
+from ._navtools_core import (
     __doc__,
     __version__,
     PI,
@@ -31,7 +31,7 @@ from ._core import (
     deg2rad,
     rad2deg,
     attitude,
-    binary_ops,
+    binaryops,
     frames,
     math,
     models,
@@ -70,7 +70,7 @@ __all__ = [
     "deg2rad",
     "rad2deg",
     "attitude",
-    "binary_ops",
+    "binaryops",
     "frames",
     "math",
     "models",

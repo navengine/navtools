@@ -1,5 +1,9 @@
 """
-Common coordinate frame transformations.
+
+        Frames
+        ======
+        
+        Common coordinate frame transformations.
 """
 from __future__ import annotations
 import numpy

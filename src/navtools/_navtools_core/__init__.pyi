@@ -9,7 +9,7 @@
       Contains the following submodules:
 
         1. `attitude`
-        2. `binary_ops`
+        2. `binaryops`
         3. `frames`
         4. `math`
         5. `models`
@@ -18,11 +18,11 @@
 from __future__ import annotations
 import numpy
 from . import attitude
-from . import binary_ops
+from . import binaryops
 from . import frames
 from . import math
 from . import models
-__all__ = ['BOLTZMANN', 'DEG2RAD', 'F', 'GAUSS_TO_TESLA', 'GRAVITY', 'HALF_PI', 'J2', 'J3', 'J4', 'LIGHT_SPEED', 'METERS_TO_FOOT', 'MINUTES_PER_DAY', 'PI', 'PI_SQU', 'RAD2DEG', 'RE', 'SQRT_PI', 'TWO_PI', 'WGS84_E', 'WGS84_E2', 'WGS84_F', 'WGS84_MU', 'WGS84_OMEGA', 'WGS84_OMEGA_SKEW', 'WGS84_OMEGA_VEC', 'WGS84_R0', 'WGS84_RP', 'attitude', 'binary_ops', 'deg2rad', 'frames', 'math', 'models', 'rad2deg']
+__all__ = ['BOLTZMANN', 'DEG2RAD', 'F', 'GAUSS_TO_TESLA', 'GRAVITY', 'HALF_PI', 'J2', 'J3', 'J4', 'LIGHT_SPEED', 'METERS_TO_FOOT', 'MINUTES_PER_DAY', 'PI', 'PI_SQU', 'RAD2DEG', 'RE', 'SQRT_PI', 'TWO_PI', 'WGS84_E', 'WGS84_E2', 'WGS84_F', 'WGS84_MU', 'WGS84_OMEGA', 'WGS84_OMEGA_SKEW', 'WGS84_OMEGA_VEC', 'WGS84_R0', 'WGS84_RP', 'attitude', 'binaryops', 'deg2rad', 'frames', 'math', 'models', 'rad2deg']
 def deg2rad(arg0: float) -> float:
     ...
 def rad2deg(arg0: float) -> float:

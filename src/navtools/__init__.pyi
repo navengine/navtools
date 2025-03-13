@@ -9,23 +9,23 @@
       Contains the following submodules:
 
         1. `attitude`
-        2. `binary_ops`
+        2. `binaryops`
         3. `frames`
         4. `math`
         5. `models`
       
 """
 from __future__ import annotations
-from navtools._core import attitude
-from navtools._core import binary_ops
-from navtools._core import deg2rad
-from navtools._core import frames
-from navtools._core import math
-from navtools._core import models
-from navtools._core import rad2deg
+from navtools._navtools_core import attitude
+from navtools._navtools_core import binaryops
+from navtools._navtools_core import deg2rad
+from navtools._navtools_core import frames
+from navtools._navtools_core import math
+from navtools._navtools_core import models
+from navtools._navtools_core import rad2deg
 import numpy
-from . import _core
-__all__: list = ['__doc__', '__version__', 'PI', 'HALF_PI', 'TWO_PI', 'PI_SQU', 'SQRT_PI', 'LIGHT_SPEED', 'BOLTZMANN', 'GAUSS_TO_TESLA', 'METERS_TO_FOOT', 'MINUTES_PER_DAY', 'GRAVITY', 'RE', 'J2', 'J3', 'J4', 'F', 'WGS84_MU', 'WGS84_R0', 'WGS84_RP', 'WGS84_E', 'WGS84_E2', 'WGS84_F', 'WGS84_OMEGA', 'WGS84_OMEGA_VEC', 'WGS84_OMEGA_SKEW', 'RAD2DEG', 'DEG2RAD', 'deg2rad', 'rad2deg', 'attitude', 'binary_ops', 'frames', 'math', 'models']
+from . import _navtools_core
+__all__: list = ['__doc__', '__version__', 'PI', 'HALF_PI', 'TWO_PI', 'PI_SQU', 'SQRT_PI', 'LIGHT_SPEED', 'BOLTZMANN', 'GAUSS_TO_TESLA', 'METERS_TO_FOOT', 'MINUTES_PER_DAY', 'GRAVITY', 'RE', 'J2', 'J3', 'J4', 'F', 'WGS84_MU', 'WGS84_R0', 'WGS84_RP', 'WGS84_E', 'WGS84_E2', 'WGS84_F', 'WGS84_OMEGA', 'WGS84_OMEGA_VEC', 'WGS84_OMEGA_SKEW', 'RAD2DEG', 'DEG2RAD', 'deg2rad', 'rad2deg', 'attitude', 'binaryops', 'frames', 'math', 'models']
 BOLTZMANN: float = 1.38e-23
 DEG2RAD: float = 0.017453292519943295
 F: float = -4.442807633e-10

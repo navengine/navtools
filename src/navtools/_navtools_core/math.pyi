@@ -1,5 +1,9 @@
 """
-Common mathematical operations.
+
+        Math
+        ====
+        
+        Common mathematical operations.
 """
 from __future__ import annotations
 import numpy

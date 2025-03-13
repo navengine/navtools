@@ -1,5 +1,9 @@
 """
-Useful binary operations.
+
+        Binary-Ops
+        ==========
+        
+        Useful binary operations.
 """
 from __future__ import annotations
 __all__ = ['CheckBit', 'CheckBits', 'ClearBit', 'MultiXor', 'SetBit', 'SetBitTo', 'TwosComp']

@@ -1,5 +1,9 @@
 """
-Attitude representations and conversions between them.
+
+        Attitude
+        ========
+        
+        Attitude representations and conversions between them.
 """
 from __future__ import annotations
 import numpy

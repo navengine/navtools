@@ -21,7 +21,7 @@
 namespace py = pybind11;
 using namespace navtools;
 
-PYBIND11_MODULE(_core, h) {
+PYBIND11_MODULE(_navtools_core, h) {
   h.doc() =
       R"pbdoc(
       NavTools
@@ -33,7 +33,7 @@ PYBIND11_MODULE(_core, h) {
       Contains the following submodules:
 
         1. `attitude`
-        2. `binary_ops`
+        2. `binaryops`
         3. `frames`
         4. `math`
         5. `models`
@@ -73,8 +73,11 @@ PYBIND11_MODULE(_core, h) {
   h.def("rad2deg", [](double x) { return RAD2DEG<double> * x; });
 
   //! === Attitude submodule =======================================================================
-  py::module_ att =
-      h.def_submodule("attitude", "Attitude representations and conversions between them.");
+  py::module_ att = h.def_submodule("attitude", R"pbdoc(
+        Attitude
+        ========
+        
+        Attitude representations and conversions between them.)pbdoc");
 
   // euler2quat
   att.def(
@@ -557,7 +560,11 @@ PYBIND11_MODULE(_core, h) {
       )pbdoc");
 
   //! === Binary-Ops submodule =====================================================================
-  py::module_ bin = h.def_submodule("binary_ops", "Useful binary operations.");
+  py::module_ bin = h.def_submodule("binaryops", R"pbdoc(
+        Binary-Ops
+        ==========
+        
+        Useful binary operations.)pbdoc");
 
   // SetBit
   bin.def(
@@ -750,7 +757,11 @@ PYBIND11_MODULE(_core, h) {
       )pbdoc");
 
   //! === Frames submodule =========================================================================
-  py::module_ frm = h.def_submodule("frames", "Common coordinate frame transformations.");
+  py::module_ frm = h.def_submodule("frames", R"pbdoc(
+        Frames
+        ======
+        
+        Common coordinate frame transformations.)pbdoc");
 
   // eci2ecefDcm
   frm.def(
@@ -3897,7 +3908,11 @@ PYBIND11_MODULE(_core, h) {
           const Eigen::Ref<const Eigen::Vector3d> &>(&enu2ecefa<double>));
 
   //! === Math submodule ===========================================================================
-  py::module_ math = h.def_submodule("math", "Common mathematical operations.");
+  py::module_ math = h.def_submodule("math", R"pbdoc(
+        Math
+        ====
+        
+        Common mathematical operations.)pbdoc");
 
   // Skew
   math.def(
@@ -4446,8 +4461,11 @@ PYBIND11_MODULE(_core, h) {
       )pbdoc");
 
   //! === Earth-Models submodule ===================================================================
-  py::module_ mod =
-      h.def_submodule("models", "Simple Earth models commonly used in navigation equations.");
+  py::module_ mod = h.def_submodule("models", R"pbdoc(
+        Models
+        ======
+        
+        Simple Earth models commonly used in navigation equations.)pbdoc");
 
   // TransverseRadius
   mod.def(

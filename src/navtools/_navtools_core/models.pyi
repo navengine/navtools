@@ -1,5 +1,9 @@
 """
-Simple Earth models commonly used in navigation equations.
+
+        Models
+        ======
+        
+        Simple Earth models commonly used in navigation equations.
 """
 from __future__ import annotations
 import numpy
