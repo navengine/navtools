@@ -64,11 +64,11 @@ target_link_libraries(
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # --- Build Executables ---
-if (NOT DEFINED INSTALL_NAVTOOLS_EXAMPLES OR NOT INSTALL_NAVTOOLS_EXAMPLES)
-    # message(STATUS "${BoldCyan}INSTALL_NAVTOOLS_EXAMPLES is false${Reset}")
+if (NOT DEFINED INSTALL_NAVTOOLS_TESTS OR NOT INSTALL_NAVTOOLS_TESTS)
+    # message(STATUS "${BoldCyan}INSTALL_NAVTOOLS_TESTS is false${Reset}")
 else()
-    # message(STATUS "${BoldCyan}INSTALL_NAVTOOLS_EXAMPLES is true${Reset}")
-    file(GLOB testfiles "${CMAKE_CURRENT_SOURCE_DIR}/examples/*.cpp")
+    # message(STATUS "${BoldCyan}INSTALL_NAVTOOLS_TESTS is true${Reset}")
+    file(GLOB testfiles "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp")
     foreach(file ${testfiles})
         # message(${file})
         get_filename_component(testname ${file} NAME_WE)
@@ -117,7 +117,7 @@ install(
 )
 
 # --- Python ---
-if (NOT DEFINED INSTALL_NAVTOOLS_PYTHON OR INSTALL_NAVTOOLS_PYTHON)
+if (NOT DEFINED INSTALL_PYTHON OR INSTALL_PYTHON)
     # add_subdirectory(pybind11)
     # pybind11_add_module(navtools_python src/navtools-pybind11.cpp)
     # target_link_libraries(navtools_python PRIVATE ${PROJECT_NAME})

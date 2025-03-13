@@ -2,6 +2,11 @@
 Common functions and definitions used across navengine.
 
 ## Prerequisites
+First a valid C++20 compiler should be installed. I recommend clang++-18 which is easy on ubuntu 24.04.
+```sh
+sudo apt install clang-18
+```
+
 Make sure Eigen and Pybind11 are installed on your computer.
 ```sh
 sudo apt install libeigen3-dev
@@ -23,7 +28,8 @@ pip install numpy
 pip install .
 ```
 
-## Python Linting
+## Python Linting (Optional)
+This should already be applied, but in case it is not, you can simply do it as follows:
 ```sh
 pip install pybind11-stubgen
 pybind11-stubgen navtools -o src
