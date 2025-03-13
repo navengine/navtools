@@ -88,7 +88,7 @@ PYBIND11_MODULE(_navtools_core, h) {
           const bool>(&euler2quat<double>),
       py::arg("q"),
       py::arg("e"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       euler2quat
       ==========
@@ -114,7 +114,7 @@ PYBIND11_MODULE(_navtools_core, h) {
       "euler2quat",
       py::overload_cast<const Eigen::Ref<const Eigen::Vector3d> &, const bool>(&euler2quat<double>),
       py::arg("q"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       euler2quat
       ==========
@@ -149,7 +149,7 @@ PYBIND11_MODULE(_navtools_core, h) {
           const bool>(&euler2dcm<double>),
       py::arg("C"),
       py::arg("e"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       euler2dcm
       =========
@@ -175,7 +175,7 @@ PYBIND11_MODULE(_navtools_core, h) {
       "euler2dcm",
       py::overload_cast<const Eigen::Ref<const Eigen::Vector3d> &, const bool>(&euler2dcm<double>),
       py::arg("e"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       euler2dcm
       =========
@@ -210,7 +210,7 @@ PYBIND11_MODULE(_navtools_core, h) {
           const bool>(&quat2euler<double>),
       py::arg("e"),
       py::arg("q"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       quat2euler
       ==========
@@ -236,7 +236,7 @@ PYBIND11_MODULE(_navtools_core, h) {
       "quat2euler",
       py::overload_cast<const Eigen::Ref<const Eigen::Vector4d> &, const bool>(&quat2euler<double>),
       py::arg("q"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       quat2euler
       ==========
@@ -320,7 +320,7 @@ PYBIND11_MODULE(_navtools_core, h) {
           const bool>(&dcm2euler<double>),
       py::arg("e"),
       py::arg("C"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       dcm2euler
       =========
@@ -346,7 +346,7 @@ PYBIND11_MODULE(_navtools_core, h) {
       "dcm2euler",
       py::overload_cast<const Eigen::Ref<const Eigen::Matrix3d> &, const bool>(&dcm2euler<double>),
       py::arg("C"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       dcm2euler
       =========
@@ -4681,7 +4681,7 @@ PYBIND11_MODULE(_navtools_core, h) {
           &EarthRate<double>),
       py::arg("w_ie_n"),
       py::arg("phi"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       EarthRate
       =========
@@ -4707,7 +4707,7 @@ PYBIND11_MODULE(_navtools_core, h) {
       "EarthRate",
       py::overload_cast<const double &, const bool>(&EarthRate<double>),
       py::arg("phi"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       EarthRate
       =========
@@ -4744,7 +4744,7 @@ PYBIND11_MODULE(_navtools_core, h) {
       py::arg("w_en_n"),
       py::arg("phi"),
       py::arg("v_nb_e"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       TransportRate
       =============
@@ -4778,7 +4778,7 @@ PYBIND11_MODULE(_navtools_core, h) {
           const bool>(&TransportRate<double>),
       py::arg("phi"),
       py::arg("v_nb_e"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       EarthRate
       =========
@@ -4819,7 +4819,7 @@ PYBIND11_MODULE(_navtools_core, h) {
       py::arg("coriolis"),
       py::arg("lla"),
       py::arg("v_nb_e"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       CoriolisRate
       ============
@@ -4853,7 +4853,7 @@ PYBIND11_MODULE(_navtools_core, h) {
           const bool>(&CoriolisRate<double>),
       py::arg("lla"),
       py::arg("v_nb_e"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       CoriolisRate
       ============
@@ -4940,7 +4940,7 @@ PYBIND11_MODULE(_navtools_core, h) {
           const bool>(&LocalGravity<double>),
       py::arg("g"),
       py::arg("lla"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       LocalGravity
       ============
@@ -4967,7 +4967,7 @@ PYBIND11_MODULE(_navtools_core, h) {
       py::overload_cast<const Eigen::Ref<const Eigen::Vector3d> &, const bool>(
           &LocalGravity<double>),
       py::arg("lla"),
-      py::arg("IsNed"),
+      py::arg("IsNed") = true,
       R"pbdoc(
       LocalGravity
       ============
