@@ -10,7 +10,7 @@ import numpy
 import typing
 __all__ = ['CoriolisRate', 'EarthRate', 'EcefGravity', 'GeocentricRadius', 'LocalGravity', 'MeridianRadius', 'RadiiOfCurvature', 'Somigliana', 'TransAndMerRadii', 'TransportRate', 'TransverseRadius']
 @typing.overload
-def CoriolisRate(coriolis: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], lla: numpy.ndarray[numpy.float64[3, 1]], v_nb_e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool) -> None:
+def CoriolisRate(coriolis: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], lla: numpy.ndarray[numpy.float64[3, 1]], v_nb_e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool = True) -> None:
     """
           CoriolisRate
           ============
@@ -37,7 +37,7 @@ def CoriolisRate(coriolis: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flag
               Is desired frame NED, default is True 
     """
 @typing.overload
-def CoriolisRate(lla: numpy.ndarray[numpy.float64[3, 1]], v_nb_e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool) -> numpy.ndarray[numpy.float64[3, 1]]:
+def CoriolisRate(lla: numpy.ndarray[numpy.float64[3, 1]], v_nb_e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool = True) -> numpy.ndarray[numpy.float64[3, 1]]:
     """
           CoriolisRate
           ============
@@ -67,7 +67,7 @@ def CoriolisRate(lla: numpy.ndarray[numpy.float64[3, 1]], v_nb_e: numpy.ndarray[
               size 3 coriolis effect
     """
 @typing.overload
-def EarthRate(w_ie_n: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], phi: float, IsNed: bool) -> None:
+def EarthRate(w_ie_n: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], phi: float, IsNed: bool = True) -> None:
     """
           EarthRate
           =========
@@ -90,7 +90,7 @@ def EarthRate(w_ie_n: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.wri
               Is desired frame NED, default is True 
     """
 @typing.overload
-def EarthRate(phi: float, IsNed: bool) -> numpy.ndarray[numpy.float64[3, 1]]:
+def EarthRate(phi: float, IsNed: bool = True) -> numpy.ndarray[numpy.float64[3, 1]]:
     """
           EarthRate
           =========
@@ -116,7 +116,7 @@ def EarthRate(phi: float, IsNed: bool) -> numpy.ndarray[numpy.float64[3, 1]]:
               size 3 vector of earth's rotation in the 'NAV' frame
     """
 @typing.overload
-def EarthRate(phi: numpy.ndarray[numpy.float64[3, 1]], v_nb_e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool) -> numpy.ndarray[numpy.float64[3, 1]]:
+def EarthRate(phi: numpy.ndarray[numpy.float64[3, 1]], v_nb_e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool = True) -> numpy.ndarray[numpy.float64[3, 1]]:
     """
           EarthRate
           =========
@@ -209,7 +209,7 @@ def GeocentricRadius(phi: float) -> float:
               Geocentric radius [m]
     """
 @typing.overload
-def LocalGravity(g: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], lla: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool) -> None:
+def LocalGravity(g: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], lla: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool = True) -> None:
     """
           LocalGravity
           ============
@@ -232,7 +232,7 @@ def LocalGravity(g: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.write
               Is desired frame NED, default is True 
     """
 @typing.overload
-def LocalGravity(lla: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool) -> numpy.ndarray[numpy.float64[3, 1]]:
+def LocalGravity(lla: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool = True) -> numpy.ndarray[numpy.float64[3, 1]]:
     """
           LocalGravity
           ============
@@ -386,7 +386,7 @@ def TransAndMerRadii(Re: float, Rn: float, phi: float) -> None:
     
               Latitude [rad]
     """
-def TransportRate(w_en_n: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], phi: numpy.ndarray[numpy.float64[3, 1]], v_nb_e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool) -> None:
+def TransportRate(w_en_n: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], phi: numpy.ndarray[numpy.float64[3, 1]], v_nb_e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool = True) -> None:
     """
           TransportRate
           =============

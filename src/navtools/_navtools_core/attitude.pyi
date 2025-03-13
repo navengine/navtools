@@ -127,7 +127,7 @@ def RotZ(z: float) -> numpy.ndarray[numpy.float64[3, 3]]:
               3x3 z-axis DCM rotation
     """
 @typing.overload
-def dcm2euler(e: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], C: numpy.ndarray[numpy.float64[3, 3], numpy.ndarray.flags.f_contiguous], IsNed: bool) -> None:
+def dcm2euler(e: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], C: numpy.ndarray[numpy.float64[3, 3], numpy.ndarray.flags.f_contiguous], IsNed: bool = True) -> None:
     """
           dcm2euler
           =========
@@ -150,7 +150,7 @@ def dcm2euler(e: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeabl
               Is desired frame NED, default is True 
     """
 @typing.overload
-def dcm2euler(C: numpy.ndarray[numpy.float64[3, 3], numpy.ndarray.flags.f_contiguous], IsNed: bool) -> numpy.ndarray[numpy.float64[3, 1]]:
+def dcm2euler(C: numpy.ndarray[numpy.float64[3, 3], numpy.ndarray.flags.f_contiguous], IsNed: bool = True) -> numpy.ndarray[numpy.float64[3, 1]]:
     """
           dcm2euler
           =========
@@ -217,7 +217,7 @@ def dcm2quat(C: numpy.ndarray[numpy.float64[3, 3], numpy.ndarray.flags.f_contigu
               size 4 NAV quaternion
     """
 @typing.overload
-def euler2dcm(C: numpy.ndarray[numpy.float64[3, 3], numpy.ndarray.flags.writeable, numpy.ndarray.flags.f_contiguous], e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool) -> None:
+def euler2dcm(C: numpy.ndarray[numpy.float64[3, 3], numpy.ndarray.flags.writeable, numpy.ndarray.flags.f_contiguous], e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool = True) -> None:
     """
           euler2dcm
           =========
@@ -240,7 +240,7 @@ def euler2dcm(C: numpy.ndarray[numpy.float64[3, 3], numpy.ndarray.flags.writeabl
               Is desired frame NED, default is True
     """
 @typing.overload
-def euler2dcm(e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool) -> numpy.ndarray[numpy.float64[3, 3]]:
+def euler2dcm(e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool = True) -> numpy.ndarray[numpy.float64[3, 3]]:
     """
           euler2dcm
           =========
@@ -266,7 +266,7 @@ def euler2dcm(e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool) -> numpy.ndarr
               size 3x3 NAV DCM (ZYX)
     """
 @typing.overload
-def euler2quat(q: numpy.ndarray[numpy.float64[4, 1], numpy.ndarray.flags.writeable], e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool) -> None:
+def euler2quat(q: numpy.ndarray[numpy.float64[4, 1], numpy.ndarray.flags.writeable], e: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool = True) -> None:
     """
           euler2quat
           ==========
@@ -289,7 +289,7 @@ def euler2quat(q: numpy.ndarray[numpy.float64[4, 1], numpy.ndarray.flags.writeab
               Is desired frame NED, default is True
     """
 @typing.overload
-def euler2quat(q: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool) -> numpy.ndarray[numpy.float64[4, 1]]:
+def euler2quat(q: numpy.ndarray[numpy.float64[3, 1]], IsNed: bool = True) -> numpy.ndarray[numpy.float64[4, 1]]:
     """
           euler2quat
           ==========
@@ -356,7 +356,7 @@ def quat2dcm(q: numpy.ndarray[numpy.float64[4, 1]]) -> numpy.ndarray[numpy.float
               size 3x3 NAV DCM (ZYX)
     """
 @typing.overload
-def quat2euler(e: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], q: numpy.ndarray[numpy.float64[4, 1]], IsNed: bool) -> None:
+def quat2euler(e: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeable], q: numpy.ndarray[numpy.float64[4, 1]], IsNed: bool = True) -> None:
     """
           quat2euler
           ==========
@@ -379,7 +379,7 @@ def quat2euler(e: numpy.ndarray[numpy.float64[3, 1], numpy.ndarray.flags.writeab
               Is desired frame NED, default is True 
     """
 @typing.overload
-def quat2euler(q: numpy.ndarray[numpy.float64[4, 1]], IsNed: bool) -> numpy.ndarray[numpy.float64[3, 1]]:
+def quat2euler(q: numpy.ndarray[numpy.float64[4, 1]], IsNed: bool = True) -> numpy.ndarray[numpy.float64[3, 1]]:
     """
           quat2euler
           ==========
