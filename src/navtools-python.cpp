@@ -3393,8 +3393,8 @@ PYBIND11_MODULE(_navtools_core, h) {
           const Eigen::Ref<const Eigen::Vector3d> &,
           const Eigen::Ref<const Eigen::Vector3d> &>(&ned2ecefv<double>),
       py::arg("v_eb_e"),
-      py::arg("r_nb_e"),
       py::arg("v_nb_e"),
+      py::arg("lla0"),
       R"pbdoc(
       ned2ecefv
       =========
@@ -3408,21 +3408,21 @@ PYBIND11_MODULE(_navtools_core, h) {
 
           3x1 ECEF velocity [m/s]
 
-      r_nb_e : np.ndarray
-
-          3x1 NED position [m]
-
       v_nb_e : np.ndarray
 
           3x1 NED velocity [m/s]
+
+      v_nb_e : np.ndarray
+
+          3x1 Latitude, Longitude, Altitude [rad,rad,m]
       )pbdoc");
   frm.def(
       "ned2ecefv",
       py::overload_cast<
           const Eigen::Ref<const Eigen::Vector3d> &,
           const Eigen::Ref<const Eigen::Vector3d> &>(&ned2ecefv<double>),
-      py::arg("r_nb_e"),
       py::arg("v_nb_e"),
+      py::arg("lla0"),
       R"pbdoc(
       ned2ecefv
       =========
@@ -3432,13 +3432,13 @@ PYBIND11_MODULE(_navtools_core, h) {
       Parameters
       ----------
 
-      r_nb_e : np.ndarray
-
-          3x1 NED position [m]
-
       v_nb_e : np.ndarray
 
           3x1 NED velocity [m/s]
+
+      v_nb_e : np.ndarray
+
+          3x1 Latitude, Longitude, Altitude [rad,rad,m]
 
       Returns
       -------
@@ -3542,8 +3542,8 @@ PYBIND11_MODULE(_navtools_core, h) {
           const Eigen::Ref<const Eigen::Vector3d> &,
           const Eigen::Ref<const Eigen::Vector3d> &>(&enu2ecefv<double>),
       py::arg("v_eb_e"),
-      py::arg("r_nb_e"),
       py::arg("v_nb_e"),
+      py::arg("lla0"),
       R"pbdoc(
       enu2ecefv
       =========
@@ -3557,21 +3557,21 @@ PYBIND11_MODULE(_navtools_core, h) {
 
           3x1 ECEF velocity [m/s]
 
-      r_nb_e : np.ndarray
-
-          3x1 ENU position [m]
-
       v_nb_e : np.ndarray
 
           3x1 ENU velocity [m/s]
+
+      lla0 : np.ndarray
+
+          3x1 Latitude, Longitude, Altitude [rad,rad,m]
       )pbdoc");
   frm.def(
       "enu2ecefv",
       py::overload_cast<
           const Eigen::Ref<const Eigen::Vector3d> &,
           const Eigen::Ref<const Eigen::Vector3d> &>(&enu2ecefv<double>),
-      py::arg("r_nb_e"),
       py::arg("v_nb_e"),
+      py::arg("lla0"),
       R"pbdoc(
       enu2ecefv
       =========
@@ -3581,13 +3581,13 @@ PYBIND11_MODULE(_navtools_core, h) {
       Parameters
       ----------
 
-      r_nb_e : np.ndarray
-
-          3x1 ENU position [m]
-
       v_nb_e : np.ndarray
 
           3x1 ENU velocity [m/s]
+
+      lla0 : np.ndarray
+
+          3x1 Latitude, Longitude, Altitude [rad,rad,m]
 
       Returns
       -------
