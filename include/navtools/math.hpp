@@ -30,14 +30,19 @@ namespace navtools {
 /// @param v    3x1 input vector
 /// @param M    3x3 skew symmetric matrix
 /// @returns    3x3 skew symmetric form of v
-template <typename T = double>
-void Skew(Eigen::Ref<Eigen::Matrix<T, 3, 3>> M, const Eigen::Ref<const Eigen::Vector<T, 3>> &v) {
+template <typename Mat33, typename Mat31>
+void Skew(Eigen::DenseBase<Mat33>& M, const Eigen::DenseBase<Mat31>& v) {
+  ASSERT_EIGEN_OBJ_SIZE(Mat33, M, 3, 3);
+  ASSERT_EIGEN_OBJ_SIZE(Mat31, v, 3, 1);
+
   M << 0.0, -v(2), v(1), v(2), 0.0, -v(0), -v(1), v(0), 0.0;
 }
-template <typename T = double>
-Eigen::Matrix<T, 3, 3> Skew(const Eigen::Ref<const Eigen::Vector<T, 3>> &v) {
-  Eigen::Matrix<T, 3, 3> M;
-  Skew<T>(M, v);
+template <typename Derived>
+auto Skew(const Eigen::DenseBase<Derived>& v) {
+  ASSERT_EIGEN_OBJ_SIZE(Derived, v, 3, 1);
+
+  Eigen::Matrix<typename Derived::Scalar,3,3> M;
+  Skew<Eigen::Matrix<typename Derived::Scalar,3,3>,Derived>(M, v);
   return M;
 }
 
@@ -275,19 +280,23 @@ void dcmnorm(Eigen::Ref<Eigen::Matrix<T, 3, 3>> R) {
 /// @param vec          size 3 vector
 /// @param vec_norm     2-norm of vec
 /// @returns    matrix exponential
-template <typename T = double>
-Eigen::Matrix<T, 3, 3> Rodrigues(const Eigen::Ref<const Eigen::Vector<T, 3>> &vec) {
-  T vec_norm = vec.norm();
-  Eigen::Matrix<T, 3, 3> skew_sym = Skew<T>(vec / vec_norm);
-  return Eigen::Matrix<T, 3, 3>::Identity() + (std::sin(vec_norm) * skew_sym) +
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar,3,3> Rodrigues(const Eigen::DenseBase<Derived>& vec, const typename Derived::Scalar& vec_norm) {
+  typedef typename Derived::Scalar Scalar;
+  ASSERT_EIGEN_OBJ_SIZE(Derived,vec,3,1);
+
+  Eigen::Matrix<Scalar,3,3> skew_sym = Skew(vec.derived() / vec_norm);
+  return Eigen::Matrix<Scalar,3,3>::Identity() + (std::sin(vec_norm) * skew_sym) +
          ((1.0 - std::cos(vec_norm)) * skew_sym * skew_sym);
 }
-template <typename T = double>
-Eigen::Matrix<T, 3, 3> Rodrigues(
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &vec, const T &vec_norm) {
-  Eigen::Matrix<T, 3, 3> skew_sym = Skew<T>(vec / vec_norm);
-  return Eigen::Matrix<T, 3, 3>::Identity() + (std::sin(vec_norm) * skew_sym) +
-         ((1.0 - std::cos(vec_norm)) * skew_sym * skew_sym);
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar,3,3> Rodrigues(const Eigen::DenseBase<Derived>& vec) {
+  typedef typename Derived::Scalar Scalar;
+  ASSERT_EIGEN_OBJ_SIZE(Derived,vec,3,1);
+
+  Scalar vec_norm = vec.derived().norm();
+  std::cout << "D: " << Rodrigues<Derived>(vec,vec_norm) << "\n\n";
+  return Rodrigues<Derived>(vec,vec_norm);
 }
 
 //! === RODRIGUES4 ===
@@ -295,21 +304,23 @@ Eigen::Matrix<T, 3, 3> Rodrigues(
 /// @param vec          size 3 vector
 /// @param vec_norm     2-norm of vec
 /// @returns    matrix exponential
-template <typename T = double>
-Eigen::Matrix<T, 3, 3> Rodrigues4(const Eigen::Ref<const Eigen::Vector<T, 3>> &vec) {
-  T vec_norm = vec.norm();
-  Eigen::Matrix<T, 3, 3> skew_sym = Skew<T>(vec);
-  T norm_squared = vec_norm * vec_norm;
-  return Eigen::Matrix<T, 3, 3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar,3,3> Rodrigues4(const Eigen::DenseBase<Derived>& vec, const typename Derived::Scalar& vec_norm) {
+  typedef typename Derived::Scalar Scalar;
+  ASSERT_EIGEN_OBJ_SIZE(Derived,vec,3,1);
+  
+  Eigen::Matrix<Scalar, 3, 3> skew_sym = Skew(vec);
+  Scalar norm_squared = vec_norm * vec_norm;
+  return Eigen::Matrix<Scalar,3,3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
          ((0.5 - (norm_squared / 24.0)) * skew_sym * skew_sym);
 }
-template <typename T = double>
-Eigen::Matrix<T, 3, 3> Rodrigues4(
-    const Eigen::Ref<const Eigen::Vector<T, 3>> &vec, const T &vec_norm) {
-  Eigen::Matrix<T, 3, 3> skew_sym = Skew<T>(vec);
-  T norm_squared = vec_norm * vec_norm;
-  return Eigen::Matrix<T, 3, 3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
-         ((0.5 - (norm_squared / 24.0)) * skew_sym * skew_sym);
+template <typename Derived>
+Eigen::Matrix<typename Derived::Scalar,3,3> Rodrigues4(const Eigen::DenseBase<Derived> &vec) {
+  typedef typename Derived::Scalar Scalar;
+  ASSERT_EIGEN_OBJ_SIZE(Derived,vec,3,1);
+
+  Scalar vec_norm = vec.derived().norm();
+  return Rodrigues4<Derived>(vec,vec_norm);
 }
 
 //! === SCALAR2EXPM ===
@@ -328,18 +339,39 @@ Eigen::Matrix<T, 2, 2> scalar2expm(const T &scalar) {
 /// @brief      Converts vector into its matrix exponential approximation form
 /// @param vec  size 3 vector
 /// @returns    3x3 matrix exponential
-template <typename T = double>
-Eigen::Matrix<T, 3, 3> vec2expm(const Eigen::Ref<const Eigen::Vector<T, 3>> &vec) {
-  T vec_norm = vec.norm();
-  if (vec_norm < 0.02) {
-    return Rodrigues4<T>(vec, vec_norm);
-  } else {
-    return Rodrigues<T>(vec, vec_norm);
+template <typename Derived>
+auto vec2expm(const Eigen::DenseBase<Derived>& vec) {
+  typedef typename Derived::Scalar Scalar;
+  static constexpr int RACT = Derived::RowsAtCompileTime;
+  if constexpr (RACT == Eigen::Dynamic) {
+    assert(vec.rows() == 1 || vec.rows() == 3);
+    typedef Eigen::Matrix<Scalar,Eigen::Dynamic,Eigen::Dynamic> MatX;
+    if (vec.rows() == 1) {
+      return MatX(scalar2expm<Scalar>(vec(0)));
+    }
+    else {
+      Scalar vec_norm = vec.derived().norm();
+      if (vec_norm < 0.02) {
+        return MatX(Rodrigues4<Derived>(vec,vec_norm));
+      } else {
+        return MatX(Rodrigues<Derived>(vec,vec_norm));
+      }
+    }
   }
-}
-template <typename T = double>
-auto vec2expm(const T &scalar) {
-  return scalar2expm(scalar);
+  else {
+    static_assert(RACT == 1 || RACT == 3);
+    if constexpr (RACT == 1) {
+      return scalar2expm<Scalar>(vec(0));
+    }
+    else {
+      Scalar vec_norm = vec.derived().norm();
+      if (vec_norm < 0.02) {
+        return Rodrigues4(vec,vec_norm);
+      } else {
+        return Rodrigues(vec,vec_norm);
+      }
+    }
+  }
 }
 
 //! === EXPM2VEC ===
