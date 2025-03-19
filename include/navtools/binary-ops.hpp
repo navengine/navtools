@@ -58,6 +58,15 @@ void UnsetBit(uint32_t &x, const uint8_t n) {
  * @param b   New value of bit you want to modify
  */
 template <bool LsbIsZero = false>
+void SetBitTo(uint16_t &x, const uint8_t n, const bool b) {
+  assert(!(n > 15));
+  if constexpr (LsbIsZero) {
+    x = (x & ~(0x0001 << n)) | (b << n);
+  } else {
+    x = (x & ~(0x8000 >> n)) | (b << (15 - n));
+  }
+}
+template <bool LsbIsZero = false>
 void SetBitTo(uint32_t &x, const uint8_t n, const bool b) {
   assert(!(n > 31));
   if constexpr (LsbIsZero) {
@@ -76,6 +85,15 @@ void SetBitTo(uint32_t &x, const uint8_t n, const bool b) {
  * @param n   Position of bit to check (Position 0 is MSB and 31 is LSB by default)
  * @return Inspected bit
  */
+template <bool LsbIsZero = false>
+bool GetBit(const uint16_t &x, const uint8_t n) {
+  assert(!(n > 15));
+  if constexpr (LsbIsZero) {
+    return static_cast<bool>((x >> n) & 0x0001);
+  } else {
+    return static_cast<bool>(x & (0x8000 >> n));
+  }
+}
 template <bool LsbIsZero = false>
 bool GetBit(const uint32_t &x, const uint8_t n) {
   assert(!(n > 31));
@@ -112,6 +130,14 @@ uint32_t GetBits(const uint32_t &x, const uint8_t b, const uint8_t e) {
  * @param n   Positions of bits to check (Position 0 is MSB and 31 is LSB by default)
  * @return XOR'd number
  */
+template <int Size, bool LsbIsZero = false>
+bool MultiXor(const uint16_t &x, const uint8_t n[]) {
+  bool r = GetBit<LsbIsZero>(x, n[0]);
+  for (uint8_t i = 1; i < Size; i++) {
+    r ^= GetBit<LsbIsZero>(x, n[i]);
+  }
+  return r;
+}
 template <int Size, bool LsbIsZero = false>
 bool MultiXor(const uint32_t &x, const uint8_t n[]) {
   bool r = GetBit<LsbIsZero>(x, n[0]);
@@ -157,6 +183,15 @@ inline double TwosComp(uint32_t &x, const uint8_t n) {
   //   return static_cast<double>(x - (1 << n));
   // }
   // return static_cast<double>(x);
+}
+
+
+template <bool LsbFirst = true>
+void PrintBinary(const uint16_t num) {
+    for (uint8_t i = 0; i < 16; i++) {
+        std::cout << GetBit<LsbFirst>(num, i);
+    }
+    std::cout << '\n';
 }
 
 // // Obtains the value of a bit in num. The bit position is chosen with pos.

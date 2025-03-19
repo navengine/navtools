@@ -295,7 +295,6 @@ Eigen::Matrix<typename Derived::Scalar,3,3> Rodrigues(const Eigen::DenseBase<Der
   ASSERT_EIGEN_OBJ_SIZE(Derived,vec,3,1);
 
   Scalar vec_norm = vec.derived().norm();
-  std::cout << "D: " << Rodrigues<Derived>(vec,vec_norm) << "\n\n";
   return Rodrigues<Derived>(vec,vec_norm);
 }
 
