@@ -8,11 +8,11 @@ Useful binary operations.
 
 from __future__ import annotations
 
-__all__ = ["CheckBit", "CheckBits", "ClearBit", "MultiXor", "SetBit", "SetBitTo", "TwosComp"]
+__all__ = ["GetBit", "GetBits", "UnsetBit", "MultiXor", "SetBit", "SetBitTo", "TwosComp"]
 
-def CheckBit(x: int, n: int) -> bool:
+def GetBit(x: int, n: int) -> bool:
     """
-    CheckBit
+    GetBit
     ========
 
     Check the value of a bit
@@ -29,9 +29,9 @@ def CheckBit(x: int, n: int) -> bool:
         Position of bit to set (Position 0 is MSB and 31 is LSB by default)
     """
 
-def CheckBits(x: int, b: int, n: int) -> int:
+def GetBits(x: int, b: int, n: int) -> int:
     """
-    CheckBits
+    GetBits
     =========
 
     Check the value of multiple bits in series
@@ -52,9 +52,9 @@ def CheckBits(x: int, b: int, n: int) -> int:
         Position of last bit to set (Position 0 is MSB and 31 is LSB by default)
     """
 
-def ClearBit(x: int, n: int) -> None:
+def UnsetBit(x: int, n: int) -> None:
     """
-    ClearBit
+    UnsetBit
     ========
 
     Set a data bit to 0

@@ -590,14 +590,14 @@ PYBIND11_MODULE(_navtools_core, h) {
           Position of bit to set (Position 0 is MSB and 31 is LSB by default)
       )pbdoc");
 
-  // ClearBit
+  // UnsetBit
   bin.def(
-      "ClearBit",
-      &ClearBit<false>,
+      "UnsetBit",
+      &UnsetBit<false>,
       py::arg("x"),
       py::arg("n"),
       R"pbdoc(
-      ClearBit
+      UnsetBit
       ========
       
       Set a data bit to 0
@@ -643,14 +643,14 @@ PYBIND11_MODULE(_navtools_core, h) {
           New bit value
       )pbdoc");
 
-  // CheckBit
+  // GetBit
   bin.def(
-      "CheckBit",
-      &CheckBit<false>,
+      "GetBit",
+      &GetBit<false>,
       py::arg("x"),
       py::arg("n"),
       R"pbdoc(
-      CheckBit
+      GetBit
       ========
 
       Check the value of a bit
@@ -667,15 +667,15 @@ PYBIND11_MODULE(_navtools_core, h) {
           Position of bit to set (Position 0 is MSB and 31 is LSB by default)
       )pbdoc");
 
-  // CheckBits
+  // GetBits
   bin.def(
-      "CheckBits",
-      &CheckBits<false>,
+      "GetBits",
+      &GetBits<false>,
       py::arg("x"),
       py::arg("b"),
       py::arg("n"),
       R"pbdoc(
-      CheckBits
+      GetBits
       =========
 
       Check the value of multiple bits in series

@@ -35,13 +35,13 @@ void SetBit(uint32_t &x, const uint8_t n) {
 }
 
 /**
- * *=== ClearBit ===*
+ * *=== UnsetBit ===*
  * @brief Set a data bit to 0
  * @param x   Number to modify
  * @param n   Position of bit to set (Position 0 is MSB and 31 is LSB by default)
  */
 template <bool LsbIsZero = false>
-void ClearBit(uint32_t &x, const uint8_t n) {
+void UnsetBit(uint32_t &x, const uint8_t n) {
   assert(!(n > 31));
   if constexpr (LsbIsZero) {
     x &= ~(0x00000001 << n);
@@ -70,14 +70,14 @@ void SetBitTo(uint32_t &x, const uint8_t n, const bool b) {
 }
 
 /**
- * *=== CheckBit ===*
- * @brief Check the value of a bit
+ * *=== GetBit ===*
+ * @brief Return the value of a bit
  * @param x   Number to modify
  * @param n   Position of bit to check (Position 0 is MSB and 31 is LSB by default)
  * @return Inspected bit
  */
 template <bool LsbIsZero = false>
-bool CheckBit(const uint32_t &x, const uint8_t n) {
+bool GetBit(const uint32_t &x, const uint8_t n) {
   assert(!(n > 31));
   if constexpr (LsbIsZero) {
     return static_cast<bool>((x >> n) & 0x00000001);
@@ -87,15 +87,15 @@ bool CheckBit(const uint32_t &x, const uint8_t n) {
 }
 
 /**
- * *=== CheckBits ===*
- * @brief Check the value of multiple bits in series
+ * *=== GetBits ===*
+ * @brief Return the value of multiple bits in series
  * @param x   Number to modify
  * @param b   Position of first bit to check (Position 0 is MSB and 31 is LSB by default)
  * @param e   Position of last bit to check (Position 0 is MSB and 31 is LSB by default)
  * @return Inspected bits shifted to the LSB end
  */
 template <bool LsbIsZero = false>
-uint32_t CheckBits(const uint32_t &x, const uint8_t b, const uint8_t e) {
+uint32_t GetBits(const uint32_t &x, const uint8_t b, const uint8_t e) {
   assert(!(b > 31));
   assert(!(e > 31));
   if constexpr (LsbIsZero) {
@@ -114,25 +114,25 @@ uint32_t CheckBits(const uint32_t &x, const uint8_t b, const uint8_t e) {
  */
 template <int Size, bool LsbIsZero = false>
 bool MultiXor(const uint32_t &x, const uint8_t n[]) {
-  bool r = CheckBit<LsbIsZero>(x, n[0]);
+  bool r = GetBit<LsbIsZero>(x, n[0]);
   for (uint8_t i = 1; i < Size; i++) {
-    r ^= CheckBit<LsbIsZero>(x, n[i]);
+    r ^= GetBit<LsbIsZero>(x, n[i]);
   }
   return r;
 }
 template <int Size, bool LsbIsZero = false>
 bool MultiXor(const uint32_t &x, const std::array<uint8_t, Size> n[Size]) {
-  bool r = CheckBit<LsbIsZero>(x, n[0]);
+  bool r = GetBit<LsbIsZero>(x, n[0]);
   for (uint8_t i = 1; i < Size; i++) {
-    r ^= CheckBit<LsbIsZero>(x, n[i]);
+    r ^= GetBit<LsbIsZero>(x, n[i]);
   }
   return r;
 }
 template <bool LsbIsZero = false>
-bool MultiXor(const uint32_t &x, const uint8_t n[], const int Size) {
-  bool r = CheckBit<LsbIsZero>(x, n[0]);
+bool MultiXor(const uint32_t &x, const uint8_t* n, const int Size) {
+  bool r = GetBit<LsbIsZero>(x, n[0]);
   for (uint8_t i = 1; i < Size; i++) {
-    r ^= CheckBit<LsbIsZero>(x, n[i]);
+    r ^= GetBit<LsbIsZero>(x, n[i]);
   }
   return r;
 }
@@ -146,7 +146,7 @@ bool MultiXor(const uint32_t &x, const uint8_t n[], const int Size) {
  */
 inline double TwosComp(uint32_t &x, const uint8_t n) {
   assert(!(n > 32));
-  if (CheckBit<true>(x, n - 1)) {
+  if (GetBit<true>(x, n - 1)) {
     uint32_t sgn_b = 0x00000001 << (n - 1);
     x &= ~sgn_b;
     return -static_cast<double>(sgn_b - x);
