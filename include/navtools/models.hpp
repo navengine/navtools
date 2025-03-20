@@ -174,7 +174,8 @@ Eigen::Vector<T, 3> EarthRate(const T &phi, const bool isNed = true) {
 }
 template <typename T = double>
 void EarthRateSkew(Eigen::Matrix<T, 3, 3> &W_ie_n, const T &phi, const bool isNed = true) {
-  W_ie_n = Skew<T>(EarthRate<T>(phi, isNed));
+  // W_ie_n = Skew<T>(EarthRate<T>(phi, isNed));
+  W_ie_n = Skew(EarthRate<T>(phi, isNed));
 }
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> EarthRateSkew(const T &phi, const bool isNed = true) {
@@ -225,7 +226,8 @@ void TransportRateSkew(
     const Eigen::Ref<const Eigen::Vector<T, 3>> &lla,
     const Eigen::Ref<const Eigen::Vector<T, 3>> &v_nb_e,
     const bool isNed = true) {
-  W_en_n = Skew<T>(TransportRate<T>(lla, v_nb_e, isNed));
+  // W_en_n = Skew<T>(TransportRate<T>(lla, v_nb_e, isNed));
+  W_en_n = Skew(TransportRate<T>(lla, v_nb_e, isNed));
 }
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> TransportRateSkew(
@@ -252,7 +254,8 @@ void CoriolisRate(
     const bool isNed = true) {
   Eigen::Vector<T, 3> w_ie_n = EarthRate<T>(lla(0), isNed);
   Eigen::Vector<T, 3> w_en_n = TransportRate<T>(lla, v_nb_e, isNed);
-  coriolis = Skew<T>(w_en_n + 2.0 * w_ie_n) * v_nb_e;
+  // coriolis = Skew<T>(w_en_n + 2.0 * w_ie_n) * v_nb_e;
+  coriolis = Skew(w_en_n + 2.0 * w_ie_n) * v_nb_e;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> CoriolisRate(

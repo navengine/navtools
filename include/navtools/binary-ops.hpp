@@ -15,6 +15,7 @@
 #include <array>
 #include <cassert>
 #include <cstdint>
+#include <iostream>
 
 namespace navtools {
 
@@ -155,7 +156,7 @@ bool MultiXor(const uint32_t &x, const std::array<uint8_t, Size> n[Size]) {
   return r;
 }
 template <bool LsbIsZero = false>
-bool MultiXor(const uint32_t &x, const uint8_t* n, const int Size) {
+bool MultiXor(const uint32_t &x, const uint8_t *n, const int Size) {
   bool r = GetBit<LsbIsZero>(x, n[0]);
   for (uint8_t i = 1; i < Size; i++) {
     r ^= GetBit<LsbIsZero>(x, n[i]);
@@ -185,13 +186,12 @@ inline double TwosComp(uint32_t &x, const uint8_t n) {
   // return static_cast<double>(x);
 }
 
-
 template <bool LsbFirst = true>
 void PrintBinary(const uint16_t num) {
-    for (uint8_t i = 0; i < 16; i++) {
-        std::cout << GetBit<LsbFirst>(num, i);
-    }
-    std::cout << '\n';
+  for (uint8_t i = 0; i < 16; i++) {
+    std::cout << GetBit<LsbFirst>(num, i);
+  }
+  std::cout << '\n';
 }
 
 // // Obtains the value of a bit in num. The bit position is chosen with pos.

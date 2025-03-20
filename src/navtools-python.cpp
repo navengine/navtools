@@ -617,7 +617,7 @@ PYBIND11_MODULE(_navtools_core, h) {
   // SetBitTo
   bin.def(
       "SetBitTo",
-      &SetBitTo<false>,
+      py::overload_cast<uint32_t &, const uint8_t, const bool>(&SetBitTo<false>),
       py::arg("x"),
       py::arg("n"),
       py::arg("b"),
@@ -646,7 +646,7 @@ PYBIND11_MODULE(_navtools_core, h) {
   // GetBit
   bin.def(
       "GetBit",
-      &GetBit<false>,
+      py::overload_cast<const uint32_t &, const uint8_t>(&GetBit<false>),
       py::arg("x"),
       py::arg("n"),
       R"pbdoc(
@@ -3917,8 +3917,9 @@ PYBIND11_MODULE(_navtools_core, h) {
   // Skew
   math.def(
       "Skew",
-      py::overload_cast<Eigen::Ref<Eigen::Matrix3d>, const Eigen::Ref<const Eigen::Vector3d> &>(
-          &Skew<double>),
+      [](Eigen::Matrix3d &M, const Eigen::Vector3d &v) {
+        Skew<Eigen::Matrix3d, Eigen::Vector3d>(M, v);
+      },
       py::arg("R"),
       py::arg("v"),
       R"pbdoc(
@@ -3940,28 +3941,28 @@ PYBIND11_MODULE(_navtools_core, h) {
       )pbdoc");
   math.def(
       "Skew",
-      py::overload_cast<const Eigen::Ref<const Eigen::Vector3d> &>(&Skew<double>),
+      [](const Eigen::Vector3d &v) { return Skew(v); },
       py::arg("v"),
       R"pbdoc(
-      Skew
-      ====
+        Skew
+        ====
 
-      Converts vector into its skew symmetric form
-  
-      Parameters
-      ----------
+        Converts vector into its skew symmetric form
 
-      v : np.ndarray
+        Parameters
+        ----------
 
-          3x1 vector
+        v : np.ndarray
 
-      Returns
-      -------
+            3x1 vector
 
-      R : np.ndarray
+        Returns
+        -------
 
-          3x3 skew symmetric matrix
-      )pbdoc");
+        R : np.ndarray
+
+            3x3 skew symmetric matrix
+        )pbdoc");
 
   // DeSkew
   math.def(
@@ -4229,7 +4230,7 @@ PYBIND11_MODULE(_navtools_core, h) {
   // Rodrigues
   math.def(
       "Rodrigues",
-      py::overload_cast<const Eigen::Ref<const Eigen::Vector3d> &>(&Rodrigues<double>),
+      [](const Eigen::Vector3d &v) { return Rodrigues(v); },
       py::arg("v"),
       R"pbdoc(
       Rodrigues
@@ -4255,7 +4256,7 @@ PYBIND11_MODULE(_navtools_core, h) {
   // Rodrigues4
   math.def(
       "Rodrigues4",
-      py::overload_cast<const Eigen::Ref<const Eigen::Vector3d> &>(&Rodrigues4<double>),
+      [](const Eigen::Vector3d &v) { return Rodrigues4(v); },
       py::arg("v"),
       R"pbdoc(
       Rodrigues4
@@ -4307,7 +4308,7 @@ PYBIND11_MODULE(_navtools_core, h) {
   // vec2expm
   math.def(
       "vec2expm",
-      py::overload_cast<const Eigen::Ref<const Eigen::Vector3d> &>(&vec2expm<double>),
+      [](const Eigen::VectorXd &v) { return vec2expm(v); },
       py::arg("v"),
       R"pbdoc(
       vec2expm
