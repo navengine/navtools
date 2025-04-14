@@ -87,6 +87,15 @@ void SetBitTo(uint32_t &x, const uint8_t n, const bool b) {
  * @return Inspected bit
  */
 template <bool LsbIsZero = false>
+bool GetBit(const uint8_t &x, const uint8_t n) {
+  assert(!(n > 7));
+  if constexpr (LsbIsZero) {
+    return static_cast<bool>((x >> n) & 0x01);
+  } else {
+    return static_cast<bool>(x & (0x80 >> n));
+  }
+}
+template <bool LsbIsZero = false>
 bool GetBit(const uint16_t &x, const uint8_t n) {
   assert(!(n > 15));
   if constexpr (LsbIsZero) {
@@ -115,15 +124,27 @@ bool GetBit(const uint32_t &x, const uint8_t n) {
  */
 template <bool LsbIsZero = false>
 uint32_t GetBits(const uint32_t &x, const uint8_t b, const uint8_t e) {
-  assert(!(b > 31));
-  assert(!(e > 31));
+  assert(b < 32);
+  assert(e < 32);
   if constexpr (LsbIsZero) {
-    // TODO: figure this out later
-    return x;
+    return (x << (31 - e)) >> (31 - (e-b));
   } else {
-    return (x >> (31 - e)) & ((1 << (e - b + 1)) - 1);
+    // return (x >> (31 - e)) & ((1 << (e - b + 1)) - 1);
+    return (x << b) >> (31 - (e-b));
   }
 }
+
+/* TODO
+template<bool LsbIsZero = false>
+void SetBitsTo(uint32_t& x,
+               const uint8_t x_b,
+               const uint32_t val,
+               const uint8_t val_b,
+               const uint8_t val_e)
+{
+
+}
+*/
 
 /**
  * *=== MultiXor ===*
@@ -189,6 +210,14 @@ inline double TwosComp(uint32_t &x, const uint8_t n) {
 template <bool LsbFirst = true>
 void PrintBinary(const uint16_t num) {
   for (uint8_t i = 0; i < 16; i++) {
+    std::cout << GetBit<LsbFirst>(num, i);
+  }
+  std::cout << '\n';
+}
+
+template <bool LsbFirst = true>
+void PrintBinary(const uint32_t num) {
+  for (uint8_t i = 0; i < 32; i++) {
     std::cout << GetBit<LsbFirst>(num, i);
   }
   std::cout << '\n';

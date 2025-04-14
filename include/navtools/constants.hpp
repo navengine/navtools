@@ -50,6 +50,19 @@ constexpr T Fraction() {
   return static_cast<T>(Numerator) / static_cast<T>(Denominator);
 }
 
+// CAUTION: max val allowable for Pow depends on the bit size of intmax_t. It should be at least 64 on most systems.
+template<int Pow, typename Float = double>
+static constexpr Float PowerOfTwo()
+{
+  if constexpr (Pow == 0) return Float(1);
+  else if constexpr (Pow < 0) {
+    return Float(1) / Float(1 << -Pow);
+  }
+  else {
+    return Float(intmax_t(1) << Pow);
+  }
+}
+
 DEFINE_FP_CONSTANT(LIGHT_SPEED, 299792458.0);  //! speed of light [m/s]
 DEFINE_FP_CONSTANT(BOLTZMANN, 1.38e-23);       //! Boltsman constant [J/K]
 DEFINE_FP_CONSTANT(GAUSS_TO_TESLA, 1e-4);      //! Gauss to Tesla
