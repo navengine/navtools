@@ -18,7 +18,7 @@
 
 namespace navtools
 {
-// This is a modified version of the fixed class from https://github.com/MikeLankamp/fpm
+// This is a modified version of the fixed class from https://github.com/MikeLankamp/navtools
 
 //! Fixed-point number type
 //! \tparam BaseType         the base integer type used to store the fixed-point number. This can be a signed or unsigned type.
@@ -406,6 +406,195 @@ constexpr inline fixed<B, I, F, R> copysign(fixed<B, I, F, R> x, fixed<C, J, G, 
         x = abs(x),
         (y >= fixed<C, J, G, S>{0}) ? x : -x;
 }
+
+
+
+namespace detail
+{
+// Number of base-10 digits required to fully represent a number of bits
+static constexpr int max_digits10(int bits)
+{
+  // 8.24 fixed-point equivalent of (int)ceil(bits * std::log10(2));
+  using T = long long;
+  return static_cast<int>((T{bits} * 5050445 + (T{1} << 24) - 1) >> 24);
+}
+
+// Number of base-10 digits that can be fully represented by a number of bits
+static constexpr int digits10(int bits)
+{
+  // 8.24 fixed-point equivalent of (int)(bits * std::log10(2));
+  using T = long long;
+  return static_cast<int>((T{bits} * 5050445) >> 24);
+}
+
+// Returns the index of the most-signifcant set bit
+inline long find_highest_bit(unsigned long long value) noexcept
+{
+    assert(value != 0);
+#if defined(_MSC_VER)
+    unsigned long index;
+#if defined(_WIN64)
+    _BitScanReverse64(&index, value);
+#else
+    if (_BitScanReverse(&index, static_cast<unsigned long>(value >> 32)) != 0) {
+        index += 32;
+    } else {
+        _BitScanReverse(&index, static_cast<unsigned long>(value & 0xfffffffflu));
+    }
+#endif
+    return index;
+#elif defined(__GNUC__) || defined(__clang__)
+    return sizeof(value) * 8 - 1 - __builtin_clzll(value);
+#else
+#   error "your platform does not support find_highest_bit()"
+#endif
+}
+
+} // namespace detail
+} // namespace navtools
+
+// Specializations for customization points
+namespace std
+{
+
+template <typename B, typename I, unsigned int F, bool R>
+struct hash<navtools::fixed<B,I,F,R>>
+{
+  using argument_type = navtools::fixed<B, I, F, R>;
+  using result_type = std::size_t;
+
+  result_type operator()(argument_type arg) const noexcept(noexcept(std::declval<std::hash<B>>()(arg.raw_value()))) {
+    return m_hash(arg.raw_value());
+  }
+
+private:
+  std::hash<B> m_hash;
+};
+
+template <typename B, typename I, unsigned int F, bool R>
+struct numeric_limits<navtools::fixed<B,I,F,R>>
+{
+  static constexpr bool is_specialized = true;
+  static constexpr bool is_signed = std::numeric_limits<B>::is_signed;
+  static constexpr bool is_integer = false;
+  static constexpr bool is_exact = true;
+  static constexpr bool has_infinity = false;
+  static constexpr bool has_quiet_NaN = false;
+  static constexpr bool has_signaling_NaN = false;
+  static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
+  static constexpr bool has_denorm_loss = false;
+  static constexpr std::float_round_style round_style = std::round_to_nearest;
+  static constexpr bool is_iec559 = false;
+  static constexpr bool is_bounded = true;
+  static constexpr bool is_modulo = std::numeric_limits<B>::is_modulo;
+  static constexpr int digits = std::numeric_limits<B>::digits;
+
+  // Any number with `digits10` significant base-10 digits (that fits in
+  // the range of the type) is guaranteed to be convertible from text and
+  // back without change. Worst case, this is 0.000...001, so we can only
+  // guarantee this case. Nothing more.
+  static constexpr int digits10 = 1;
+
+  // This is equal to max_digits10 for the integer and fractional part together.
+  static constexpr int max_digits10 =
+      navtools::detail::max_digits10(std::numeric_limits<B>::digits - F) + navtools::detail::max_digits10(F);
+
+  static constexpr int radix = 2;
+  static constexpr int min_exponent = 1 - F;
+  static constexpr int min_exponent10 = -navtools::detail::digits10(F);
+  static constexpr int max_exponent = std::numeric_limits<B>::digits - F;
+  static constexpr int max_exponent10 = navtools::detail::digits10(std::numeric_limits<B>::digits - F);
+  static constexpr bool traps = true;
+  static constexpr bool tinyness_before = false;
+
+  static constexpr navtools::fixed<B,I,F,R> lowest() noexcept {
+    return navtools::fixed<B,I,F,R>::from_raw_value(std::numeric_limits<B>::lowest());
+  };
+
+  static constexpr navtools::fixed<B,I,F,R> min() noexcept {
+    return lowest();
+  }
+
+  static constexpr navtools::fixed<B,I,F,R> max() noexcept {
+    return navtools::fixed<B,I,F,R>::from_raw_value(std::numeric_limits<B>::max());
+  };
+
+  static constexpr navtools::fixed<B,I,F,R> epsilon() noexcept {
+    return navtools::fixed<B,I,F,R>::from_raw_value(1);
+  };
+
+  static constexpr navtools::fixed<B,I,F,R> round_error() noexcept {
+    return navtools::fixed<B,I,F,R>(1) / 2;
+  };
+
+  static constexpr navtools::fixed<B,I,F,R> denorm_min() noexcept {
+    return min();
+  }
+};
+
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::is_specialized;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::is_signed;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::is_integer;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::is_exact;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::has_infinity;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::has_quiet_NaN;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::has_signaling_NaN;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr std::float_denorm_style numeric_limits<navtools::fixed<B,I,F,R>>::has_denorm;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::has_denorm_loss;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr std::float_round_style numeric_limits<navtools::fixed<B,I,F,R>>::round_style;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::is_iec559;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::is_bounded;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::is_modulo;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr int numeric_limits<navtools::fixed<B,I,F,R>>::digits;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr int numeric_limits<navtools::fixed<B,I,F,R>>::digits10;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr int numeric_limits<navtools::fixed<B,I,F,R>>::max_digits10;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr int numeric_limits<navtools::fixed<B,I,F,R>>::radix;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr int numeric_limits<navtools::fixed<B,I,F,R>>::min_exponent;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr int numeric_limits<navtools::fixed<B,I,F,R>>::min_exponent10;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr int numeric_limits<navtools::fixed<B,I,F,R>>::max_exponent;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr int numeric_limits<navtools::fixed<B,I,F,R>>::max_exponent10;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::traps;
+template <typename B, typename I, unsigned int F, bool R>
+constexpr bool numeric_limits<navtools::fixed<B,I,F,R>>::tinyness_before;
+
+}
+
+namespace navtools {
+
+template<typename T>
+struct is_fixed : std::false_type {};
+
+template<typename BaseType, typename IntermediateType, unsigned int FractionBits, bool EnableRounding>
+struct is_fixed<fixed<BaseType, IntermediateType, FractionBits, EnableRounding>> : std::true_type {};
+
+#if  __cplusplus >= 201703L
+template<typename T>
+inline constexpr bool is_fixed_v = is_fixed<T>::value;
+#endif
+
+typedef navtools::fixed<int64_t,int64_t,42> Fixed42;
 
 
 // ---------------------------- IOS IMPLEMENTATION ----------------------------
@@ -1131,169 +1320,6 @@ std::basic_istream<CharT, Traits>& operator>>(std::basic_istream<CharT, Traits>&
 }
 
 
-namespace detail
-{
-// Number of base-10 digits required to fully represent a number of bits
-static constexpr int max_digits10(int bits)
-{
-  // 8.24 fixed-point equivalent of (int)ceil(bits * std::log10(2));
-  using T = long long;
-  return static_cast<int>((T{bits} * 5050445 + (T{1} << 24) - 1) >> 24);
-}
-
-// Number of base-10 digits that can be fully represented by a number of bits
-static constexpr int digits10(int bits)
-{
-  // 8.24 fixed-point equivalent of (int)(bits * std::log10(2));
-  using T = long long;
-  return static_cast<int>((T{bits} * 5050445) >> 24);
-}
-
-} // namespace detail
-} // namespace navtools
-
-// Specializations for customization points
-namespace std
-{
-
-template <typename B, typename I, unsigned int F, bool R>
-struct hash<fpm::fixed<B,I,F,R>>
-{
-  using argument_type = fpm::fixed<B, I, F, R>;
-  using result_type = std::size_t;
-
-  result_type operator()(argument_type arg) const noexcept(noexcept(std::declval<std::hash<B>>()(arg.raw_value()))) {
-    return m_hash(arg.raw_value());
-  }
-
-private:
-  std::hash<B> m_hash;
-};
-
-template <typename B, typename I, unsigned int F, bool R>
-struct numeric_limits<fpm::fixed<B,I,F,R>>
-{
-  static constexpr bool is_specialized = true;
-  static constexpr bool is_signed = std::numeric_limits<B>::is_signed;
-  static constexpr bool is_integer = false;
-  static constexpr bool is_exact = true;
-  static constexpr bool has_infinity = false;
-  static constexpr bool has_quiet_NaN = false;
-  static constexpr bool has_signaling_NaN = false;
-  static constexpr std::float_denorm_style has_denorm = std::denorm_absent;
-  static constexpr bool has_denorm_loss = false;
-  static constexpr std::float_round_style round_style = std::round_to_nearest;
-  static constexpr bool is_iec559 = false;
-  static constexpr bool is_bounded = true;
-  static constexpr bool is_modulo = std::numeric_limits<B>::is_modulo;
-  static constexpr int digits = std::numeric_limits<B>::digits;
-
-  // Any number with `digits10` significant base-10 digits (that fits in
-  // the range of the type) is guaranteed to be convertible from text and
-  // back without change. Worst case, this is 0.000...001, so we can only
-  // guarantee this case. Nothing more.
-  static constexpr int digits10 = 1;
-
-  // This is equal to max_digits10 for the integer and fractional part together.
-  static constexpr int max_digits10 =
-      fpm::detail::max_digits10(std::numeric_limits<B>::digits - F) + fpm::detail::max_digits10(F);
-
-  static constexpr int radix = 2;
-  static constexpr int min_exponent = 1 - F;
-  static constexpr int min_exponent10 = -fpm::detail::digits10(F);
-  static constexpr int max_exponent = std::numeric_limits<B>::digits - F;
-  static constexpr int max_exponent10 = fpm::detail::digits10(std::numeric_limits<B>::digits - F);
-  static constexpr bool traps = true;
-  static constexpr bool tinyness_before = false;
-
-  static constexpr fpm::fixed<B,I,F,R> lowest() noexcept {
-    return fpm::fixed<B,I,F,R>::from_raw_value(std::numeric_limits<B>::lowest());
-  };
-
-  static constexpr fpm::fixed<B,I,F,R> min() noexcept {
-    return lowest();
-  }
-
-  static constexpr fpm::fixed<B,I,F,R> max() noexcept {
-    return fpm::fixed<B,I,F,R>::from_raw_value(std::numeric_limits<B>::max());
-  };
-
-  static constexpr fpm::fixed<B,I,F,R> epsilon() noexcept {
-    return fpm::fixed<B,I,F,R>::from_raw_value(1);
-  };
-
-  static constexpr fpm::fixed<B,I,F,R> round_error() noexcept {
-    return fpm::fixed<B,I,F,R>(1) / 2;
-  };
-
-  static constexpr fpm::fixed<B,I,F,R> denorm_min() noexcept {
-    return min();
-  }
-};
-
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_specialized;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_signed;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_integer;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_exact;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::has_infinity;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::has_quiet_NaN;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::has_signaling_NaN;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr std::float_denorm_style numeric_limits<fpm::fixed<B,I,F,R>>::has_denorm;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::has_denorm_loss;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr std::float_round_style numeric_limits<fpm::fixed<B,I,F,R>>::round_style;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_iec559;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_bounded;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::is_modulo;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::digits;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::digits10;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::max_digits10;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::radix;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::min_exponent;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::min_exponent10;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::max_exponent;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr int numeric_limits<fpm::fixed<B,I,F,R>>::max_exponent10;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::traps;
-template <typename B, typename I, unsigned int F, bool R>
-constexpr bool numeric_limits<fpm::fixed<B,I,F,R>>::tinyness_before;
-
-}
-
-namespace navtools {
-
-template<typename T>
-struct is_fixed : std::false_type {};
-
-template<typename BaseType, typename IntermediateType, unsigned int FractionBits, bool EnableRounding>
-struct is_fixed<fixed<BaseType, IntermediateType, FractionBits, EnableRounding>> : std::true_type {};
-
-#if  __cplusplus >= 201703L
-template<typename T>
-inline constexpr bool is_fixed_v = is_fixed<T>::value;
-#endif
-
-typedef fpm::fixed<int64_t,int64_t,42> Fixed42;
 } // namespace navtools
 #endif
 

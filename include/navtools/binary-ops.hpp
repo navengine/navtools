@@ -26,7 +26,7 @@ namespace navtools {
  * @param n   Position of bit to set (Position 0 is MSB and 31 is LSB by default)
  */
 template <bool LsbIsZero = false>
-void SetBit(uint32_t &x, const uint8_t n)
+void SetBit(uint32_t &x, const uint8_t n) noexcept
 {
   assert(!(n > 31));
   if constexpr (LsbIsZero) {
@@ -35,7 +35,7 @@ void SetBit(uint32_t &x, const uint8_t n)
     x |= (0x80000000 >> n);
   }
 }
-void SetBit(uint32_t& x, const uint8_t n, bool lsb_is_zero)
+void SetBit(uint32_t& x, const uint8_t n, bool lsb_is_zero) noexcept
 {
   if (lsb_is_zero)
     SetBit<true>(x,n);
@@ -50,7 +50,7 @@ void SetBit(uint32_t& x, const uint8_t n, bool lsb_is_zero)
  * @param n   Position of bit to set (Position 0 is MSB and 31 is LSB by default)
  */
 template <bool LsbIsZero = false>
-void UnsetBit(uint32_t &x, const uint8_t n)
+void UnsetBit(uint32_t &x, const uint8_t n) noexcept
 {
   assert(!(n > 31));
   if constexpr (LsbIsZero) {
@@ -59,7 +59,7 @@ void UnsetBit(uint32_t &x, const uint8_t n)
     x &= ~(0x80000000 >> n);
   }
 }
-void UnsetBit(uint32_t& x, const uint8_t n, bool lsb_is_zero)
+void UnsetBit(uint32_t& x, const uint8_t n, bool lsb_is_zero) noexcept
 {
   if (lsb_is_zero)
     UnsetBit<true>(x,n);
@@ -75,7 +75,8 @@ void UnsetBit(uint32_t& x, const uint8_t n, bool lsb_is_zero)
  * @param b   New value of bit you want to modify
  */
 template <bool LsbIsZero = false>
-void SetBitTo(uint16_t &x, const uint8_t n, const bool b) {
+void SetBitTo(uint16_t &x, const uint8_t n, const bool b) noexcept
+{
   assert(!(n > 15));
   if constexpr (LsbIsZero) {
     x = (x & ~(0x0001 << n)) | (b << n);
@@ -84,7 +85,8 @@ void SetBitTo(uint16_t &x, const uint8_t n, const bool b) {
   }
 }
 template <bool LsbIsZero = false>
-void SetBitTo(uint32_t &x, const uint8_t n, const bool b) {
+void SetBitTo(uint32_t &x, const uint8_t n, const bool b) noexcept
+{
   assert(!(n > 31));
   if constexpr (LsbIsZero) {
     x = (x & ~(0x00000001 << n)) | (b << n);
@@ -103,7 +105,8 @@ void SetBitTo(uint32_t &x, const uint8_t n, const bool b) {
  * @return Inspected bit
  */
 template <bool LsbIsZero = false>
-bool GetBit(const uint8_t &x, const uint8_t n) {
+bool GetBit(const uint8_t &x, const uint8_t n) noexcept
+{
   assert(!(n > 7));
   if constexpr (LsbIsZero) {
     return static_cast<bool>((x >> n) & 0x01);
@@ -112,7 +115,8 @@ bool GetBit(const uint8_t &x, const uint8_t n) {
   }
 }
 template <bool LsbIsZero = false>
-bool GetBit(const uint16_t &x, const uint8_t n) {
+bool GetBit(const uint16_t &x, const uint8_t n) noexcept
+{
   assert(!(n > 15));
   if constexpr (LsbIsZero) {
     return static_cast<bool>((x >> n) & 0x0001);
@@ -121,7 +125,8 @@ bool GetBit(const uint16_t &x, const uint8_t n) {
   }
 }
 template <bool LsbIsZero = false>
-bool GetBit(const uint32_t &x, const uint8_t n) {
+bool GetBit(const uint32_t &x, const uint8_t n) noexcept
+{
   assert(!(n > 31));
   if constexpr (LsbIsZero) {
     return static_cast<bool>((x >> n) & 0x00000001);
@@ -139,7 +144,8 @@ bool GetBit(const uint32_t &x, const uint8_t n) {
  * @return Inspected bits shifted to the LSB end
  */
 template <bool LsbIsZero = false>
-uint32_t GetBits(const uint32_t &x, const uint8_t b, const uint8_t e) {
+uint32_t GetBits(const uint32_t &x, const uint8_t b, const uint8_t e) noexcept
+{
   assert(b < 32);
   assert(e < 32);
   if constexpr (LsbIsZero) {
@@ -169,7 +175,8 @@ void SetBitsTo(uint32_t& x,
  * @return XOR'd number
  */
 template <int Size, bool LsbIsZero = false>
-bool MultiXor(const uint16_t &x, const uint8_t n[]) {
+bool MultiXor(const uint16_t &x, const uint8_t n[]) 
+{
   bool r = GetBit<LsbIsZero>(x, n[0]);
   for (uint8_t i = 1; i < Size; i++) {
     r ^= GetBit<LsbIsZero>(x, n[i]);
@@ -177,7 +184,8 @@ bool MultiXor(const uint16_t &x, const uint8_t n[]) {
   return r;
 }
 template <int Size, bool LsbIsZero = false>
-bool MultiXor(const uint32_t &x, const uint8_t n[]) {
+bool MultiXor(const uint32_t &x, const uint8_t n[])
+{
   bool r = GetBit<LsbIsZero>(x, n[0]);
   for (uint8_t i = 1; i < Size; i++) {
     r ^= GetBit<LsbIsZero>(x, n[i]);
@@ -185,7 +193,8 @@ bool MultiXor(const uint32_t &x, const uint8_t n[]) {
   return r;
 }
 template <int Size, bool LsbIsZero = false>
-bool MultiXor(const uint32_t &x, const std::array<uint8_t, Size> n[Size]) {
+bool MultiXor(const uint32_t &x, const std::array<uint8_t, Size> n[Size]) noexcept
+{
   bool r = GetBit<LsbIsZero>(x, n[0]);
   for (uint8_t i = 1; i < Size; i++) {
     r ^= GetBit<LsbIsZero>(x, n[i]);
@@ -208,7 +217,8 @@ bool MultiXor(const uint32_t &x, const uint8_t *n, const int Size) {
  * @param n   Number of bits in the integer
  * @return signed integer
  */
-inline double TwosComp(uint32_t &x, const uint8_t n) {
+inline double TwosComp(uint32_t &x, const uint8_t n) noexcept
+{
   assert(!(n > 32));
   if (GetBit<true>(x, n - 1)) {
     uint32_t sgn_b = 0x00000001 << (n - 1);
