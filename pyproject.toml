@@ -27,10 +27,13 @@ classifiers = [
 [project.optional-dependencies]
 test = ["pytest"]
 
-
 [tool.scikit-build]
 wheel.expand-macos-universal-tags = true
 minimum-version = "build-system.requires"
+
+[tool.scikit-build.cmake]
+args = ["-DCMAKE_PREFIX_PATH=./../../build/src/"]
+# args = ["-DCMAKE_PREFIX_PATH=./build/"]
 
 
 # [tool.pytest.ini_options]
