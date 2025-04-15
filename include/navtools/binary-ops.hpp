@@ -26,13 +26,21 @@ namespace navtools {
  * @param n   Position of bit to set (Position 0 is MSB and 31 is LSB by default)
  */
 template <bool LsbIsZero = false>
-void SetBit(uint32_t &x, const uint8_t n) {
+void SetBit(uint32_t &x, const uint8_t n)
+{
   assert(!(n > 31));
   if constexpr (LsbIsZero) {
     x |= (0x00000001 << n);
   } else {
     x |= (0x80000000 >> n);
   }
+}
+void SetBit(uint32_t& x, const uint8_t n, bool lsb_is_zero)
+{
+  if (lsb_is_zero)
+    SetBit<true>(x,n);
+  else
+    SetBit<false>(x,n);
 }
 
 /**
@@ -42,13 +50,21 @@ void SetBit(uint32_t &x, const uint8_t n) {
  * @param n   Position of bit to set (Position 0 is MSB and 31 is LSB by default)
  */
 template <bool LsbIsZero = false>
-void UnsetBit(uint32_t &x, const uint8_t n) {
+void UnsetBit(uint32_t &x, const uint8_t n)
+{
   assert(!(n > 31));
   if constexpr (LsbIsZero) {
     x &= ~(0x00000001 << n);
   } else {
     x &= ~(0x80000000 >> n);
   }
+}
+void UnsetBit(uint32_t& x, const uint8_t n, bool lsb_is_zero)
+{
+  if (lsb_is_zero)
+    UnsetBit<true>(x,n);
+  else
+    UnsetBit<false>(x,n);
 }
 
 /**
