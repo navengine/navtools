@@ -4154,7 +4154,7 @@ PYBIND11_MODULE(_navtools_core, h) {
   // quatconj
   math.def(
       "quatconj",
-      &quatconj<double>,
+      py::overload_cast<const Eigen::Ref<const Eigen::Vector<double, 4>> &>(&quatconj<double>),
       py::arg("q"),
       R"pbdoc(
       quatconj
@@ -4173,7 +4173,7 @@ PYBIND11_MODULE(_navtools_core, h) {
   // quatinv
   math.def(
       "quatinv",
-      &quatinv<double>,
+      py::overload_cast<const Eigen::Ref<const Eigen::Vector<double, 4>> &>(&quatinv<double>),
       py::arg("q"),
       R"pbdoc(
       quatinv
@@ -4192,7 +4192,7 @@ PYBIND11_MODULE(_navtools_core, h) {
   // quatnorm
   math.def(
       "quatnorm",
-      &quatnorm<double>,
+      py::overload_cast<const Eigen::Ref<const Eigen::Vector<double, 4>> &>(&quatnorm<double>),
       py::arg("q"),
       R"pbdoc(
       quatnorm

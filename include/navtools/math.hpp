@@ -20,6 +20,7 @@
 #include <cmath>
 
 #include "navtools/constants.hpp"
+#include "navtools/types.hpp"
 
 namespace navtools {
 
@@ -224,18 +225,24 @@ Eigen::Vector<T, 4> quatdot(
 // }
 
 //! === QUATCONJ/QUATINV ===
+template <typename T = double>
+inline static const Eigen::Vector<T, 4> Q_INV{1.0, -1.0, -1.0, -1.0};
 /// @brief      quaternion conjugate/inverse
 template <typename T = double>
 void quatconj(Eigen::Ref<Eigen::Vector<T, 4>> q) {
-  q(1) *= -1.0;
-  q(2) *= -1.0;
-  q(3) *= -1.0;
+  q.array() *= Q_INV<T>.array();
 }
 template <typename T = double>
 void quatinv(Eigen::Ref<Eigen::Vector<T, 4>> q) {
-  q(1) *= -1.0;
-  q(2) *= -1.0;
-  q(3) *= -1.0;
+  q.array() *= Q_INV<T>.array();
+}
+template <typename T = double>
+Eigen::Vector<T, 4> quatconj(const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
+  return q.array() * Q_INV<T>.array();
+}
+template <typename T = double>
+Eigen::Vector<T, 4> quatinv(const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
+  return q.array() * Q_INV<T>.array();
 }
 
 //! === QUATNORM ===
@@ -243,6 +250,10 @@ void quatinv(Eigen::Ref<Eigen::Vector<T, 4>> q) {
 template <typename T = double>
 void quatnorm(Eigen::Ref<Eigen::Vector<T, 4>> q) {
   q /= q.norm();
+}
+template <typename T = double>
+Eigen::Vector<T, 4> quatnorm(const Eigen::Ref<const Eigen::Vector<T, 4>> &q) {
+  return q / q.norm();
 }
 
 //! === DCMNORM ===

@@ -8,7 +8,7 @@ Useful binary operations.
 
 from __future__ import annotations
 
-__all__ = ["GetBit", "GetBits", "UnsetBit", "MultiXor", "SetBit", "SetBitTo", "TwosComp"]
+__all__ = ["GetBit", "GetBits", "MultiXor", "SetBit", "SetBitTo", "TwosComp", "UnsetBit"]
 
 def GetBit(x: int, n: int) -> bool:
     """
@@ -50,25 +50,6 @@ def GetBits(x: int, b: int, n: int) -> int:
     n : uint8
 
         Position of last bit to set (Position 0 is MSB and 31 is LSB by default)
-    """
-
-def UnsetBit(x: int, n: int) -> None:
-    """
-    UnsetBit
-    ========
-
-    Set a data bit to 0
-
-    Parameters
-    ----------
-
-    x : uint32
-
-        Number to modify
-
-    n : uint8
-
-        Position of bit to set (Position 0 is MSB and 31 is LSB by default)
     """
 
 def MultiXor(x: int, n: int, Size: int) -> bool:
@@ -160,4 +141,23 @@ def TwosComp(x: int, n: int) -> float:
     y : int32
 
         Signed integer result
+    """
+
+def UnsetBit(x: int, n: int) -> None:
+    """
+    UnsetBit
+    ========
+
+    Set a data bit to 0
+
+    Parameters
+    ----------
+
+    x : uint32
+
+        Number to modify
+
+    n : uint8
+
+        Position of bit to set (Position 0 is MSB and 31 is LSB by default)
     """

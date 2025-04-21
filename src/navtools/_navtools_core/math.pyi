@@ -146,12 +146,7 @@ def Rodrigues4(v: numpy.ndarray[numpy.float64[3, 1]]) -> numpy.ndarray[numpy.flo
     """
 
 @typing.overload
-def Skew(
-    R: numpy.ndarray[
-        numpy.float64[3, 3], numpy.ndarray.flags.writeable, numpy.ndarray.flags.f_contiguous
-    ],
-    v: numpy.ndarray[numpy.float64[3, 1]],
-) -> None:
+def Skew(R: numpy.ndarray[numpy.float64[3, 3]], v: numpy.ndarray[numpy.float64[3, 1]]) -> None:
     """
     Skew
     ====
@@ -369,7 +364,7 @@ def pow2db(x: float) -> float:
         Output dB
     """
 
-def quatconj(q: numpy.ndarray[numpy.float64[4, 1], numpy.ndarray.flags.writeable]) -> None:
+def quatconj(q: numpy.ndarray[numpy.float64[4, 1]]) -> numpy.ndarray[numpy.float64[4, 1]]:
     """
     quatconj
     ========
@@ -412,7 +407,7 @@ def quatdot(
         4x1 quaternion product
     """
 
-def quatinv(q: numpy.ndarray[numpy.float64[4, 1], numpy.ndarray.flags.writeable]) -> None:
+def quatinv(q: numpy.ndarray[numpy.float64[4, 1]]) -> numpy.ndarray[numpy.float64[4, 1]]:
     """
     quatinv
     =======
@@ -449,7 +444,7 @@ def quatmat(q: numpy.ndarray[numpy.float64[4, 1]]) -> numpy.ndarray[numpy.float6
         4x4 quaternion matrix view
     """
 
-def quatnorm(q: numpy.ndarray[numpy.float64[4, 1], numpy.ndarray.flags.writeable]) -> None:
+def quatnorm(q: numpy.ndarray[numpy.float64[4, 1]]) -> numpy.ndarray[numpy.float64[4, 1]]:
     """
     quatnorm
     ========
@@ -486,7 +481,7 @@ def scalar2expm(x: float) -> numpy.ndarray[numpy.float64[2, 2]]:
         2x2 matrix exponential
     """
 
-def vec2expm(v: numpy.ndarray[numpy.float64[3, 1]]) -> numpy.ndarray[numpy.float64[3, 3]]:
+def vec2expm(v: numpy.ndarray[numpy.float64[m, 1]]) -> numpy.ndarray[numpy.float64[m, n]]:
     """
     vec2expm
     ========
