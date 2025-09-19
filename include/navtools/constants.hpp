@@ -18,6 +18,8 @@
 #include <complex>
 #include <numbers>
 
+#include <Eigen/Dense>
+
 #include "navtools/types.hpp"
 
 namespace navtools {
