@@ -17,6 +17,7 @@
 #include <cmath>
 #include <complex>
 #include <numbers>
+#include <cassert>
 
 #include <Eigen/Dense>
 
@@ -56,12 +57,13 @@ constexpr T Fraction() {
 template<int Pow, typename Float = double>
 static constexpr Float PowerOfTwo()
 {
+  static_assert((Pow < 64) && (Pow > -64), "PowerOfTwo: Pow of magnitude greater than 63 cannot be used. Use a different method.");
   if constexpr (Pow == 0) return Float(1);
   else if constexpr (Pow < 0) {
-    return Float(1) / Float(1 << -Pow);
+    return Float(1) / Float(uint64_t(1) << -Pow);
   }
   else {
-    return Float(intmax_t(1) << Pow);
+    return Float(uint64_t(1) << Pow);
   }
 }
 
