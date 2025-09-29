@@ -7,6 +7,19 @@
 namespace nt {
 
 /**
+ * *=== CircMod ===*
+ * @brief Modulus of floating point number
+ * @tparam T A floating point type (e.g. double, float)
+ * @param x user input and output
+ * @param y value to take modulus about
+ * @returns modulus of number
+ */
+template <typename T>
+inline constexpr T CircMod(T x, const T y) {
+  return x - std::floor(x / y) * y;
+}
+
+/**
  * *=== Skew ===*
  * @brief Creates a 3x3 skew-symmetric matrix from a 3x1 vector
  * @tparam DerivedVec The type of the input Eigen dense vector (e.g., Vector3d, Array3ff)
@@ -36,7 +49,7 @@ inline void Skew(const Eigen::DenseBase<DerivedVec>& v, Eigen::DenseBase<Derived
  * @param v The 3-component input vector. It can be a column vector, row vector, etc
  * @return A 3x3 skew-symmetric matrix of the same scalar type as the input
  */
-template <typename DerivedVec, typename DerivedMat>
+template <typename DerivedMat, typename DerivedVec>
 inline DerivedMat Skew(const Eigen::DenseBase<DerivedVec>& v) {
   DerivedMat M;
   Skew(v, M);
@@ -77,19 +90,6 @@ inline DerivedVec Deskew(const Eigen::DenseBase<DerivedMat>& M) {
 }
 
 /**
- * *=== CircMod ===*
- * @brief Modulus of floating point number
- * @tparam T A floating point type (e.g. double, float)
- * @param x user input and output
- * @param y value to take modulus about
- * @returns modulus of number
- */
-template <typename T>
-constexpr T CircMod(T x, const T y) {
-  return x - std::floor(x / y) * y;
-}
-
-/**
  * *=== Rodrigues ===*
  * @brief Rodrigues formula for the approximation of a matrix exponential
  * @tparam Derived An Eigen size 3 object (i.e Vector3d, RowVector3d, Array3f)
@@ -98,7 +98,7 @@ constexpr T CircMod(T x, const T y) {
  * @returns matrix exponential
  */
 template <typename Derived>
-Eigen::Matrix<typename Derived::Scalar, 3, 3> Rodrigues(
+inline auto Rodrigues(
     const Eigen::DenseBase<Derived>& vec, const typename Derived::Scalar& vec_norm) {
   typedef typename Derived::Scalar Scalar;
   ASSERT_EIGEN_VEC_SIZE(Derived, vec, 3);
@@ -116,7 +116,7 @@ Eigen::Matrix<typename Derived::Scalar, 3, 3> Rodrigues(
  * @returns matrix exponential
  */
 template <typename Derived>
-Eigen::Matrix<typename Derived::Scalar, 3, 3> Rodrigues(const Eigen::DenseBase<Derived>& vec) {
+inline auto Rodrigues(const Eigen::DenseBase<Derived>& vec) {
   typedef typename Derived::Scalar Scalar;
   ASSERT_EIGEN_VEC_SIZE(Derived, vec, 3);
 
@@ -133,7 +133,7 @@ Eigen::Matrix<typename Derived::Scalar, 3, 3> Rodrigues(const Eigen::DenseBase<D
  * @returns matrix exponential
  */
 template <typename Derived>
-Eigen::Matrix3<typename Derived::Scalar> Rodrigues4(
+inline auto Rodrigues4(
     const Eigen::DenseBase<Derived>& vec, const typename Derived::Scalar& vec_norm) {
   typedef typename Derived::Scalar Scalar;
   ASSERT_EIGEN_VEC_SIZE(Derived, vec, 3);
@@ -152,7 +152,7 @@ Eigen::Matrix3<typename Derived::Scalar> Rodrigues4(
  * @returns matrix exponential
  */
 template <typename Derived>
-Eigen::Matrix3<typename Derived::Scalar> Rodrigues4(const Eigen::DenseBase<Derived>& vec) {
+inline auto Rodrigues4(const Eigen::DenseBase<Derived>& vec) {
   typedef typename Derived::Scalar Scalar;
   ASSERT_EIGEN_VEC_SIZE(Derived, vec, 3);
 
@@ -169,7 +169,7 @@ Eigen::Matrix3<typename Derived::Scalar> Rodrigues4(const Eigen::DenseBase<Deriv
  * @returns 2x2 rotation matrix
  */
 template <typename T = double>
-Eigen::Matrix2<T> scalar2expm(const T& scalar) {
+inline auto scalar2expm(const T& scalar) {
   T cs = std::cos(scalar);
   T ss = std::sin(scalar);
   return Eigen::Matrix2<T>({{cs, -ss}, {ss, cs}});
@@ -183,7 +183,7 @@ Eigen::Matrix2<T> scalar2expm(const T& scalar) {
  * @returns 3x3 matrix exponential
  */
 template <typename Derived>
-auto vec2expm(const Eigen::DenseBase<Derived>& vec) {
+inline auto vec2expm(const Eigen::DenseBase<Derived>& vec) {
   typedef typename Derived::Scalar Scalar;
   static constexpr int RACT = Derived::RowsAtCompileTime;
   if constexpr (RACT == Eigen::Dynamic) {
@@ -222,7 +222,7 @@ auto vec2expm(const Eigen::DenseBase<Derived>& vec) {
  * @returns size 3 vector
  */
 template <typename Derived>
-auto expm2vec(const Eigen::DenseBase<Derived>& mat) {
+inline auto expm2vec(const Eigen::DenseBase<Derived>& mat) {
   ASSERT_EIGEN_MAT_SIZE(Derived, mat, 3, 3);
   using Scalar = typename Derived::Scalar;
 

@@ -15,7 +15,7 @@ namespace nt {
  * @returns Earth's transverse radius at "phi"
  */
 template <typename T = double>
-T TransverseRadius(const T phi) {
+inline T TransverseRadius(const T phi) {
   T sin_phi = std::sin(phi);
   T t = 1.0 - WGS84_E2<T> * sin_phi * sin_phi;
   return WGS84_A<T> / std::sqrt(t);
@@ -29,7 +29,7 @@ T TransverseRadius(const T phi) {
  * @returns Earth's meridian radius at "phi"
  */
 template <typename T = double>
-T MeridianRadius(const T phi) {
+inline T MeridianRadius(const T phi) {
   T sin_phi = std::sin(phi);
   T t = 1.0 - WGS84_E2<T> * sin_phi * sin_phi;
   return WGS84_A<T> * (1.0 - WGS84_E2<T>) / std::pow(t, 1.5);
@@ -43,7 +43,7 @@ T MeridianRadius(const T phi) {
  * @returns Earth's geocentric radius at "phi"
  */
 template <typename T = double>
-T GeocentricRadius(const T phi) {
+inline T GeocentricRadius(const T phi) {
   T sin_phi2 = std::sin(phi);
   sin_phi2 *= sin_phi2;
   T cos_phi = std::cos(phi);
@@ -61,7 +61,7 @@ T GeocentricRadius(const T phi) {
  * @returns Earth's {Transverse, Meridian} radii at "phi"
  */
 template <typename T = double>
-std::pair<T, T> EarthRadii2(const T phi) {
+inline std::pair<T, T> EarthRadii2(const T phi) {
   T sin_phi = std::sin(phi);
   T t = 1.0 - WGS84_E2<T> * sin_phi * sin_phi;
 
@@ -77,7 +77,7 @@ std::pair<T, T> EarthRadii2(const T phi) {
  * @returns Earth's {Transverse, Meridian, Geocentric} radii at Latitude
  */
 template <typename T = double>
-std::tuple<T, T, T> EarthRadii3(const T phi) {
+inline std::tuple<T, T, T> EarthRadii3(const T phi) {
   T sin_phi2 = std::sin(phi);
   sin_phi2 *= sin_phi2;
   T cos_phi = std::cos(phi);
@@ -100,7 +100,7 @@ std::tuple<T, T, T> EarthRadii3(const T phi) {
  * @returns Earth's rotation in the local navigation frame
  */
 template <bool isNed = true, typename T = double>
-auto EarthRate(const T phi) {
+inline auto EarthRate(const T phi) {
   if constexpr (isNed) {
     return Eigen::Vector3<T>(WGS84_OMEGA<T> * std::cos(phi), 0.0, WGS84_OMEGA<T> * std::sin(phi));
   } else {
@@ -119,7 +119,7 @@ auto EarthRate(const T phi) {
  * @returns Transport rate in the local navigation frame
  */
 template <bool isNed = true, typename Derived1, typename Derived2>
-auto TransportRate(
+inline auto TransportRate(
     const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<Derived2> &v_nb_e) {
   ASSERT_EIGEN_VEC_SIZE(Derived1, lla, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, v_nb_e, 3);
@@ -150,7 +150,8 @@ auto TransportRate(
  * @returns Coriolis effect
  */
 template <bool isNed = true, typename Derived1, typename Derived2>
-auto CoriolisRate(const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<Derived2> &v_nb_e) {
+inline auto CoriolisRate(
+    const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<Derived2> &v_nb_e) {
   ASSERT_EIGEN_VEC_SIZE(Derived1, lla, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, v_nb_e, 3);
   ASSERT_EIGEN_TYPE(Derived1, Derived2);
@@ -170,7 +171,7 @@ auto CoriolisRate(const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<
  * @returns Local navigation frame gravity
  */
 template <bool isNed = true, typename Derived>
-auto LocalGravity(const Eigen::DenseBase<Derived> &lla) {
+inline auto LocalGravity(const Eigen::DenseBase<Derived> &lla) {
   ASSERT_EIGEN_VEC_SIZE(Derived, lla, 3);
   using Scalar = typename Derived::Scalar;
 
@@ -207,7 +208,7 @@ auto LocalGravity(const Eigen::DenseBase<Derived> &lla) {
  * @returns ECEF frame gravitational acceleration
  */
 template <typename Derived>
-auto EcefGravitation(const Eigen::DenseBase<Derived> &r_eb_e) {
+inline auto EcefGravitation(const Eigen::DenseBase<Derived> &r_eb_e) {
   ASSERT_EIGEN_VEC_SIZE(Derived, r_eb_e, 3);
   using Scalar = typename Derived::Scalar;
 
@@ -230,7 +231,7 @@ auto EcefGravitation(const Eigen::DenseBase<Derived> &r_eb_e) {
  * @returns ECEF frame gravity
  */
 template <typename Derived>
-auto EcefGravity(const Eigen::DenseBase<Derived> &r_eb_e) {
+inline auto EcefGravity(const Eigen::DenseBase<Derived> &r_eb_e) {
   using Scalar = typename Derived::Scalar;
 
   const Scalar w2 = WGS84_OMEGA<Scalar> * WGS84_OMEGA<Scalar>;
@@ -246,7 +247,7 @@ auto EcefGravity(const Eigen::DenseBase<Derived> &r_eb_e) {
  * @returns ECI frame gravitational acceleration
  */
 template <typename Derived>
-auto EciGravitation(const Eigen::DenseBase<Derived> &r_ib_i) {
+inline auto EciGravitation(const Eigen::DenseBase<Derived> &r_ib_i) {
   ASSERT_EIGEN_VEC_SIZE(Derived, r_ib_i, 3);
   using Scalar = typename Derived::Scalar;
 
