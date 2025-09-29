@@ -389,7 +389,7 @@ inline fixed<B, I, F, R> round(fixed<B, I, F, R> x) noexcept
 }
 
 template <typename B, typename I, unsigned int F, bool R>
-constexpr inline fixed<B, I, F, R> CircMod(fixed<B, I, F, R>& x, fixed<B, I, F, R> y) 
+constexpr inline void CircMod(fixed<B, I, F, R>& x, fixed<B, I, F, R> y) 
 {
   assert(y.raw_value() > 0);
   x =
