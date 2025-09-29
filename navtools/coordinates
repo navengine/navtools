@@ -1,0 +1,1935 @@
+#ifndef NAVTOOLS_COORDINATES_HPP
+#define NAVTOOLS_COORDINATES_HPP
+
+#include "navtools/core/acceleration-transforms.hpp"
+#include "navtools/core/angular-rate-transforms.hpp"
+#include "navtools/core/macros.hpp"
+#include "navtools/core/position-transforms.hpp"
+#include "navtools/core/velocity-transforms.hpp"
+#include <Eigen/Dense>
+
+namespace nt {
+
+enum CoordType {
+  POS,    // position
+  VEL,    // velocity
+  ACCEL,  // acceleration
+  ANGVEL  // angular rate
+};
+enum TangentFrame {
+  NED,  // North-East-Down
+  ENU,  // East-North-Up
+};
+
+template <CoordType type, typename Scalar = double>
+class EcefCoord;
+
+template <CoordType type, typename Scalar = double>
+class EciCoord;
+
+template <CoordType type, TangentFrame frame, typename Scalar = double>
+class TangentCoord;
+
+template <bool degrees = false, typename Scalar = double>
+class GeodeticCoord;
+
+//! ============================================================================================ !//
+
+template <CoordType type, typename Scalar>
+class EcefCoord : public Eigen::Vector3<Scalar> {
+ private:
+  using EcefPos = EcefCoord<CoordType::POS, Scalar>;
+  using EcefVel = EcefCoord<CoordType::VEL, Scalar>;
+  using EcefAccel = EcefCoord<CoordType::ACCEL, Scalar>;
+  using EcefAngVel = EcefCoord<CoordType::ANGVEL, Scalar>;
+  using EciPos = EciCoord<CoordType::POS, Scalar>;
+  using EciVel = EciCoord<CoordType::VEL, Scalar>;
+  using EciAccel = EciCoord<CoordType::ACCEL, Scalar>;
+  using EciAngVel = EciCoord<CoordType::ANGVEL, Scalar>;
+  using NedPos = TangentCoord<CoordType::POS, TangentFrame::NED, Scalar>;
+  using NedVel = TangentCoord<CoordType::VEL, TangentFrame::NED, Scalar>;
+  using NedAccel = TangentCoord<CoordType::ACCEL, TangentFrame::NED, Scalar>;
+  using NedAngVel = TangentCoord<CoordType::ANGVEL, TangentFrame::NED, Scalar>;
+  using EnuPos = TangentCoord<CoordType::POS, TangentFrame::ENU, Scalar>;
+  using EnuVel = TangentCoord<CoordType::VEL, TangentFrame::ENU, Scalar>;
+  using EnuAccel = TangentCoord<CoordType::ACCEL, TangentFrame::ENU, Scalar>;
+  using EnuAngVel = TangentCoord<CoordType::ANGVEL, TangentFrame::ENU, Scalar>;
+
+ public:
+  /**
+   * *=== EcefCoord ===*
+   * @brief Default constructor. Initializes the vector to zeros.
+   */
+  explicit EcefCoord()
+      : Eigen::Vector3<Scalar>() {
+    this->setZero();
+  }
+
+  /**
+   * *=== EcefCoord ===*
+   * @brief Constructor that initializes the vector with given x, y, and z values.
+   * @param x The x-component of the vector.
+   * @param y The y-component of the vector.
+   * @param z The z-component of the vector.
+   */
+  explicit EcefCoord(Scalar x, Scalar y, Scalar z)
+      : Eigen::Vector3<Scalar>(x, y, z) {}
+
+  /**
+   * *=== EcefCoord ===*
+   * @brief Constructor that initializes the vector from an Eigen::DenseBase object.
+   * @tparam Derived The Eigen derived type.
+   * @param vector The Eigen vector to copy from.
+   */
+  template <typename Derived>
+  EcefCoord(const Eigen::DenseBase<Derived>& vector)
+      : Eigen::Vector3<Scalar>() {
+    ASSERT_EIGEN_SCALAR_TYPE(Derived, Scalar);
+    ASSERT_EIGEN_VEC_SIZE(Derived, vector, 3);
+    this->operator=(vector);
+  }
+
+  /**
+   * *=== operator= ===*
+   * @brief Assignment operator that copies from an Eigen::DenseBase object.
+   * @tparam Derived The Eigen derived type.
+   * @param other The Eigen vector to copy from.
+   * @returns A reference to the current object.
+   */
+  template <typename Derived>
+  EcefCoord& operator=(const Eigen::DenseBase<Derived>& other) {
+    this->Eigen::Vector3<Scalar>::operator=(other);
+    return *this;
+  }
+
+  Scalar& x() { return (*this)(0); }
+  Scalar& y() { return (*this)(1); }
+  Scalar& z() { return (*this)(2); }
+  const Scalar& x() const { return (*this)(0); }
+  const Scalar& y() const { return (*this)(1); }
+  const Scalar& z() const { return (*this)(2); }
+
+  /**
+   * *=== from_eci_pos ===*
+   * @brief Converts an ECI position vector to ECEF position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @param dt    The time difference between the ECI and ECEF frames.
+   * @param r_eci The ECI position vector.
+   */
+  static auto from_eci_pos(const Scalar dt, const EciPos& r_eci) -> EcefPos
+      requires(type == CoordType::POS) {
+    return eci2ecef(dt, r_eci);
+  }
+
+  /**
+   * *=== from_eci_vel ===*
+   * @brief Converts an ECI velocity vector to ECEF velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @param dt    The time difference between the ECI and ECEF frames.
+   * @param v_eci The ECI velocity vector.
+   * @param r_eci The ECI position vector (required for the conversion).
+   */
+  static auto from_eci_vel(const Scalar dt, const EciVel& v_eci, const EciPos& r_eci) -> EcefVel
+      requires(type == CoordType::VEL) {
+    return eci2ecefv(dt, v_eci, r_eci);
+  }
+
+  /**
+   * *=== from_eci_accel ===*
+   * @brief Converts an ECI acceleration vector to ECEF acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @param dt    The time difference between the ECI and ECEF frames.
+   * @param a_eci The ECI acceleration vector.
+   * @param v_eci The ECI velocity vector (required for the conversion).
+   * @param r_eci The ECI position vector (required for the conversion).
+   */
+  static auto from_eci_accel(
+      const Scalar dt, const EciAccel& a_eci, const EciVel& v_eci, const EciPos& r_eci) -> EcefVel
+      requires(type == CoordType::ACCEL) {
+    return eci2ecefa(dt, a_eci, v_eci, r_eci);
+  }
+
+  /**
+   * *=== from_eci_angvel ===*
+   * @brief Converts an ECI angular velocity vector to ECEF angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @param dt    The time difference between the ECI and ECEF frames.
+   * @param w_eci The ECI angular velocity vector.
+   */
+  static auto from_eci_angvel(const Scalar dt, const EciAngVel& w_eci) -> EcefAngVel
+      requires(type == CoordType::ANGVEL) {
+    return eci2ecefw(dt, w_eci);
+  }
+
+  /**
+   * *=== from_tangent_pos ===*
+   * @brief Converts a tangent frame position vector to ECEF position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param r_tangent The position vector in the tangent frame.
+   * @param lla0      The latitude, longitude, and altitude of the tangent frame origin.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  static auto from_tangent_pos(
+      const TangentCoord<CoordType::POS, frame, Scalar>& r_tangent,
+      const GeodeticCoord<degrees, Scalar>& lla0) -> EcefPos requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecef(r_tangent, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecef(r_tangent, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecef(r_tangent, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecef(r_tangent, lla0);
+      }
+    }
+  }
+  /**
+   * *=== from_tangent_vel ===*
+   * @brief Converts a tangent frame velocity vector to ECEF velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param v_tangent The velocity vector in the tangent frame.
+   * @param lla0      The latitude, longitude, and altitude of the tangent frame origin.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  static auto from_tangent_vel(
+      const TangentCoord<CoordType::VEL, frame, Scalar>& v_tangent,
+      const GeodeticCoord<degrees, Scalar>& lla0) -> EcefVel requires(type == CoordType::VEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefv(v_tangent, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefv(v_tangent, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefv(v_tangent, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefv(v_tangent, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_tangent_accel ===*
+   * @brief Converts a tangent frame acceleration vector to ECEF acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param a_tangent The acceleration vector in the tangent frame.
+   * @param lla0      The latitude, longitude, and altitude of the tangent frame origin.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  static auto from_tangent_accel(
+      const TangentCoord<CoordType::ACCEL, frame, Scalar>& a_tangent,
+      const GeodeticCoord<degrees, Scalar>& lla0) -> EcefAccel requires(type == CoordType::ACCEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefa(a_tangent, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefa(a_tangent, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefa(a_tangent, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefa(a_tangent, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_tangent_angvel ===*
+   * @brief Converts a tangent frame angular velocity vector to ECEF angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param w_tangent The angular velocity vector in the tangent frame.
+   * @param lla0      The latitude, longitude, and altitude of the tangent frame origin.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  static auto from_tangent_angvel(
+      const TangentCoord<CoordType::ANGVEL, frame, Scalar>& w_tangent,
+      const GeodeticCoord<degrees, Scalar>& lla0) -> EcefAngVel requires(type == CoordType::ANGVEL)
+  {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefw(w_tangent, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefw(w_tangent, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefw(w_tangent, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefw(w_tangent, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_lla ===*
+   * @brief Converts a geodetic position to ECEF position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam degrees True if the lla coordinates are in degrees, false for radians.
+   * @param lla The geodetic coordinates (latitude, longitude, altitude).
+   */
+  template <bool degrees = false>
+  static auto from_lla(const GeodeticCoord<degrees, Scalar>& lla) -> EcefPos
+      requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla_rad;
+      lla_rad(0) = lla(0) * D2R<Scalar>;
+      lla_rad(1) = lla(1) * D2R<Scalar>;
+      lla_rad(2) = lla(2);
+      return lla2ecef(lla_rad);
+    } else {
+      return lla2ecef(lla);
+    }
+  }
+
+  /**
+   * *=== to_eci_pos ===*
+   * @brief Converts an ECEF position vector to ECI position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @param dt The time difference between the ECEF and ECI frames.
+   * @returns The converted ECI position vector.
+   */
+  auto to_eci_pos(const Scalar dt) const -> EciPos requires(type == CoordType::POS) {
+    return ecef2eci(dt, *this);
+  }
+  /**
+   * *=== to_eci_vel ===*
+   * @brief Converts an ECEF velocity vector to ECI velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @param dt     The time difference between the ECEF and ECI frames.
+   * @param r_ecef The ECEF position vector (required for the conversion).
+   * @returns The converted ECI velocity vector.
+   */
+  auto to_eci_vel(const Scalar dt, const EcefPos& r_ecef) const -> EciVel
+      requires(type == CoordType::VEL) {
+    return ecef2eciv(dt, *this, r_ecef);
+  }
+  /**
+   * *=== to_eci_accel ===*
+   * @brief Converts an ECEF acceleration vector to ECI acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @param dt     The time difference between the ECEF and ECI frames.
+   * @param v_ecef The ECEF velocity vector (required for the conversion).
+   * @param r_ecef The ECEF position vector (required for the conversion).
+   * @returns The converted ECI acceleration vector.
+   */
+  auto to_eci_accel(const Scalar dt, const EcefVel& v_ecef, const EcefPos& r_ecef) const -> EciAccel
+      requires(type == CoordType::ACCEL) {
+    return ecef2ecia(dt, *this, v_ecef, r_ecef);
+  }
+
+  /**
+   * *=== to_eci_angvel ===*
+   * @brief Converts an ECEF angular velocity vector to ECI angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @param dt The time difference between the ECEF and ECI frames.
+   * @returns The converted ECI angular velocity vector.
+   */
+  auto to_eci_angvel(const Scalar dt) const -> EciAngVel requires(type == CoordType::ANGVEL) {
+    return ecef2eciw(dt, *this);
+  }
+
+  /**
+   * *=== to_tangent_pos ===*
+   * @brief Converts an ECEF position vector to a tangent frame position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the returned coordinates should be in degrees, false for radians.
+   * @param lla0 The latitude, longitude, and altitude of the tangent frame origin.
+   * @returns The converted tangent frame position.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  auto to_tangent_pos(const GeodeticCoord<degrees, Scalar>& lla0) const
+      -> TangentCoord<CoordType::POS, frame, Scalar> requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2ned(*this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enu(*this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2ned(*this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enu(*this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_tangent_vel ===*
+   * @brief Converts an ECEF velocity vector to a tangent frame velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the returned coordinates should be in degrees, false for radians.
+   * @param lla0 The latitude, longitude, and altitude of the tangent frame origin.
+   * @returns The converted tangent frame velocity.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  auto to_tangent_vel(const GeodeticCoord<degrees, Scalar>& lla0) const
+      -> TangentCoord<CoordType::VEL, frame, Scalar> requires(type == CoordType::VEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2nedv(*this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enuv(*this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2nedv(*this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enuv(*this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_tangent_accel ===*
+   * @brief Converts an ECEF acceleration vector to a tangent frame acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the returned coordinates should be in degrees, false for radians.
+   * @param lla0 The latitude, longitude, and altitude of the tangent frame origin.
+   * @returns The converted tangent frame acceleration.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  auto to_tangent_accel(const GeodeticCoord<degrees, Scalar>& lla0) const
+      -> TangentCoord<CoordType::ACCEL, frame, Scalar> requires(type == CoordType::ACCEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2neda(*this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enua(*this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2neda(*this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enua(*this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_tangent_angvel ===*
+   * @brief Converts an ECEF angular velocity vector to a tangent frame angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the returned coordinates should be in degrees, false for radians.
+   * @param lla0 The latitude, longitude, and altitude of the tangent frame origin.
+   * @returns The converted tangent frame angular velocity.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  auto to_tangent_angvel(const GeodeticCoord<degrees, Scalar>& lla0) const
+      -> TangentCoord<CoordType::ANGVEL, frame, Scalar> requires(type == CoordType::ANGVEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2nedw(*this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enuw(*this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2nedw(*this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enuw(*this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_lla ===*
+   * @brief Converts an ECEF position vector to geodetic coordinates.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam degrees True if the returned coordinates should be in degrees, false for radians.
+   * @returns The converted geodetic coordinates (latitude, longitude, altitude).
+   */
+  template <bool degrees = false>
+  auto to_lla() const -> GeodeticCoord<degrees, Scalar> requires(type == CoordType::POS) {
+    GeodeticCoord<false, Scalar> lla_rad;
+    ecef2lla(*this, lla_rad);
+    if constexpr (degrees) {
+      GeodeticCoord<true, Scalar> lla_deg;
+      lla_deg(0) = lla_rad(0) * R2D<Scalar>;
+      lla_deg(1) = lla_rad(1) * R2D<Scalar>;
+      lla_deg(2) = lla_rad(2);
+      return lla_deg;
+    } else {
+      return lla_rad;
+    }
+  }
+};
+
+//! ============================================================================================ !//
+
+template <CoordType type, typename Scalar>
+class EciCoord : public Eigen::Vector3<Scalar> {
+ private:
+  using EcefPos = EcefCoord<CoordType::POS, Scalar>;
+  using EcefVel = EcefCoord<CoordType::VEL, Scalar>;
+  using EcefAccel = EcefCoord<CoordType::ACCEL, Scalar>;
+  using EcefAngVel = EcefCoord<CoordType::ANGVEL, Scalar>;
+  using EciPos = EciCoord<CoordType::POS, Scalar>;
+  using EciVel = EciCoord<CoordType::VEL, Scalar>;
+  using EciAccel = EciCoord<CoordType::ACCEL, Scalar>;
+  using EciAngVel = EciCoord<CoordType::ANGVEL, Scalar>;
+  using NedPos = TangentCoord<CoordType::POS, TangentFrame::NED, Scalar>;
+  using NedVel = TangentCoord<CoordType::VEL, TangentFrame::NED, Scalar>;
+  using NedAccel = TangentCoord<CoordType::ACCEL, TangentFrame::NED, Scalar>;
+  using NedAngVel = TangentCoord<CoordType::ANGVEL, TangentFrame::NED, Scalar>;
+  using EnuPos = TangentCoord<CoordType::POS, TangentFrame::ENU, Scalar>;
+  using EnuVel = TangentCoord<CoordType::VEL, TangentFrame::ENU, Scalar>;
+  using EnuAccel = TangentCoord<CoordType::ACCEL, TangentFrame::ENU, Scalar>;
+  using EnuAngVel = TangentCoord<CoordType::ANGVEL, TangentFrame::ENU, Scalar>;
+
+ public:
+  /**
+   * *=== EciCoord ===*
+   * @brief Default constructor. Initializes the vector to zeros.
+   */
+  explicit EciCoord()
+      : Eigen::Vector3<Scalar>() {
+    this->setZero();
+  }
+
+  /**
+   * *=== EciCoord ===*
+   * @brief Constructor that initializes the vector with given x, y, and z values.
+   * @param x The x-component of the vector.
+   * @param y The y-component of the vector.
+   * @param z The z-component of the vector.
+   */
+  explicit EciCoord(Scalar x, Scalar y, Scalar z)
+      : Eigen::Vector3<Scalar>(x, y, z) {}
+
+  /**
+   * *=== EciCoord ===*
+   * @brief Constructor that initializes the vector from an Eigen::DenseBase object.
+   * @tparam Derived The Eigen derived type.
+   * @param vector The Eigen vector to copy from.
+   */
+  template <typename Derived>
+  EciCoord(const Eigen::DenseBase<Derived>& vector)
+      : Eigen::Vector3<Scalar>() {
+    ASSERT_EIGEN_SCALAR_TYPE(Derived, Scalar);
+    ASSERT_EIGEN_VEC_SIZE(Derived, vector, 3);
+    this->operator=(vector);
+  }
+
+  /**
+   * *=== operator= ===*
+   * @brief Assignment operator that copies from an Eigen::DenseBase object.
+   * @tparam Derived The Eigen derived type.
+   * @param other The Eigen vector to copy from.
+   * @returns A reference to the current object.
+   */
+  template <typename Derived>
+  EciCoord& operator=(const Eigen::DenseBase<Derived>& other) {
+    this->Eigen::Vector3<Scalar>::operator=(other);
+    return *this;
+  }
+
+  Scalar& x() { return (*this)(0); }
+  Scalar& y() { return (*this)(1); }
+  Scalar& z() { return (*this)(2); }
+  const Scalar& x() const { return (*this)(0); }
+  const Scalar& y() const { return (*this)(1); }
+  const Scalar& z() const { return (*this)(2); }
+
+  /**
+   * *=== from_ecef_pos ===*
+   * @brief Converts an ECEF position vector to ECI position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @param dt     The time difference between the ECEF and ECI frames.
+   * @param r_ecef The ECEF position vector.
+   */
+  static auto from_ecef_pos(const Scalar dt, const EcefPos& r_ecef) -> EciPos
+      requires(type == CoordType::POS) {
+    return ecef2eci(dt, r_ecef);
+  }
+  /**
+   * *=== from_ecef_vel ===*
+   * @brief Converts an ECEF velocity vector to ECI velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @param dt     The time difference between the ECEF and ECI frames.
+   * @param v_ecef The ECEF velocity vector.
+   * @param r_ecef The ECEF position vector (required for the conversion).
+   */
+  static auto from_ecef_vel(const Scalar dt, const EcefVel& v_ecef, const EcefPos& r_ecef) -> EciVel
+      requires(type == CoordType::VEL) {
+    return ecef2eciv(dt, v_ecef, r_ecef);
+  }
+
+  /**
+   * *=== from_ecef_accel ===*
+   * @brief Converts an ECEF acceleration vector to ECI acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @param dt     The time difference between the ECEF and ECI frames.
+   * @param a_ecef The ECEF acceleration vector.
+   * @param v_ecef The ECEF velocity vector (required for the conversion).
+   * @param r_ecef The ECEF position vector (required for the conversion).
+   */
+  static auto from_ecef_accel(
+      const Scalar dt, const EcefAccel& a_ecef, const EcefVel& v_ecef, const EcefPos& r_ecef)
+      -> EciAccel requires(type == CoordType::ACCEL) {
+    return ecef2ecia(dt, a_ecef, v_ecef, r_ecef);
+  }
+
+  /**
+   * *=== from_ecef_angvel ===*
+   * @brief Converts an ECEF angular velocity vector to ECI angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @param dt     The time difference between the ECEF and ECI frames.
+   * @param w_ecef The ECEF angular velocity vector.
+   */
+  static auto from_ecef_angvel(const Scalar dt, const EcefAngVel& w_ecef) -> EciAngVel
+      requires(type == CoordType::ANGVEL) {
+    return ecef2eciw(dt, w_ecef);
+  }
+
+  /**
+   * *=== from_tangent_pos ===*
+   * @brief Converts a tangent frame position vector to ECI position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt        The time difference for the transformation.
+   * @param r_tangent The position vector in the tangent frame.
+   * @param lla0      The geodetic coordinates of the tangent frame origin.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  static auto from_tangent_pos(
+      const Scalar dt,
+      const TangentCoord<CoordType::POS, frame, Scalar>& r_tangent,
+      const GeodeticCoord<degrees, Scalar>& lla0) -> EciPos requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eci(dt, r_tangent, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eci(dt, r_tangent, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eci(dt, r_tangent, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eci(dt, r_tangent, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_tangent_vel ===*
+   * @brief Converts a tangent frame velocity vector to ECI velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt        The time difference for the transformation.
+   * @param v_tangent The velocity vector in the tangent frame.
+   * @param lla0      The geodetic coordinates of the tangent frame origin.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  static auto from_tangent_vel(
+      const Scalar dt,
+      const TangentCoord<CoordType::VEL, frame, Scalar>& v_tangent,
+      const TangentCoord<CoordType::POS, frame, Scalar>& r_tangent,
+      const GeodeticCoord<degrees, Scalar>& lla0) -> EciVel requires(type == CoordType::VEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eciv(dt, v_tangent, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eciv(dt, v_tangent, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eciv(dt, v_tangent, r_tangent, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eciv(dt, v_tangent, r_tangent, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_tangent_accel ===*
+   * @brief Converts a tangent frame acceleration vector to ECI acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt        The time difference for the transformation.
+   * @param a_tangent The acceleration vector in the tangent frame.
+   * @param v_tangent The velocity vector in the tangent frame.
+   * @param r_tangent The position vector in the tangent frame.
+   * @param lla0      The geodetic coordinates of the tangent frame origin.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  static auto from_tangent_accel(
+      const Scalar dt,
+      const TangentCoord<CoordType::ACCEL, frame, Scalar>& a_tangent,
+      const TangentCoord<CoordType::VEL, frame, Scalar>& v_tangent,
+      const TangentCoord<CoordType::POS, frame, Scalar>& r_tangent,
+      const GeodeticCoord<degrees, Scalar>& lla0) -> EciAccel requires(type == CoordType::ACCEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecia(dt, a_tangent, v_tangent, r_tangent, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecia(dt, a_tangent, v_tangent, r_tangent, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecia(dt, a_tangent, v_tangent, r_tangent, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecia(dt, a_tangent, v_tangent, r_tangent, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_tangent_angvel ===*
+   * @brief Converts a tangent frame angular velocity vector to ECI angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt        The time difference for the transformation.
+   * @param w_tangent The angular velocity vector in the tangent frame.
+   * @param lla0      The geodetic coordinates of the tangent frame origin.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  static auto from_tangent_angvel(
+      const Scalar dt,
+      const TangentCoord<CoordType::ANGVEL, frame, Scalar>& w_tangent,
+      const GeodeticCoord<degrees, Scalar>& lla0) -> EciAngVel requires(type == CoordType::ANGVEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eciw(dt, w_tangent, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eciw(dt, w_tangent, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eciw(dt, w_tangent, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eciw(dt, w_tangent, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_lla ===*
+   * @brief Converts geodetic coordinates to ECI position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam degrees True if the lla coordinates are in degrees, false for radians.
+   * @param dt  The time difference for the transformation.
+   * @param lla The geodetic coordinates (latitude, longitude, altitude).
+   */
+  template <bool degrees = false>
+  static auto from_lla(const Scalar dt, const GeodeticCoord<degrees, Scalar>& lla) -> EciPos
+      requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla_rad;
+      lla_rad(0) = lla(0) * D2R<Scalar>;
+      lla_rad(1) = lla(1) * D2R<Scalar>;
+      lla_rad(2) = lla(2);
+      return lla2eci(dt, lla_rad);
+    } else {
+      return lla2eci(dt, lla);
+    }
+  }
+
+  /**
+   * *=== to_ecef_pos ===*
+   * @brief Converts an ECI position vector to ECEF position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @param dt The time difference between the ECI and ECEF frames.
+   * @returns The converted ECEF position vector.
+   */
+  auto to_ecef_pos(const Scalar dt) const -> EcefPos requires(type == CoordType::POS) {
+    return eci2ecef(dt, *this);
+  }
+  /**
+   * *=== to_ecef_vel ===*
+   * @brief Converts an ECI velocity vector to ECEF velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @param dt    The time difference between the ECI and ECEF frames.
+   * @param r_eci The ECI position vector (required for the conversion).
+   * @returns The converted ECEF velocity vector.
+   */
+  auto to_ecef_vel(const Scalar dt, const EciPos& r_eci) const -> EcefVel
+      requires(type == CoordType::VEL) {
+    return eci2ecefv(dt, *this, r_eci);
+  }
+
+  /**
+   * *=== to_ecef_accel ===*
+   * @brief Converts an ECI acceleration vector to ECEF acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @param dt    The time difference between the ECI and ECEF frames.
+   * @param v_eci The ECI velocity vector (required for the conversion).
+   * @param r_eci The ECI position vector (required for the conversion).
+   * @returns The converted ECEF acceleration vector.
+   */
+  auto to_ecef_accel(const Scalar dt, const EciVel& v_eci, const EciPos& r_eci) const -> EcefAccel
+      requires(type == CoordType::ACCEL) {
+    return eci2ecefa(dt, *this, v_eci, r_eci);
+  }
+
+  /**
+   * *=== to_ecef_angvel ===*
+   * @brief Converts an ECI angular velocity vector to ECEF angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @param dt The time difference between the ECI and ECEF frames.
+   * @returns The converted ECEF angular velocity vector.
+   */
+  auto to_ecef_angvel(const Scalar dt) const -> EcefAngVel requires(type == CoordType::ANGVEL) {
+    return eci2ecefw(dt, *this);
+  }
+
+  /**
+   * *=== to_tangent_pos ===*
+   * @brief Converts an ECI position vector to a tangent frame position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the returned coordinates should be in degrees, false for radians.
+   * @param dt   The time difference for the transformation.
+   * @param lla0 The geodetic coordinates (latitude, longitude, altitude) of the tangent frame
+   * origin.
+   * @returns The converted tangent frame position.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  auto to_tangent_pos(const Scalar dt, const GeodeticCoord<degrees, Scalar>& lla0) const
+      -> TangentCoord<CoordType::POS, frame, Scalar> requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2ned(dt, *this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enu(dt, *this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2ned(dt, *this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enu(dt, *this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_tangent_vel ===*
+   * @brief Converts an ECI velocity vector to a tangent frame velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the returned coordinates should be in degrees, false for radians.
+   * @param dt    The time difference for the transformation.
+   * @param r_eci The ECI position vector (required for the conversion).
+   * @param lla0  The geodetic coordinates of the tangent frame origin.
+   * @returns The converted tangent frame velocity.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  auto to_tangent_vel(
+      const Scalar dt, const EciPos& r_eci, const GeodeticCoord<degrees, Scalar>& lla0) const
+      -> TangentCoord<CoordType::VEL, frame, Scalar> requires(type == CoordType::VEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2nedv(dt, *this, r_eci, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enuv(dt, *this, r_eci, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2nedv(dt, *this, r_eci, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enuv(dt, *this, r_eci, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_tangent_accel ===*
+   * @brief Converts an ECI acceleration vector to a tangent frame acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the returned coordinates should be in degrees, false for radians.
+   * @param dt    The time difference for the transformation.
+   * @param v_eci The ECI velocity vector (required for the conversion).
+   * @param r_eci The ECI position vector (required for the conversion).
+   * @param lla0  The geodetic coordinates of the tangent frame origin.
+   * @returns The converted tangent frame acceleration.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  auto to_tangent_accel(
+      const Scalar dt,
+      const EciVel& v_eci,
+      const EciPos& r_eci,
+      const GeodeticCoord<degrees, Scalar>& lla0) const
+      -> TangentCoord<CoordType::ACCEL, frame, Scalar> requires(type == CoordType::ACCEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2neda(dt, *this, v_eci, r_eci, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enua(dt, *this, v_eci, r_eci, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2neda(dt, *this, v_eci, r_eci, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enua(dt, *this, v_eci, r_eci, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_tangent_angvel ===*
+   * @brief Converts an ECI angular velocity vector to a tangent frame angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam degrees True if the returned coordinates should be in degrees, false for radians.
+   * @param dt   The time difference for the transformation.
+   * @param lla0 The geodetic coordinates of the tangent frame origin.
+   * @returns The converted tangent frame angular velocity.
+   */
+  template <TangentFrame frame, bool degrees = false>
+  auto to_tangent_angvel(const Scalar dt, const GeodeticCoord<degrees, Scalar>& lla0) const
+      -> TangentCoord<CoordType::ANGVEL, frame, Scalar> requires(type == CoordType::ANGVEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2nedw(dt, *this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enuw(dt, *this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2nedw(dt, *this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enuw(dt, *this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_lla ===*
+   * @brief Converts an ECI position vector to geodetic coordinates.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam degrees True if the returned coordinates should be in degrees, false for radians.
+   * @param dt The time difference for the transformation.
+   * @returns The converted geodetic coordinates (latitude, longitude, altitude).
+   */
+  template <bool degrees = false>
+  auto to_lla(const Scalar dt) const
+      -> GeodeticCoord<degrees, Scalar> requires(type == CoordType::POS) {
+    GeodeticCoord<false, Scalar> lla_rad;
+    eci2lla(dt, *this, lla_rad);
+    if constexpr (degrees) {
+      GeodeticCoord<true, Scalar> lla_deg;
+      lla_deg(0) = lla_rad(0) * R2D<Scalar>;
+      lla_deg(1) = lla_rad(1) * R2D<Scalar>;
+      lla_deg(2) = lla_rad(2);
+      return lla_deg;
+    } else {
+      return lla_rad;
+    }
+  }
+};
+
+//! ============================================================================================ !//
+
+template <CoordType type, TangentFrame frame, typename Scalar>
+class TangentCoord : public Eigen::Vector3<Scalar> {
+ private:
+  using EcefPos = EcefCoord<CoordType::POS, Scalar>;
+  using EcefVel = EcefCoord<CoordType::VEL, Scalar>;
+  using EcefAccel = EcefCoord<CoordType::ACCEL, Scalar>;
+  using EcefAngVel = EcefCoord<CoordType::ANGVEL, Scalar>;
+  using EciPos = EciCoord<CoordType::POS, Scalar>;
+  using EciVel = EciCoord<CoordType::VEL, Scalar>;
+  using EciAccel = EciCoord<CoordType::ACCEL, Scalar>;
+  using EciAngVel = EciCoord<CoordType::ANGVEL, Scalar>;
+  using NedPos = TangentCoord<CoordType::POS, TangentFrame::NED, Scalar>;
+  using NedVel = TangentCoord<CoordType::VEL, TangentFrame::NED, Scalar>;
+  using NedAccel = TangentCoord<CoordType::ACCEL, TangentFrame::NED, Scalar>;
+  using NedAngVel = TangentCoord<CoordType::ANGVEL, TangentFrame::NED, Scalar>;
+  using EnuPos = TangentCoord<CoordType::POS, TangentFrame::ENU, Scalar>;
+  using EnuVel = TangentCoord<CoordType::VEL, TangentFrame::ENU, Scalar>;
+  using EnuAccel = TangentCoord<CoordType::ACCEL, TangentFrame::ENU, Scalar>;
+  using EnuAngVel = TangentCoord<CoordType::ANGVEL, TangentFrame::ENU, Scalar>;
+
+ public:
+  /**
+   * *=== TangentCoord ===*
+   * @brief Default constructor. Initializes the vector to zeros.
+   */
+  explicit TangentCoord()
+      : Eigen::Vector3<Scalar>() {
+    this->setZero();
+  }
+
+  /**
+   * *=== TangentCoord ===*
+   * @brief Constructor that initializes the vector with given x, y, and z values.
+   * @param x The x-component of the vector.
+   * @param y The y-component of the vector.
+   * @param z The z-component of the vector.
+   */
+  explicit TangentCoord(Scalar x, Scalar y, Scalar z)
+      : Eigen::Vector3<Scalar>(x, y, z) {}
+
+  /**
+   * *=== TangentCoord ===*
+   * @brief Constructor that initializes the vector from an Eigen::DenseBase object.
+   * @tparam Derived The Eigen derived type.
+   * @param vector The Eigen vector to copy from.
+   */
+  template <typename Derived>
+  TangentCoord(const Eigen::DenseBase<Derived>& vector)
+      : Eigen::Vector3<Scalar>() {
+    ASSERT_EIGEN_SCALAR_TYPE(Derived, Scalar);
+    ASSERT_EIGEN_VEC_SIZE(Derived, vector, 3);
+    this->operator=(vector);
+  }
+
+  /**
+   * *=== operator= ===*
+   * @brief Assignment operator that copies from an Eigen::DenseBase object.
+   * @tparam Derived The Eigen derived type.
+   * @param other The Eigen vector to copy from.
+   * @returns A reference to the current object.
+   */
+  template <typename Derived>
+  TangentCoord& operator=(const Eigen::DenseBase<Derived>& other) {
+    this->Eigen::Vector3<Scalar>::operator=(other);
+    return *this;
+  }
+
+  Scalar& n() {
+    if constexpr (frame == TangentFrame::NED) {
+      return (*this)(0);
+    } else if constexpr (frame == TangentFrame::ENU) {
+      return (*this)(1);
+    }
+  }
+  Scalar& e() {
+    if constexpr (frame == TangentFrame::NED) {
+      return (*this)(1);
+    } else if constexpr (frame == TangentFrame::ENU) {
+      return (*this)(0);
+    }
+  }
+  auto d() -> Scalar& requires(frame == TangentFrame::NED) { return (*this)(2); }
+  auto u() -> Scalar& requires(frame == TangentFrame::ENU) { return (*this)(2); }
+
+  const Scalar& n() const {
+    if constexpr (frame == TangentFrame::NED) {
+      return (*this)(0);
+    } else if constexpr (frame == TangentFrame::ENU) {
+      return (*this)(1);
+    }
+  }
+  const Scalar& e() const {
+    if constexpr (frame == TangentFrame::NED) {
+      return (*this)(1);
+    } else if constexpr (frame == TangentFrame::ENU) {
+      return (*this)(0);
+    }
+  }
+  auto d() const -> const Scalar& requires(frame == TangentFrame::NED) { return (*this)(2); }
+  auto u() const -> const Scalar& requires(frame == TangentFrame::ENU) { return (*this)(2); }
+
+  /**
+   * *=== from_ecef_pos ===*
+   * @brief Converts an ECEF position vector to a tangent frame position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param r_ecef The ECEF position vector.
+   * @param lla0   The geodetic coordinates of the tangent frame origin.
+   */
+  template <bool degrees = false>
+  static auto from_ecef_pos(const EcefPos& r_ecef, const GeodeticCoord<degrees, Scalar>& lla0)
+      -> TangentCoord<CoordType::POS, frame, Scalar> requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2ned(r_ecef, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enu(r_ecef, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2ned(r_ecef, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enu(r_ecef, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_ecef_vel ===*
+   * @brief Converts an ECEF velocity vector to a tangent frame velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param v_ecef The ECEF velocity vector.
+   * @param lla0   The geodetic coordinates of the tangent frame origin.
+   */
+  template <bool degrees = false>
+  static auto from_ecef_vel(const EcefVel& v_ecef, const GeodeticCoord<degrees, Scalar>& lla0)
+      -> TangentCoord<CoordType::VEL, frame, Scalar> requires(type == CoordType::VEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2nedv(v_ecef, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enuv(v_ecef, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2nedv(v_ecef, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enuv(v_ecef, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_ecef_accel ===*
+   * @brief Converts an ECEF acceleration vector to a tangent frame acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param a_ecef The ECEF acceleration vector.
+   * @param lla0   The geodetic coordinates of the tangent frame origin.
+   */
+  template <bool degrees = false>
+  static auto from_ecef_accel(const EcefAccel& a_ecef, const GeodeticCoord<degrees, Scalar>& lla0)
+      -> TangentCoord<CoordType::ACCEL, frame, Scalar> requires(type == CoordType::ACCEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2neda(a_ecef, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enua(a_ecef, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2neda(a_ecef, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enua(a_ecef, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_ecef_angvel ===*
+   * @brief Converts an ECEF angular velocity vector to a tangent frame angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param w_ecef The ECEF angular velocity vector.
+   * @param lla0   The geodetic coordinates of the tangent frame origin.
+   */
+  template <bool degrees = false>
+  static auto from_ecef_angvel(const EcefAngVel& w_ecef, const GeodeticCoord<degrees, Scalar>& lla0)
+      -> TangentCoord<CoordType::ANGVEL, frame, Scalar> requires(type == CoordType::ANGVEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2nedw(w_ecef, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enuw(w_ecef, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ecef2nedw(w_ecef, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return ecef2enuw(w_ecef, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_eci_pos ===*
+   * @brief Converts an ECI position vector to a tangent frame position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt    The time difference for the transformation.
+   * @param r_eci The ECI position vector.
+   * @param lla0  The geodetic coordinates of the tangent frame origin.
+   */
+  template <bool degrees = false>
+  static auto from_eci_pos(
+      const Scalar dt, const EciPos& r_eci, const GeodeticCoord<degrees, Scalar>& lla0)
+      -> TangentCoord<CoordType::POS, frame, Scalar> requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2ned(dt, r_eci, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enu(dt, r_eci, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2ned(dt, r_eci, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enu(dt, r_eci, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_eci_vel ===*
+   * @brief Converts an ECI velocity vector to a tangent frame velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt    The time difference for the transformation.
+   * @param v_eci The ECI velocity vector.
+   * @param r_eci The ECI position vector (required for the conversion).
+   * @param lla0  The geodetic coordinates of the tangent frame origin.
+   */
+  template <bool degrees = false>
+  static auto from_eci_vel(
+      const Scalar dt,
+      const EciVel& v_eci,
+      const EciPos& r_eci,
+      const GeodeticCoord<degrees, Scalar>& lla0)
+      -> TangentCoord<CoordType::VEL, frame, Scalar> requires(type == CoordType::VEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2nedv(dt, v_eci, r_eci, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enuv(dt, v_eci, r_eci, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2nedv(dt, v_eci, r_eci, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enuv(dt, v_eci, r_eci, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_eci_accel ===*
+   * @brief Converts an ECI acceleration vector to a tangent frame acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt    The time difference for the transformation.
+   * @param a_eci The ECI acceleration vector.
+   * @param v_eci The ECI velocity vector (required for the conversion).
+   * @param r_eci The ECI position vector (required for the conversion).
+   * @param lla0  The geodetic coordinates of the tangent frame origin.
+   */
+  template <bool degrees = false>
+  static auto from_eci_accel(
+      const Scalar dt,
+      const EciAccel& a_eci,
+      const EciVel& v_eci,
+      const EciPos& r_eci,
+      const GeodeticCoord<degrees, Scalar>& lla0)
+      -> TangentCoord<CoordType::ACCEL, frame, Scalar> requires(type == CoordType::ACCEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2neda(dt, a_eci, v_eci, r_eci, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enua(dt, a_eci, v_eci, r_eci, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2neda(dt, a_eci, v_eci, r_eci, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enua(dt, a_eci, v_eci, r_eci, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_eci_angvel ===*
+   * @brief Converts an ECI angular velocity vector to a tangent frame angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt    The time difference for the transformation.
+   * @param w_eci The ECI angular velocity vector.
+   * @param lla0  The geodetic coordinates of the tangent frame origin.
+   */
+  template <bool degrees = false>
+  static auto from_eci_angvel(
+      const Scalar dt, const EciAngVel& w_eci, const GeodeticCoord<degrees, Scalar>& lla0)
+      -> TangentCoord<CoordType::ANGVEL, frame, Scalar> requires(type == CoordType::ANGVEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2nedw(dt, w_eci, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enuw(dt, w_eci, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return eci2nedw(dt, w_eci, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return eci2enuw(dt, w_eci, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== from_lla ===*
+   * @brief Converts a geodetic position to a tangent frame position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam degrees True if the lla and lla0 coordinates are in degrees, false for radians.
+   * @param lla  The geodetic coordinates of the point to convert.
+   * @param lla0 The geodetic coordinates of the tangent frame origin.
+   */
+  template <bool degrees = false>
+  static auto from_lla(
+      const GeodeticCoord<degrees, Scalar>& lla, const GeodeticCoord<degrees, Scalar>& lla0)
+      -> TangentCoord<CoordType::POS, frame, Scalar> requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla_rad;
+      lla_rad(0) = lla(0) * D2R<Scalar>;
+      lla_rad(1) = lla(1) * D2R<Scalar>;
+      lla_rad(2) = lla(2);
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return lla2ned(lla_rad, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return lla2enu(lla_rad, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return lla2ned(lla, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return lla2enu(lla, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_ecef_pos ===*
+   * @brief Converts a tangent frame position to an ECEF position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param lla0 The geodetic coordinates of the tangent frame origin.
+   * @returns The converted ECEF position.
+   */
+  template <bool degrees = false>
+  auto to_ecef_pos(const GeodeticCoord<degrees, Scalar>& lla0) const -> EcefPos
+      requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecef(*this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecef(*this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecef(*this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecef(*this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_ecef_vel ===*
+   * @brief Converts a tangent frame velocity to an ECEF velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param lla0 The geodetic coordinates of the tangent frame origin.
+   * @returns The converted ECEF velocity.
+   */
+  template <bool degrees = false>
+  auto to_ecef_vel(const GeodeticCoord<degrees, Scalar>& lla0) const -> EcefVel
+      requires(type == CoordType::VEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefv(*this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefv(*this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefv(*this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefv(*this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_ecef_accel ===*
+   * @brief Converts a tangent frame acceleration to an ECEF acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param lla0 The geodetic coordinates of the tangent frame origin.
+   * @returns The converted ECEF acceleration.
+   */
+  template <bool degrees = false>
+  auto to_ecef_accel(const GeodeticCoord<degrees, Scalar>& lla0) const -> EcefAccel
+      requires(type == CoordType::ACCEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefa(*this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefa(*this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefa(*this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefa(*this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_ecef_angvel ===*
+   * @brief Converts a tangent frame angular velocity to an ECEF angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param lla0 The geodetic coordinates of the tangent frame origin.
+   * @returns The converted ECEF angular velocity.
+   */
+  template <bool degrees = false>
+  auto to_ecef_angvel(const GeodeticCoord<degrees, Scalar>& lla0) const -> EcefAngVel
+      requires(type == CoordType::ANGVEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefw(*this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefw(*this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecefw(*this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecefw(*this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_eci_pos ===*
+   * @brief Converts a tangent frame position to an ECI position.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt   The time difference for the transformation.
+   * @param lla0 The geodetic coordinates of the tangent frame origin.
+   * @returns The converted ECI position.
+   */
+  template <bool degrees = false>
+  auto to_eci_pos(const Scalar dt, const GeodeticCoord<degrees, Scalar>& lla0) const -> EciPos
+      requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eci(dt, *this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eci(dt, *this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eci(dt, *this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eci(dt, *this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_eci_vel ===*
+   * @brief Converts a tangent frame velocity to an ECI velocity.
+   * @note This function is only available when `type == CoordType::VEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt        The time difference for the transformation.
+   * @param r_tangent The tangent frame position vector (required for the conversion).
+   * @param lla0      The geodetic coordinates of the tangent frame origin.
+   * @returns The converted ECI velocity.
+   */
+  template <bool degrees = false>
+  auto to_eci_vel(
+      const Scalar dt,
+      const TangentCoord<CoordType::POS, frame, Scalar>& r_tangent,
+      const GeodeticCoord<degrees, Scalar>& lla0) const -> EciVel requires(type == CoordType::VEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eciv(dt, *this, r_tangent, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eciv(dt, *this, r_tangent, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eciv(dt, *this, r_tangent, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eciv(dt, *this, r_tangent, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_eci_accel ===*
+   * @brief Converts a tangent frame acceleration to an ECI acceleration.
+   * @note This function is only available when `type == CoordType::ACCEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt        The time difference for the transformation.
+   * @param v_tangent The tangent frame velocity vector (required for the conversion).
+   * @param r_tangent The tangent frame position vector (required for the conversion).
+   * @param lla0      The geodetic coordinates of the tangent frame origin.
+   * @returns The converted ECI acceleration.
+   */
+  template <bool degrees = false>
+  auto to_eci_accel(
+      const Scalar dt,
+      const TangentCoord<CoordType::VEL, frame, Scalar>& v_tangent,
+      const TangentCoord<CoordType::POS, frame, Scalar>& r_tangent,
+      const GeodeticCoord<degrees, Scalar>& lla0) const -> EciAccel
+      requires(type == CoordType::ACCEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecia(dt, *this, v_tangent, r_tangent, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecia(dt, *this, v_tangent, r_tangent, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2ecia(dt, *this, v_tangent, r_tangent, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2ecia(dt, *this, v_tangent, r_tangent, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_eci_angvel ===*
+   * @brief Converts a tangent frame angular velocity to an ECI angular velocity.
+   * @note This function is only available when `type == CoordType::ANGVEL`.
+   * @tparam degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param dt   The time difference for the transformation.
+   * @param lla0 The geodetic coordinates of the tangent frame origin.
+   * @returns The converted ECI angular velocity.
+   */
+  template <bool degrees = false>
+  auto to_eci_angvel(const Scalar dt, const GeodeticCoord<degrees, Scalar>& lla0) const -> EciAngVel
+      requires(type == CoordType::ANGVEL) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eciw(dt, *this, lla0_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eciw(dt, *this, lla0_rad);
+      }
+    } else {
+      if constexpr (frame == TangentFrame::NED) {
+        return ned2eciw(dt, *this, lla0);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        return enu2eciw(dt, *this, lla0);
+      }
+    }
+  }
+
+  /**
+   * *=== to_lla ===*
+   * @brief Converts a tangent frame position to geodetic coordinates.
+   * @note This function is only available when `type == CoordType::POS`.
+   * @tparam degrees True if the returned coordinates and lla0 are in degrees, false for radians.
+   * @param lla0 The geodetic coordinates of the tangent frame origin.
+   * @returns The converted geodetic coordinates.
+   */
+  template <bool degrees = false>
+  auto to_lla(const GeodeticCoord<degrees, Scalar>& lla0) const
+      -> GeodeticCoord<degrees, Scalar> requires(type == CoordType::POS) {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla0_rad;
+      lla0_rad(0) = lla0(0) * D2R<Scalar>;
+      lla0_rad(1) = lla0(1) * D2R<Scalar>;
+      lla0_rad(2) = lla0(2);
+      GeodeticCoord<false, Scalar> lla_rad;
+      if constexpr (frame == TangentFrame::NED) {
+        ned2lla(*this, lla0_rad, lla_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        enu2lla(*this, lla0_rad, lla_rad);
+      }
+      GeodeticCoord<true, Scalar> lla_deg;
+      lla_deg(0) = lla_rad(0) * R2D<Scalar>;
+      lla_deg(1) = lla_rad(1) * R2D<Scalar>;
+      lla_deg(2) = lla_rad(2);
+      return lla_deg;
+    } else {
+      GeodeticCoord<false, Scalar> lla_rad;
+      if constexpr (frame == TangentFrame::NED) {
+        ned2lla(*this, lla0, lla_rad);
+      } else if constexpr (frame == TangentFrame::ENU) {
+        enu2lla(*this, lla0, lla_rad);
+      }
+      return lla_rad;
+    }
+  }
+};
+
+//! ============================================================================================ !//
+
+template <bool degrees, typename Scalar>
+class GeodeticCoord : public Eigen::Vector3<Scalar> {
+ private:
+  using EcefPos = EcefCoord<CoordType::POS, Scalar>;
+  using EciPos = EciCoord<CoordType::POS, Scalar>;
+  using NedPos = TangentCoord<CoordType::POS, TangentFrame::NED, Scalar>;
+  using EnuPos = TangentCoord<CoordType::POS, TangentFrame::ENU, Scalar>;
+
+ public:
+  /**
+   * *=== GeodeticCoord ===*
+   * @brief Default constructor. Initializes the geodetic coordinates to zeros.
+   */
+  explicit GeodeticCoord()
+      : Eigen::Vector3<Scalar>() {
+    this->setZero();
+  }
+
+  /**
+   * *=== GeodeticCoord ===*
+   * @brief Constructor that initializes the geodetic coordinates with given values.
+   * @param lat The latitude.
+   * @param lon The longitude.
+   * @param alt The altitude.
+   */
+  explicit GeodeticCoord(Scalar lat, Scalar lon, Scalar alt)
+      : Eigen::Vector3<Scalar>(lat, lon, alt) {}
+
+  /**
+   * *=== GeodeticCoord ===*
+   * @brief Constructor that initializes the coordinates from an Eigen::DenseBase object.
+   * @tparam Derived The Eigen derived type.
+   * @param vector The Eigen vector to copy from.
+   */
+  template <typename Derived>
+  GeodeticCoord(const Eigen::DenseBase<Derived>& vector)
+      : Eigen::Vector3<Scalar>() {
+    ASSERT_EIGEN_SCALAR_TYPE(Derived, Scalar);
+    ASSERT_EIGEN_VEC_SIZE(Derived, vector, 3);
+    this->operator=(vector);
+  }
+
+  /**
+   * *=== operator= ===*
+   * @brief Assignment operator that copies from an Eigen::DenseBase object.
+   * @tparam Derived The Eigen derived type.
+   * @param other The Eigen vector to copy from.
+   * @return A reference to the current object.
+   */
+  template <typename Derived>
+  GeodeticCoord& operator=(const Eigen::DenseBase<Derived>& other) {
+    this->Eigen::Vector3<Scalar>::operator=(other);
+    return *this;
+  }
+
+  Scalar& lat() { return (*this)(0); }
+  Scalar& lon() { return (*this)(1); }
+  Scalar& alt() { return (*this)(2); }
+  const Scalar& lat() const { return (*this)(0); }
+  const Scalar& lon() const { return (*this)(1); }
+  const Scalar& alt() const { return (*this)(2); }
+
+  /**
+   * *=== from_ecef ===*
+   * @brief Converts an ECEF position vector to geodetic coordinates.
+   * @param r_ecef The ECEF position vector.
+   */
+  static auto from_ecef(const EcefPos& r_ecef) -> GeodeticCoord<degrees, Scalar> {
+    GeodeticCoord<degrees, Scalar> lla;
+    ecef2lla(r_ecef, lla);
+    if constexpr (degrees) {
+      lla(0) *= R2D<Scalar>;
+      lla(1) *= R2D<Scalar>;
+    }
+    return lla;
+  }
+
+  /**
+   * *=== from_eci ===*
+   * @brief Converts an ECI position vector to geodetic coordinates.
+   * @param dt The time difference for the transformation.
+   * @param r_eci The ECI position vector.
+   */
+  static auto from_eci(const Scalar dt, const EciPos& r_eci) -> GeodeticCoord<degrees, Scalar> {
+    GeodeticCoord<degrees, Scalar> lla;
+    eci2lla(dt, r_eci, lla);
+    if constexpr (degrees) {
+      lla(0) *= R2D<Scalar>;
+      lla(1) *= R2D<Scalar>;
+    }
+    return lla;
+  }
+
+  /**
+   * *=== from_tangent ===*
+   * @brief Converts a tangent frame position vector to geodetic coordinates.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @param r_tangent The position vector in the tangent frame.
+   * @param lla0 The geodetic coordinates of the tangent frame origin.
+   */
+  template <TangentFrame frame, bool lla0_degrees = false>
+  static auto from_tangent(
+      const TangentCoord<CoordType::POS, frame, Scalar>& r_tangent,
+      const GeodeticCoord<lla0_degrees, Scalar>& lla0) -> GeodeticCoord<degrees, Scalar> {
+    GeodeticCoord<degrees, Scalar> lla;
+    GeodeticCoord<lla0_degrees, Scalar> lla0_rad = lla0;
+    if constexpr (lla0_degrees) {
+      lla0_rad(0) *= D2R<Scalar>;
+      lla0_rad(1) *= D2R<Scalar>;
+    }
+    if constexpr (frame == TangentFrame::NED) {
+      ned2lla(r_tangent, lla0_rad, lla);
+    } else if constexpr (frame == TangentFrame::ENU) {
+      enu2lla(r_tangent, lla0_rad, lla);
+    }
+    if constexpr (degrees) {
+      lla(0) *= R2D<Scalar>;
+      lla(1) *= R2D<Scalar>;
+    }
+    return lla;
+  }
+
+  /**
+   * *=== to_ecef ===*
+   * @brief Converts geodetic coordinates to an ECEF position vector.
+   * @return The converted ECEF position vector.
+   */
+  auto to_ecef() const -> EcefPos {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla_rad;
+      lla_rad(0) = (*this)(0) * D2R<Scalar>;
+      lla_rad(1) = (*this)(1) * D2R<Scalar>;
+      lla_rad(2) = (*this)(2);
+      return lla2ecef(lla_rad);
+    } else {
+      return lla2ecef(*this);
+    }
+  }
+
+  /**
+   * *=== to_eci ===*
+   * @brief Converts geodetic coordinates to an ECI position vector.
+   * @param dt The time difference for the transformation.
+   * @return The converted ECI position vector.
+   */
+  auto to_eci(const Scalar dt) const -> EciPos {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla_rad;
+      lla_rad(0) = (*this)(0) * D2R<Scalar>;
+      lla_rad(1) = (*this)(1) * D2R<Scalar>;
+      lla_rad(2) = (*this)(2);
+      return lla2eci(dt, lla_rad);
+    } else {
+      return lla2eci(dt, *this);
+    }
+  }
+
+  /**
+   * *=== to_tangent ===*
+   * @brief Converts geodetic coordinates to a tangent frame position vector.
+   * @tparam frame The tangent frame (NED or ENU).
+   * @tparam lla0_degrees True if the lla0 coordinates are in degrees, false for radians.
+   * @param lla0 The geodetic coordinates of the tangent frame origin.
+   * @return The converted tangent frame position vector.
+   */
+  template <TangentFrame frame, bool lla0_degrees = false>
+  auto to_tangent(const GeodeticCoord<lla0_degrees, Scalar>& lla0) const
+      -> TangentCoord<CoordType::POS, frame, Scalar> {
+    if constexpr (degrees) {
+      GeodeticCoord<false, Scalar> lla_rad;
+      lla_rad(0) = (*this)(0) * D2R<Scalar>;
+      lla_rad(1) = (*this)(1) * D2R<Scalar>;
+      lla_rad(2) = (*this)(2);
+      if constexpr (lla0_degrees) {
+        GeodeticCoord<false, Scalar> lla0_rad;
+        lla0_rad(0) = lla0(0) * D2R<Scalar>;
+        lla0_rad(1) = lla0(1) * D2R<Scalar>;
+        lla0_rad(2) = lla0(2);
+        if constexpr (frame == TangentFrame::NED) {
+          return lla2ned(lla_rad, lla0_rad);
+        } else if constexpr (frame == TangentFrame::ENU) {
+          return lla2enu(lla_rad, lla0_rad);
+        }
+      } else {
+        if constexpr (frame == TangentFrame::NED) {
+          return lla2ned(lla_rad, lla0);
+        } else if constexpr (frame == TangentFrame::ENU) {
+          return lla2enu(lla_rad, lla0);
+        }
+      }
+    } else {
+      if constexpr (lla0_degrees) {
+        GeodeticCoord<false, Scalar> lla0_rad;
+        lla0_rad(0) = lla0(0) * D2R<Scalar>;
+        lla0_rad(1) = lla0(1) * D2R<Scalar>;
+        lla0_rad(2) = lla0(2);
+        if constexpr (frame == TangentFrame::NED) {
+          return lla2ned(*this, lla0_rad);
+        } else if constexpr (frame == TangentFrame::ENU) {
+          return lla2enu(*this, lla0_rad);
+        }
+      } else {
+        if constexpr (frame == TangentFrame::NED) {
+          return lla2ned(*this, lla0);
+        } else if constexpr (frame == TangentFrame::ENU) {
+          return lla2enu(*this, lla0);
+        }
+      }
+    }
+  }
+};
+
+}  // namespace nt
+
+//! ============================================================================================ !//
+
+namespace Eigen {
+namespace internal {
+
+template <nt::CoordType type, typename Scalar>
+struct traits<nt::EcefCoord<type, Scalar>>
+    : public Eigen::internal::traits<Eigen::Vector3<Scalar>> {};
+
+template <nt::CoordType type, typename Scalar>
+struct traits<nt::EciCoord<type, Scalar>> : public Eigen::internal::traits<Eigen::Vector3<Scalar>> {
+};
+
+template <nt::CoordType type, nt::TangentFrame frame, typename Scalar>
+struct traits<nt::TangentCoord<type, frame, Scalar>>
+    : public Eigen::internal::traits<Eigen::Vector3<Scalar>> {};
+
+template <bool degrees, typename Scalar>
+struct traits<nt::GeodeticCoord<degrees, Scalar>>
+    : public Eigen::internal::traits<Eigen::Vector3<Scalar>> {};
+
+}  // namespace internal
+}  // namespace Eigen
+
+#endif

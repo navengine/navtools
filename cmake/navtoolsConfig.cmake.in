@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+
+if(NOT TARGET @PROJECT_NAME@::@PROJECT_NAME@)
+    include("${PACKAGE_@PROJECT_NAME@_TARGETS_FILE}")
+endif()
+
+include(CMakeFindDependencyMacro)
+find_dependency(Eigen3 REQUIRED)

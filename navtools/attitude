@@ -1,0 +1,686 @@
+#ifndef NAVTOOLS_ATTITUDE_HPP
+#define NAVTOOLS_ATTITUDE_HPP
+
+#include "navtools/core/attitude-transforms.hpp"
+#include "navtools/core/constants.hpp"
+#include "navtools/core/macros.hpp"
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+
+namespace nt {
+
+template <typename Scalar = double, RotationOrder order = RotationOrder::ZYX>
+class EulerAngles;
+
+template <typename Scalar = double>
+class RotationMatrix;
+
+template <typename Scalar = double>
+class Quaternion;
+
+//! ============================================================================================ !//
+
+/**
+ * @class EulerAngles
+ * @brief A templated class for representing 3D rotations using Euler angles.
+ * It inherits from Eigen::Vector3, providing seamless integration with Eigen's
+ * linear algebra functionalities.
+ * @tparam Scalar The underlying floating-point type (e.g., float, double).
+ */
+template <typename Scalar, RotationOrder order>
+class EulerAngles : public Eigen::Vector3<Scalar> {
+ public:
+  /**
+   * *=== EulerAngles ===*
+   * @brief Default constructor. Initializes angles to zero.
+   */
+  explicit EulerAngles() noexcept
+      : Eigen::Vector3<Scalar>() {
+    this->setZero();
+  }
+
+  /**
+   * *=== EulerAngles ===*
+   * @brief Constructs with explicit roll, pitch, and yaw values.
+   * @param roll The rotation angle about the first axis.
+   * @param pitch The rotation angle about the second axis.
+   * @param yaw The rotation angle about the third axis.
+   */
+  explicit EulerAngles(Scalar roll, Scalar pitch, Scalar yaw) noexcept
+      : Eigen::Vector3<Scalar>(roll, pitch, yaw) {
+    this->normalize();
+  }
+
+  /**
+   * *=== EulerAngles ===*
+   * @brief Constructs from an Eigen dense vector.
+   * @tparam Derived The derived type of the Eigen vector.
+   * @param vector The Eigen vector containing the three angles.
+   */
+  template <typename Derived>
+  EulerAngles(const Eigen::DenseBase<Derived>& vector)
+      : Eigen::Vector3<Scalar>() {
+    ASSERT_EIGEN_VEC_SIZE(Derived, vector, 3);
+    ASSERT_EIGEN_SCALAR_TYPE(Derived, Scalar);
+    *this = vector.derived();
+    this->normalize();
+  }
+
+  EulerAngles(const RotationMatrix<Scalar>& dcm)
+      : Eigen::Vector3<Scalar>() {
+    *this = from_dcm(dcm);
+  }
+
+  EulerAngles(const Quaternion<Scalar>& q)
+      : Eigen::Vector3<Scalar>() {
+    *this = from_quat(q);
+  }
+
+  /**
+   * *=== operator= ===*
+   * @brief Assignment operator from an Eigen dense vector.
+   * @tparam Derived The derived type of the Eigen vector.
+   * @param other The Eigen vector to assign from.
+   * @return A reference to the EulerAngles object.
+   */
+  template <typename Derived>
+  EulerAngles& operator=(const Eigen::DenseBase<Derived>& other) {
+    ASSERT_EIGEN_SCALAR_TYPE(Derived, Scalar);
+    this->Eigen::Vector3<Scalar>::operator=(other);
+    return *this;
+  }
+
+  // Named accessors for clarity
+  Scalar& roll() { return (*this)(0); }
+  Scalar& pitch() { return (*this)(1); }
+  Scalar& yaw() { return (*this)(2); }
+  const Scalar& roll() const { return (*this)(0); }
+  const Scalar& pitch() const { return (*this)(1); }
+  const Scalar& yaw() const { return (*this)(2); }
+
+  /**
+   * *=== normalize ===*
+   * @brief Normalizes the angles to the range $[-\pi, \pi)$.
+   */
+  void normalize() {
+    auto WrapAngle = [](Scalar x, Scalar y) {
+      Scalar half_y = 0.5 * y;
+      return x - std::floor((x + half_y) / y) * y;
+    };
+
+    if constexpr ((order == RotationOrder::YXZ) || (order == RotationOrder::ZXY)) {
+      this->roll() = WrapAngle(this->roll(), PI<Scalar>);
+      this->pitch() = WrapAngle(this->pitch(), TWO_PI<Scalar>);
+      this->yaw() = WrapAngle(this->yaw(), TWO_PI<Scalar>);
+    } else if constexpr ((order == RotationOrder::XYZ) || (order == RotationOrder::ZYX)) {
+      this->roll() = WrapAngle(this->roll(), TWO_PI<Scalar>);
+      this->pitch() = WrapAngle(this->pitch(), PI<Scalar>);
+      this->yaw() = WrapAngle(this->yaw(), TWO_PI<Scalar>);
+    } else if constexpr ((order == RotationOrder::XZY) || (order == RotationOrder::YZX)) {
+      this->roll() = WrapAngle(this->roll(), TWO_PI<Scalar>);
+      this->pitch() = WrapAngle(this->pitch(), TWO_PI<Scalar>);
+      this->yaw() = WrapAngle(this->yaw(), PI<Scalar>);
+    } else if constexpr (
+        (order == RotationOrder::XYX) || (order == RotationOrder::XZX) ||
+        (order == RotationOrder::YXY) || (order == RotationOrder::YZY) ||
+        (order == RotationOrder::ZXZ) || (order == RotationOrder::ZYZ)) {
+      this->roll() = WrapAngle(this->roll(), TWO_PI<Scalar>);
+      this->pitch() = WrapAngle(this->pitch(), PI<Scalar>);
+      this->yaw() = WrapAngle(this->yaw(), TWO_PI<Scalar>);
+    }
+  }
+
+  /**
+   * *=== from_dcm ===*
+   * @brief Converts a Direction Cosine Matrix to this EulerAngles object in-place.
+   * @tparam order The rotation order (e.g., ZYX, XYZ).
+   * @param dcm The Direction Cosine Matrix to convert from.
+   */
+  static EulerAngles<Scalar> from_dcm(const RotationMatrix<Scalar>& dcm) {
+    return dcm2euler<order, EulerAngles<Scalar, order>>(dcm);
+  }
+
+  /**
+   * *=== from_quat ===*
+   * @brief Converts a Quaternion to this EulerAngles object in-place.
+   * @tparam order The rotation order (e.g., ZYX, XYZ).
+   * @param q The Quaternion to convert from.
+   */
+  static EulerAngles<Scalar> from_quat(const Quaternion<Scalar>& q) {
+    return quat2euler<order, EulerAngles<Scalar, order>>(q);
+  }
+
+  /**
+   * *=== to_dcm===*
+   * @brief Converts the Euler angles to a Direction Cosine Matrix.
+   * @tparam order The rotation order (e.g., ZYX, XYZ).
+   * @return The resulting Direction Cosine Matrix.
+   */
+  RotationMatrix<Scalar> to_dcm() const { return euler2dcm<order, RotationMatrix<Scalar>>(*this); }
+
+  /**
+   * *=== to_quat ===*
+   * @brief Converts the Euler angles to a Quaternion.
+   * @tparam order The rotation order (e.g., ZYX, XYZ).
+   * @return The resulting Quaternion.
+   */
+  Quaternion<Scalar> to_quat() const { return euler2quat<order, Quaternion<Scalar>>(*this); }
+};
+
+//! ============================================================================================ !//
+
+/**
+ * @class RotationMatrix
+ * @brief A templated class for representing 3D rotations using a 3x3 matrix.
+ * It inherits from Eigen::Matrix3, providing full matrix functionality.
+ * @tparam Scalar The underlying floating-point type (e.g., float, double).
+ */
+template <typename Scalar>
+class RotationMatrix : public Eigen::Matrix3<Scalar> {
+ public:
+  /**
+   * *=== RotationMatrix ===*
+   * @brief Default constructor. Initializes to zero matrix.
+   */
+  explicit RotationMatrix() noexcept
+      : Eigen::Matrix3<Scalar>() {
+    this->setZero();
+  }
+
+  /**
+   * *=== RotationMatrix ===*
+   * @brief Constructs from an Eigen dense matrix. Normalizes the matrix.
+   * @tparam Derived The derived type of the Eigen matrix.
+   * @param matrix The Eigen matrix to construct from.
+   */
+  template <typename Derived>
+  RotationMatrix(const Eigen::DenseBase<Derived>& matrix)
+      : Eigen::Matrix3<Scalar>() {
+    ASSERT_EIGEN_MAT_SIZE(Derived, matrix, 3, 3);
+    ASSERT_EIGEN_SCALAR_TYPE(Derived, Scalar);
+    *this = matrix.derived();
+    this->normalize();
+  }
+
+  /**
+   * *=== RotationMatrix ===*
+   * @brief Constructs from Euler Angles.
+   * @tparam order The rotation order (e.g., ZYX, XYZ).
+   * @param e The EulerAngles object to construct from.
+   */
+  template <RotationOrder order>
+  explicit RotationMatrix(const EulerAngles<Scalar, order>& e)
+      : Eigen::Matrix3<Scalar>() {
+    *this = from_euler<order>(e);
+  }
+
+  /**
+   * *=== RotationMatrix ===*
+   * @brief Constructs from a Quaternion.
+   * @param q The Quaternion object to construct from.
+   */
+  explicit RotationMatrix(const Quaternion<Scalar>& q)
+      : Eigen::Matrix3<Scalar>() {
+    *this = from_quat(q);
+  }
+
+  /**
+   * *=== operator= ===*
+   * @brief Assignment operator from an Eigen dense matrix.
+   * @tparam Derived The derived type of the Eigen matrix.
+   * @param other The Eigen matrix to assign from.
+   * @return A reference to the RotationMatrix object.
+   */
+  template <typename Derived>
+  RotationMatrix& operator=(const Eigen::DenseBase<Derived>& other) {
+    ASSERT_EIGEN_SCALAR_TYPE(Derived, Scalar);
+    this->Eigen::Matrix3<Scalar>::operator=(other);
+    return *this;
+  }
+
+  /**
+   * *=== normalize ===*
+   * @brief Normalizes the matrix to ensure it is a valid rotation matrix (orthonormal).
+   * Implements a Gram-Schmidt orthogonalization process.
+   */
+  void normalize() {
+    this->col(0).normalize();
+    this->col(1) -= this->col(1).dot(this->col(0)) * this->col(0);
+    this->col(1).normalize();
+    this->col(2) = this->col(0).cross(this->col(1));
+  }
+
+  /**
+   * *=== normalized ===*
+   * @brief Returns a normalized copy of the matrix.
+   * @return A normalized RotationMatrix object.
+   */
+  RotationMatrix<Scalar> normalized() const {
+    RotationMatrix<Scalar> out = *this;
+    out.normalize();
+    return out;
+  }
+
+  /**
+   * *=== from_euler ===*
+   * @brief Converts Euler Angles to a Direction Cosine Matrix in-place.
+   * @tparam order The rotation order (e.g., ZYX, XYZ).
+   * @param e The EulerAngles object to convert from.
+   */
+  template <RotationOrder order>
+  static RotationMatrix<Scalar> from_euler(const EulerAngles<Scalar, order>& e) {
+    return euler2dcm<order, RotationMatrix<Scalar>>(e);
+  }
+
+  /**
+   * *=== from_quat ===*
+   * @brief Converts a Quaternion to a Direction Cosine Matrix in-place.
+   * @param q The Quaternion object to convert from.
+   */
+  static RotationMatrix<Scalar> from_quat(const Quaternion<Scalar>& q) {
+    return quat2dcm<RotationMatrix<Scalar>>(q);
+  }
+
+  /**
+   * *=== identity ===*
+   * @brief Creates a static identity matrix.
+   * @return An identity RotationMatrix object.
+   */
+  static RotationMatrix identity() {
+    RotationMatrix identity;
+    identity.setIdentity();
+    return identity;
+  }
+
+  /**
+   * *=== to_euler ===*
+   * @brief Converts the Direction Cosine Matrix to Euler Angles.
+   * @tparam order The rotation order (e.g., ZYX, XYZ).
+   * @return The resulting EulerAngles object.
+   */
+  template <RotationOrder order>
+  EulerAngles<Scalar> to_euler() const {
+    return dcm2euler<order, EulerAngles<Scalar>>(*this);
+  }
+
+  /**
+   * *=== to_quat ===*
+   * @brief Converts the Direction Cosine Matrix to a Quaternion.
+   * @return The resulting Quaternion object.
+   */
+  Quaternion<Scalar> to_quat() const {  //
+    return dcm2quat<Quaternion<Scalar>>(*this);
+  }
+};
+
+//! ============================================================================================ !//
+
+/**
+ * @class Quaternion
+ * @brief A templated class for representing 3D rotations using a unit quaternion.
+ * It inherits from Eigen::Vector4, providing seamless integration with Eigen.
+ * @tparam Scalar The underlying floating-point type (e.g., float, double).
+ */
+template <typename Scalar>
+class Quaternion : public Eigen::Vector4<Scalar> {
+ public:
+  /**
+   * *=== Quaternion ===*
+   * @brief Default constructor. Initializes to zero quaternion.
+   */
+  explicit Quaternion() noexcept
+      : Eigen::Vector4<Scalar>() {
+    this->setZero();
+  }
+
+  /**
+   * *=== Quaternion ===*
+   * @brief Constructs with explicit x, y, z, and w components. Normalizes the quaternion.
+   * @param x The x-component of the vector part.
+   * @param y The y-component of the vector part.
+   * @param z The z-component of the vector part.
+   * @param w The w-component (scalar part).
+   */
+  explicit Quaternion(const Scalar x, const Scalar y, const Scalar z, const Scalar w) noexcept
+      : Eigen::Vector4<Scalar>(x, y, z, w) {
+    this->normalize();
+  }
+
+  /**
+   * *=== Quaternion ===*
+   * @brief Constructs from an Eigen dense vector. Normalizes the quaternion.
+   * @tparam Derived The derived type of the Eigen vector.
+   * @param vector The Eigen vector containing the four quaternion components.
+   */
+  template <typename Derived>
+  Quaternion(const Eigen::DenseBase<Derived>& vector)
+      : Eigen::Vector4<Scalar>() {
+    ASSERT_EIGEN_VEC_SIZE(Derived, vector, 4);
+    ASSERT_EIGEN_SCALAR_TYPE(Derived, Scalar);
+    *this = vector.derived();
+    this->normalize();
+  }
+
+  /**
+   * *=== Quaternion ===*
+   * @brief Constructs from Euler Angles.
+   * @tparam order The rotation order (e.g., ZYX, XYZ).
+   * @param e The EulerAngles object to construct from.
+   */
+  template <RotationOrder order>
+  explicit Quaternion(const EulerAngles<Scalar, order>& e)
+      : Eigen::Vector4<Scalar>() {
+    *this = from_euler<order>(e);
+  }
+
+  /**
+   * *=== Quaternion ===*
+   * @brief Constructs from a Direction Cosine Matrix.
+   * @param dcm The Direction Cosine Matrix object to construct from.
+   */
+  explicit Quaternion(const RotationMatrix<Scalar>& dcm)
+      : Eigen::Vector4<Scalar>() {
+    *this = from_dcm(dcm);
+  }
+
+  /**
+   * *=== operator= ===*
+   * @brief Assignment operator from an Eigen dense vector.
+   * @tparam Derived The derived type of the Eigen vector.
+   * @param other The Eigen vector to assign from.
+   * @return A reference to the Quaternion object.
+   */
+  template <typename Derived>
+  Quaternion& operator=(const Eigen::DenseBase<Derived>& other) {
+    ASSERT_EIGEN_SCALAR_TYPE(Derived, Scalar);
+    this->Eigen::Vector4<Scalar>::operator=(other);
+    return *this;
+  }
+
+  /**
+   * *=== operator*= ===*
+   * @brief Multiplies this quaternion by another in-place.
+   *        The multiplication follows the Hamilton product formula p*q.
+   * @tparam Derived The derived type of the Eigen vector for the other quaternion.
+   * @param q The other quaternion to multiply by.
+   * @return A reference to the updated Quaternion object.
+   */
+  Quaternion& operator*=(const Quaternion<Scalar>& q) {
+    const Scalar pw = this->w();
+    const Scalar px = this->x();
+    const Scalar py = this->y();
+    const Scalar pz = this->z();
+
+    const auto& qd = q.derived();
+    const Scalar qw = qd.w();
+    const Scalar qx = qd.x();
+    const Scalar qy = qd.y();
+    const Scalar qz = qd.z();
+
+    // p*q
+    this->x() = pw * qx + px * qw + py * qz - pz * qy;
+    this->y() = pw * qy - px * qz + py * qw + pz * qx;
+    this->z() = pw * qz + px * qy - py * qx + pz * qw;
+    this->w() = pw * qw - px * qx - py * qy - pz * qz;
+    return *this;
+  }
+
+  /**
+   * *=== operator*= ===*
+   * @brief In-place Hamilton product of this quaternion with a 3D vector.
+   *        The vector is treated as a pure quaternion with a scalar part of 0.
+   * @tparam Derived The derived type of the Eigen vector.
+   * @param vector The 3D vector to multiply by.
+   * @return A reference to the updated Quaternion object.
+   */
+  template <typename Derived>
+  Quaternion& operator*=(const Eigen::DenseBase<Derived>& vector) {
+    ASSERT_EIGEN_VEC_SIZE(Derived, vector, 3);
+
+    const Scalar qw = this->w();
+    const Scalar qx = this->x();
+    const Scalar qy = this->y();
+    const Scalar qz = this->z();
+
+    const auto& v_pure = vector.derived();
+    const Scalar vx = v_pure(0);
+    const Scalar vy = v_pure(1);
+    const Scalar vz = v_pure(2);
+
+    this->x() = qw * vx + qx * 0.0 + qy * vz - qz * vy;  // x
+    this->y() = qw * vy - qx * vz + qy * 0.0 + qz * vx;  // y
+    this->z() = qw * vz + qx * vy - qy * vx + qz * 0.0;  // z
+    this->w() = qw * 0.0 - qx * vx - qy * vy - qz * vz;  // w
+    return *this;
+  }
+
+  /**
+   * *=== operator*= ===*
+   * @brief In-place Hamilton product of this quaternion with a 3D vector.
+   *        The vector is treated as a pure quaternion with a scalar part of 0.
+   * @tparam Derived The derived type of the Eigen vector.
+   * @param vector The 3D vector to multiply by.
+   * @return A reference to the updated Quaternion object.
+   */
+  template <typename Derived>
+  Quaternion operator*(const Eigen::DenseBase<Derived>& vector) const {
+    ASSERT_EIGEN_VEC_SIZE(Derived, vector, 3);
+
+    const Scalar& qw = this->w();
+    const Scalar& qx = this->x();
+    const Scalar& qy = this->y();
+    const Scalar& qz = this->z();
+
+    const auto& v_pure = vector.derived();
+    const Scalar vx = v_pure(0);
+    const Scalar vy = v_pure(1);
+    const Scalar vz = v_pure(2);
+
+    return Quaternion<Scalar>(
+        qw * vx + qx * 0.0 + qy * vz - qz * vy,  // x
+        qw * vy - qx * vz + qy * 0.0 + qz * vx,  // y
+        qw * vz + qx * vy - qy * vx + qz * 0.0,  // z
+        qw * 0.0 - qx * vx - qy * vy - qz * vz   // w
+    );
+  }
+
+  // Named accessors for components
+  Scalar& x() { return (*this)(0); }
+  Scalar& y() { return (*this)(1); }
+  Scalar& z() { return (*this)(2); }
+  Scalar& w() { return (*this)(3); }
+  const Scalar& x() const { return (*this)(0); }
+  const Scalar& y() const { return (*this)(1); }
+  const Scalar& z() const { return (*this)(2); }
+  const Scalar& w() const { return (*this)(3); }
+
+  /**
+   * *=== normalize ===*
+   * @brief Normalizes the quaternion to a unit quaternion.
+   */
+  void normalize() { (*this) /= this->norm(); }
+
+  /**
+   * *=== conjugate ===*
+   * @brief Conjugates the quaternion in-place by negating its vector part.
+   */
+  void conjugate() {
+    this->x() = -this->x();
+    this->y() = -this->y();
+    this->z() = -this->z();
+  }
+
+  /**
+   * *=== inverse ===*
+   * @brief Inverts the quaternion in-place. For a unit quaternion, this is equivalent to
+   *        conjugation.
+   */
+  void inverse() {
+    this->conjugate();
+    this->normalize();
+  }
+
+  /**
+   * *=== normalized ===*
+   * @brief Returns a normalized copy of the quaternion.
+   * @return A normalized Quaternion object.
+   */
+  Quaternion<Scalar> normalized() const {
+    Quaternion<Scalar> out = *this;
+    out /= out.norm();
+    return out;
+  }
+
+  /**
+   * *=== conjugated ===*
+   * @brief Returns a conjugated copy of the quaternion.
+   * @return A conjugated Quaternion object.
+   */
+  Quaternion<Scalar> conjugated() const {
+    return Quaternion<Scalar>(-this->x(), -this->y(), -this->z(), this->w());
+  }
+
+  /**
+   * *=== inversed ===*
+   * @brief Returns an inverted copy of the quaternion.
+   * @return An inverted Quaternion object.
+   */
+  Quaternion<Scalar> inversed() const {
+    Quaternion<Scalar> out = *this;
+    out.inverse();
+    return out;
+  }
+
+  /**
+   * *=== identity ===*
+   * @brief Creates a static identity quaternion.
+   * @return An identity Quaternion object.
+   */
+  static Quaternion identity() noexcept { return Quaternion(0.0, 0.0, 0.0, 1.0); }
+
+  /**
+   * *=== rotate ===*
+   * @brief Rotates a 3D vector using the quaternion.
+   *        This performs the operation: v' = q * v * q^-1.
+   * @tparam Derived The derived type of the Eigen vector.
+   * @param vector The 3D vector to rotate.
+   * @return The rotated 3D vector.
+   */
+  template <typename Derived>
+  Eigen::Vector3<Scalar> rotate(const Eigen::DenseBase<Derived>& vector) const {
+    // This is the full quaternion rotation formula: q * v_pure * q_inverse
+    Quaternion<Scalar> pure_v(vector.x(), vector.y(), vector.z(), 0.0);
+    Quaternion<Scalar> rotated_q = (*this) * pure_v * this->inversed();
+    return Eigen::Vector3<Scalar>(rotated_q.x(), rotated_q.y(), rotated_q.z());
+  }
+
+  /**
+   * *=== from_euler ===*
+   * @brief Converts Euler Angles to a Quaternion in-place.
+   * @tparam order The rotation order (e.g., ZYX, XYZ).
+   * @param e The EulerAngles object to convert from.
+   */
+  template <RotationOrder order>
+  static Quaternion<Scalar> from_euler(const EulerAngles<Scalar, order>& e) {
+    return euler2quat<order, Quaternion<Scalar>>(e);
+  }
+
+  /**
+   * *=== from_dcm ===*
+   * @brief Converts a Direction Cosine Matrix to a Quaternion in-place.
+   * @param dcm The Direction Cosine Matrix object to convert from.
+   */
+  static Quaternion<Scalar> from_dcm(const RotationMatrix<Scalar>& dcm) {
+    return dcm2quat<Quaternion<Scalar>>(dcm);
+  }
+
+  /**
+   * *=== from_eigen_quat ===*
+   * @brief Constructs from an Eigen::Quaternion object.
+   * @param quat The Eigen::Quaternion object to convert from.
+   */
+  static Quaternion<Scalar> from_eigen_quat(const Eigen::Quaternion<Scalar>& quat) {
+    return Quaternion<Scalar>(quat.x(), quat.y(), quat.z(), quat.w());
+  }
+
+  /**
+   * *=== to_euler ===*
+   * @brief Converts the Quaternion to Euler Angles.
+   * @tparam order The rotation order (e.g., ZYX, XYZ).
+   * @return The resulting EulerAngles object.
+   */
+  template <RotationOrder order>
+  EulerAngles<Scalar> to_euler() const {
+    return quat2euler<order, EulerAngles<Scalar>>(*this);
+  }
+
+  /**
+   * *=== to_dcm ===*
+   * @brief Converts the Quaternion to a Direction Cosine Matrix.
+   * @return The resulting RotationMatrix object.
+   */
+  RotationMatrix<Scalar> to_dcm() const { return quat2dcm<RotationMatrix<Scalar>>(*this); }
+
+  /**
+   * *=== to_eigen_quat ===*
+   * @brief Converts the Quaternion to an Eigen::Quaternion object.
+   * @return The resulting Eigen::Quaternion object.
+   */
+  Eigen::Quaternion<Scalar> to_eigen_quat() const {
+    return Eigen::Quaternion<Scalar>(this->w(), this->x(), this->y(), this->z());
+  }
+};
+
+/**
+ * *=== operator* ===*
+ * @brief Global operator for quaternion-quaternion multiplication.
+ *        This performs the Hamilton product: p * q.
+ * @tparam Scalar The underlying floating-point type.
+ * @param p The first quaternion.
+ * @param q The second quaternion.
+ * @return The resulting Quaternion from the multiplication of p * q.
+ */
+template <typename Scalar>
+Quaternion<Scalar> operator*(const Quaternion<Scalar>& p, const Quaternion<Scalar>& q) {
+  const Scalar& pw = p.w();
+  const Scalar& px = p.x();
+  const Scalar& py = p.y();
+  const Scalar& pz = p.z();
+
+  const Scalar& qw = q.w();
+  const Scalar& qx = q.x();
+  const Scalar& qy = q.y();
+  const Scalar& qz = q.z();
+
+  // p*q
+  return Quaternion<Scalar>(
+      pw * qx + px * qw + py * qz - pz * qy,  // x
+      pw * qy - px * qz + py * qw + pz * qx,  // y
+      pw * qz + px * qy - py * qx + pz * qw,  // z
+      pw * qw - px * qx - py * qy - pz * qz   // w
+  );
+}
+
+}  // namespace nt
+
+//! ============================================================================================ !//
+
+namespace Eigen {
+namespace internal {
+
+template <typename Scalar, nt::RotationOrder order>
+struct traits<nt::EulerAngles<Scalar, order>>
+    : public Eigen::internal::traits<Eigen::Vector3<Scalar>> {};
+
+template <typename Scalar>
+struct traits<nt::RotationMatrix<Scalar>> : public Eigen::internal::traits<Eigen::Matrix3<Scalar>> {
+};
+
+template <typename Scalar>
+struct traits<nt::Quaternion<Scalar>> : public Eigen::internal::traits<Eigen::Vector4<Scalar>> {};
+
+}  // namespace internal
+}  // namespace Eigen
+
+#endif

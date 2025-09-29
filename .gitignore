@@ -1,10 +1,44 @@
-.DS_Store/
-.DS_Store
-.vscode/
+# Build artifacts
+*.o
+*.obj
+*.exe
+a.out
+*.lib
+*.dll
+*.so
 build/
+bin/
+obj/
+Debug/
+Release/
+
+# IDE/Editor-specific files
+.vs/
+*.suo
+*.user
+*.sln.docstates
+ipch/
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+.idea/
+*.iml
+*.pro.user
+.vscode/
+
+# Temporary files
 log/
-install/
-*.yaml
-*.yml
-.cache/
-.venv/
+logs/
+*.log
+*~
+~*
+*.swp
+.DS_Store
+
+# Dependency management
+packages/
+*.nupkg
+.cache
+lib/

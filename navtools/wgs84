@@ -1,0 +1,9 @@
+#ifndef NAVTOOLS_WGS84_HPP
+#define NAVTOOLS_WGS84_HPP
+
+#include "navtools/core/wgs84-models.hpp"
+#include <Eigen/Dense>
+
+namespace nt {}
+
+#endif
