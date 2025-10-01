@@ -9,6 +9,7 @@ set(NAVTOOLS_VERSION_NUMBER ${NAVTOOLS_MAJOR_VERSION}.${NAVTOOLS_MINOR_VERSION}.
 message(STATUS "${PROJECT_NAME} version ${NAVTOOLS_VERSION_NUMBER}")
 
 # --- CMake Options ---
+option(BUILD_WITH_BLAS "Enable compilation of with BLAS (default is OFF)" OFF)
 option(NAVTOOLS_BUILD_TESTS "Enable compilation of navtools tests (default is OFF)" OFF)
 
 # --- Compiler Flags ---
@@ -48,6 +49,12 @@ target_include_directories (${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
 )
+list(APPEND EXT_LIB "Eigen3::Eigen")
+if (BUILD_WITH_BLAS)
+    find_package(BLAS REQUIRED)
+    list(APPEND EXT_LIB "${BLAS_LIBRARIES}")
+    target_compile_definitions(${PROJECT_NAME} INTERFACE EIGEN_USE_BLAS)
+endif()
 target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen)
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
