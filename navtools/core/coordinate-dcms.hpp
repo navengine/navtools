@@ -37,9 +37,9 @@ inline void eci2ecefDcm(const typename Derived::Scalar dt, Eigen::DenseBase<Deri
  * @param dt time elapsed between frames (s)
  * @returns the 3x3 ECI->ECEF rotation matrix
  */
-template <typename Derived>
-inline Derived eci2ecefDcm(const typename Derived::Scalar dt) {
-  Derived R;
+template <typename Scalar = double>
+inline Eigen::Matrix3<Scalar> eci2ecefDcm(const Scalar dt) {
+  Eigen::Matrix3<Scalar> R;
   eci2ecefDcm(dt, R);
   return R;
 }
@@ -79,16 +79,15 @@ inline void eci2nedDcm(
 /**
  * *=== eci2nedDcm ===*
  * @brief Earth-Centered-Inertial to North-East-Down rotation matrix
- * @tparam DerivedMat The type of the input Eigen dense matrix (e.g., Matrix3d...)
- * @tparam DerivedVec The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
+ * @tparam Derived The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
  * @param dt   time elapsed between frames (s)
  * @param lla0 3x1 reference Geodetic Latitude, Longitude, Height (rad, rad, m)
  * @return the 3x3 ECI->NED rotation matrix
  */
-template <typename DerivedMat, typename DerivedVec>
-inline DerivedMat eci2nedDcm(
-    const typename DerivedVec::Scalar dt, const Eigen::DenseBase<DerivedVec> &lla0) {
-  DerivedMat R;
+template <typename Derived>
+inline Eigen::Matrix3<typename Derived::Scalar> eci2nedDcm(
+    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &lla0) {
+  Eigen::Matrix3<typename Derived::Scalar> R;
   eci2nedDcm(dt, lla0.derived(), R);
   return R;
 }
@@ -128,16 +127,15 @@ inline void eci2enuDcm(
 /**
  * *=== eci2enuDcm ===*
  * @brief Earth-Centered-Inertial to East-North-Up rotation matrix
- * @tparam DerivedMat The type of the input Eigen dense matrix (e.g., Matrix3d...)
- * @tparam DerivedVec The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
+ * @tparam Derived The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
  * @param lla0 3x1 reference Geodetic Latitude, Longitude, Height (rad, rad, m)
  * @param dt   time elapsed between frames (s)
  * @returns the 3x3 ECI->ENU rotation matrix
  */
-template <typename DerivedMat, typename DerivedVec>
-inline DerivedMat eci2enuDcm(
-    const typename DerivedVec::Scalar dt, const Eigen::DenseBase<DerivedVec> &lla0) {
-  DerivedMat R;
+template <typename Derived>
+inline Eigen::Matrix3<typename Derived::Scalar> eci2enuDcm(
+    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &lla0) {
+  Eigen::Matrix3<typename Derived::Scalar> R;
   eci2enuDcm(dt, lla0.derived(), R);
   return R;
 }
@@ -171,9 +169,9 @@ inline void ecef2eciDcm(const typename Derived::Scalar dt, Eigen::DenseBase<Deri
  * @param dt time elapsed between frames (s)
  * @returns the 3x3 ECEF->ECI rotation matrix
  */
-template <typename Derived>
-inline Derived ecef2eciDcm(const typename Derived::Scalar dt) {
-  Derived R;
+template <typename Scalar = double>
+inline Eigen::Matrix3<Scalar> ecef2eciDcm(const Scalar dt) {
+  Eigen::Matrix3<Scalar> R;
   ecef2eciDcm(dt, R);
   return R;
 }
@@ -209,14 +207,13 @@ inline void ecef2nedDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBa
 /**
  * *=== ecef2nedDcm ===*
  * @brief Earth-Centered-Earth-Fixed to North-East-Down rotation matrix
- * @tparam DerivedMat The type of the input Eigen dense matrix (e.g., Matrix3d...)
- * @tparam DerivedVec The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
+ * @tparam Derived The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
  * @param lla0 3x1 reference Geodetic Latitude, Longitude, Height (rad, rad, m)
  * @returns the 3x3 ECEF->NED rotation matrix
  */
-template <typename DerivedMat, typename DerivedVec>
-inline DerivedMat ecef2nedDcm(const Eigen::DenseBase<DerivedVec> &lla0) {
-  DerivedMat R;
+template <typename Derived>
+inline Eigen::Matrix3<typename Derived::Scalar> ecef2nedDcm(const Eigen::DenseBase<Derived> &lla0) {
+  Eigen::Matrix3<typename Derived::Scalar> R;
   ecef2nedDcm(lla0.derived(), R);
   return R;
 }
@@ -252,14 +249,13 @@ inline void ecef2enuDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBa
 /**
  * *=== ecef2enuDcm ===*
  * @brief Earth-Centered-Earth-Fixed to East-North-Up rotation matrix
- * @tparam DerivedVec The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
- * @tparam DerivedMat The type of the input Eigen dense matrix (e.g., Matrix3d...)
+ * @tparam Derived The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
  * @param lla0 3x1 reference Geodetic Latitude, Longitude, Height (rad, rad, m)
  * @param R    3x3 ECEF->ENU rotation matrix
  */
-template <typename DerivedMat, typename DerivedVec>
-inline DerivedMat ecef2enuDcm(const Eigen::DenseBase<DerivedVec> &lla0) {
-  DerivedMat R;
+template <typename Derived>
+inline Eigen::Matrix3<typename Derived::Scalar> ecef2enuDcm(const Eigen::DenseBase<Derived> &lla0) {
+  Eigen::Matrix3<typename Derived::Scalar> R;
   ecef2enuDcm(lla0.derived(), R);
   return R;
 }
@@ -299,16 +295,15 @@ inline void ned2eciDcm(
 /**
  * *=== ned2eciDcm ===*
  * @brief North-East-Down to Earth-Centered-Inertial rotation matrix
- * @tparam DerivedMat The type of the input Eigen dense matrix (e.g., Matrix3d...)
  * @tparam DerivedVec The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
  * @param lla0 3x1 reference Geodetic Latitude, Longitude, Height (rad, rad, m)
  * @param dt  time elapsed between frames (s)
  * @returns the 3x3 NED->ECI rotation matrix
  */
-template <typename DerivedMat, typename DerivedVec>
-inline DerivedMat ned2eciDcm(
-    const typename DerivedVec::Scalar dt, const Eigen::DenseBase<DerivedVec> &lla0) {
-  DerivedMat R;
+template <typename Derived>
+inline Eigen::Matrix3<typename Derived::Scalar> ned2eciDcm(
+    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &lla0) {
+  Eigen::Matrix3<typename Derived::Scalar> R;
   ned2eciDcm(dt, lla0.derived(), R);
   return R;
 }
@@ -343,14 +338,13 @@ inline void ned2ecefDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBa
 /**
  * *=== ned2ecefDcm ===*
  * @brief North-East-Down to Earth-Centered-Earth-Fixed rotation matrix
- * @tparam DerivedMat The type of the input Eigen dense matrix (e.g., Matrix3d...)
- * @tparam DerivedVec The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
+ * @tparam Derived The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
  * @param lla 3x1 Geodetic Latitude, Longitude, Height (rad, rad, m)
  * @returns the 3x3 NED->ECEF rotation matrix
  */
-template <typename DerivedMat, typename DerivedVec>
-inline DerivedMat ned2ecefDcm(const Eigen::DenseBase<DerivedVec> &lla0) {
-  DerivedMat R;
+template <typename Derived>
+inline Eigen::Matrix3<typename Derived::Scalar> ned2ecefDcm(const Eigen::DenseBase<Derived> &lla0) {
+  Eigen::Matrix3<typename Derived::Scalar> R;
   ned2ecefDcm(lla0.derived(), R);
   return R;
 }
@@ -373,9 +367,9 @@ inline void ned2enuDcm(Eigen::DenseBase<Derived> &R) {
  * @tparam Derived The type of the input Eigen dense matrix (e.g., Matrix3d...)
  * @returns 3x3 NED->ENU rotation matrix
  */
-template <typename Derived>
-inline Derived ned2enuDcm() {
-  Derived R;
+template <typename Scalar = double>
+inline Eigen::Matrix3<Scalar> ned2enuDcm() {
+  Eigen::Matrix3<Scalar> R;
   ned2enuDcm(R);
   return R;
 }
@@ -415,16 +409,15 @@ inline void enu2eciDcm(
 /**
  * *=== enu2eciDcm ===*
  * @brief East-North-Up to Earth-Centered-Inertial rotation matrix
- * @tparam DerivedMat The type of the input Eigen dense matrix (e.g., Matrix3d...)
- * @tparam DerivedVec The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
+ * @tparam Derived The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
  * @param lla0 3x1 reference Geodetic Latitude, Longitude, Height (rad, rad, m)
  * @param dt  time elapsed between frames (s)
  * @returns the 3x3 ENU->ECI rotation matrix
  */
-template <typename DerivedMat, typename DerivedVec>
-inline DerivedMat enu2eciDcm(
-    const typename DerivedVec::Scalar dt, const Eigen::DenseBase<DerivedVec> &lla0) {
-  DerivedMat R;
+template <typename Derived>
+inline Eigen::Matrix3<typename Derived::Scalar> enu2eciDcm(
+    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &lla0) {
+  Eigen::Matrix3<typename Derived::Scalar> R;
   enud2eciDcm(dt, lla0.derived(), R);
   return R;
 }
@@ -459,14 +452,13 @@ inline void enu2ecefDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBa
 /**
  * *=== enu2ecefDcm ===*
  * @brief East-North-Up to Earth-Centered-Earth-Fixed rotation matrix
- * @tparam DerivedMat The type of the input Eigen dense matrix (e.g., Matrix3d...)
- * @tparam DerivedVec The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
+ * @tparam Derived The type of the input Eigen dense vector (e.g., Vector3d, Array3f)
  * @param lla 3x1 Geodetic Latitude, Longitude, Height (rad, rad, m)
  * @returns the 3x3 ENU->ECEF rotation matrix
  */
-template <typename DerivedMat, typename DerivedVec>
-inline DerivedMat enu2ecefDcm(const Eigen::DenseBase<DerivedVec> &lla0) {
-  DerivedMat R;
+template <typename Derived>
+inline Eigen::Matrix3<typename Derived::Scalar> enu2ecefDcm(const Eigen::DenseBase<Derived> &lla0) {
+  Eigen::Matrix3<typename Derived::Scalar> R;
   enu2ecefDcm(lla0.derived(), R);
   return R;
 }
@@ -489,9 +481,9 @@ inline void enu2nedDcm(Eigen::DenseBase<Derived> &R) {
  * @tparam Derived The type of the input Eigen dense matrix (e.g., Matrix3d...)
  * @returns 3x3 ENU->NED rotation matrix
  */
-template <typename Derived>
-inline Derived enu2nedDcm() {
-  Derived R;
+template <typename Scalar = double>
+inline Eigen::Matrix3<Scalar> enu2nedDcm() {
+  Eigen::Matrix3<Scalar> R;
   ned2enuDcm(R);
   return R;
 }

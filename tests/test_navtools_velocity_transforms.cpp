@@ -28,11 +28,10 @@ class VelocityTransformTest : public ::testing::Test {
   Eigen::Vector3d v_ecef_expected_ = {1.23, -4.56, 7.89};
 
   // Pre-calculated values for comparison (based on the formulas)
-  Eigen::Vector3d v_ned_expected_ = nt::ecef2nedDcm<Eigen::Matrix3d>(lla0_) * v_ecef_expected_;
-  Eigen::Vector3d v_enu_expected_ = nt::ecef2enuDcm<Eigen::Matrix3d>(lla0_) * v_ecef_expected_;
+  Eigen::Vector3d v_ned_expected_ = nt::ecef2nedDcm(lla0_) * v_ecef_expected_;
+  Eigen::Vector3d v_enu_expected_ = nt::ecef2enuDcm(lla0_) * v_ecef_expected_;
   Eigen::Vector3d v_eci_expected_ =
-      nt::ecef2eciDcm<Eigen::Matrix3d>(dt_) *
-      (v_ecef_expected_ + nt::OMEGA_ECEF<double>.cross(r_ecef_expected_));
+      nt::ecef2eciDcm(dt_) * (v_ecef_expected_ + nt::OMEGA_ECEF<double>.cross(r_ecef_expected_));
 };
 
 // Test ECEF to NED conversion

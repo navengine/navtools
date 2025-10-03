@@ -366,13 +366,14 @@ inline Eigen::Vector3<typename Derived::Scalar> eci2ecef(
  * @param lla0 3d vector of reference ellipsoidal LLA position (rad,rad,m)
  * @param ned  3d vector of cartesian NED position (m,m,m)
  */
-template <typename Derived1, typename Derived2>
+template <typename Derived1, typename Derived2, typename Derived3>
 inline void lla2ned(
     const Eigen::DenseBase<Derived1> &lla,
-    const Eigen::DenseBase<Derived1> &lla0,
-    Eigen::DenseBase<Derived2> &ned) {
+    const Eigen::DenseBase<Derived2> &lla0,
+    Eigen::DenseBase<Derived3> &ned) {
   ASSERT_EIGEN_VEC_SIZE(Derived1, ned, 3);
   ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_TYPE(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -388,10 +389,10 @@ inline void lla2ned(
  * @param lla0 3d vector of reference ellipsoidal LLA position (rad,rad,m)
  * @returns the 3d vector of cartesian NED position (m,m,m)
  */
-template <typename Derived>
-inline Eigen::Vector3<typename Derived::Scalar> lla2ned(
-    const Eigen::DenseBase<Derived> &lla, const Eigen::DenseBase<Derived> &lla0) {
-  Eigen::Vector3<typename Derived::Scalar> ned;
+template <typename Derived1, typename Derived2>
+inline Eigen::Vector3<typename Derived1::Scalar> lla2ned(
+    const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<Derived2> &lla0) {
+  Eigen::Vector3<typename Derived1::Scalar> ned;
   lla2ned(lla, lla0, ned);
   return ned;
 }
@@ -404,13 +405,14 @@ inline Eigen::Vector3<typename Derived::Scalar> lla2ned(
  * @param lla0 3d vector of reference ellipsoidal LLA position (rad,rad,m)
  * @param enu  3d vector of cartesian ENU position (m,m,m)
  */
-template <typename Derived1, typename Derived2>
+template <typename Derived1, typename Derived2, typename Derived3>
 inline void lla2enu(
     const Eigen::DenseBase<Derived1> &lla,
-    const Eigen::DenseBase<Derived1> &lla0,
-    Eigen::DenseBase<Derived2> &enu) {
+    const Eigen::DenseBase<Derived2> &lla0,
+    Eigen::DenseBase<Derived3> &enu) {
   ASSERT_EIGEN_VEC_SIZE(Derived1, enu, 3);
   ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_TYPE(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -426,10 +428,10 @@ inline void lla2enu(
  * @param lla0 3d vector of reference ellipsoidal LLA position (rad,rad,m)
  * @returns the 3d vector of cartesian ENU position (m,m,m)
  */
-template <typename Derived>
-inline Eigen::Vector3<typename Derived::Scalar> lla2enu(
-    const Eigen::DenseBase<Derived> &lla, const Eigen::DenseBase<Derived> &lla0) {
-  Eigen::Vector3<typename Derived::Scalar> enu;
+template <typename Derived1, typename Derived2>
+inline Eigen::Vector3<typename Derived1::Scalar> lla2enu(
+    const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<Derived2> &lla0) {
+  Eigen::Vector3<typename Derived1::Scalar> enu;
   lla2enu(lla, lla0, enu);
   return enu;
 }
@@ -442,15 +444,16 @@ inline Eigen::Vector3<typename Derived::Scalar> lla2enu(
  * @param lla0 3x1 Reference LLA position [rad, rad, m]
  * @param lla  3x1 LLA position [m]
  */
-template <typename Derived1, typename Derived2>
+template <typename Derived1, typename Derived2, typename Derived3>
 inline void ned2lla(
     const Eigen::DenseBase<Derived1> &ned,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived2> &lla) {
+    Eigen::DenseBase<Derived3> &lla) {
   ASSERT_EIGEN_VEC_SIZE(Derived1, ned, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
-  ASSERT_EIGEN_VEC_SIZE(Derived2, lla, 3);
+  ASSERT_EIGEN_VEC_SIZE(Derived3, lla, 3);
   ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_TYPE(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -466,10 +469,10 @@ inline void ned2lla(
  * @param lla0 3x1 Reference LLA position [rad, rad, m]
  * @returns the 3x1 LLA position [m]
  */
-template <typename Derived>
-inline Eigen::Vector3<typename Derived::Scalar> ned2lla(
-    const Eigen::DenseBase<Derived> &ned, const Eigen::DenseBase<Derived> &lla0) {
-  Eigen::Vector3<typename Derived::Scalar> lla;
+template <typename Derived1, typename Derived2>
+inline Eigen::Vector3<typename Derived1::Scalar> ned2lla(
+    const Eigen::DenseBase<Derived1> &ned, const Eigen::DenseBase<Derived2> &lla0) {
+  Eigen::Vector3<typename Derived1::Scalar> lla;
   ned2lla(ned, lla0, lla);
   return lla;
 }
@@ -482,15 +485,16 @@ inline Eigen::Vector3<typename Derived::Scalar> ned2lla(
  * @param lla0 3x1 Reference LLA position [rad, rad, m]
  * @param lla  3x1 LLA position [m]
  */
-template <typename Derived1, typename Derived2>
+template <typename Derived1, typename Derived2, typename Derived3>
 inline void enu2lla(
     const Eigen::DenseBase<Derived1> &enu,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived2> &lla) {
+    Eigen::DenseBase<Derived3> &lla) {
   ASSERT_EIGEN_VEC_SIZE(Derived1, enu, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
-  ASSERT_EIGEN_VEC_SIZE(Derived2, lla, 3);
+  ASSERT_EIGEN_VEC_SIZE(Derived3, lla, 3);
   ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_TYPE(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -506,10 +510,10 @@ inline void enu2lla(
  * @param lla0 3x1 Reference LLA position [rad, rad, m]
  * @returns the 3x1 LLA position [m]
  */
-template <typename Derived>
-inline Eigen::Vector3<typename Derived::Scalar> enu2lla(
-    const Eigen::DenseBase<Derived> &enu, const Eigen::DenseBase<Derived> &lla0) {
-  Eigen::Vector3<typename Derived::Scalar> lla;
+template <typename Derived1, typename Derived2>
+inline Eigen::Vector3<typename Derived1::Scalar> enu2lla(
+    const Eigen::DenseBase<Derived1> &enu, const Eigen::DenseBase<Derived2> &lla0) {
+  Eigen::Vector3<typename Derived1::Scalar> lla;
   enu2lla(enu, lla0, lla);
   return lla;
 }

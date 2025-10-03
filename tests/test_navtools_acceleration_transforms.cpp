@@ -24,10 +24,10 @@ class AccelerationTransformTest : public ::testing::Test {
   Eigen::Vector3d a_ecef_expected_ = {0.123, -0.456, 0.789};
 
   // Pre-calculated values for comparison (based on the CORRECT formulas)
-  Eigen::Vector3d a_ned_expected_ = nt::ecef2nedDcm<Eigen::Matrix3d>(lla0_) * a_ecef_expected_;
-  Eigen::Vector3d a_enu_expected_ = nt::ecef2enuDcm<Eigen::Matrix3d>(lla0_) * a_ecef_expected_;
+  Eigen::Vector3d a_ned_expected_ = nt::ecef2nedDcm(lla0_) * a_ecef_expected_;
+  Eigen::Vector3d a_enu_expected_ = nt::ecef2enuDcm(lla0_) * a_ecef_expected_;
   Eigen::Vector3d a_eci_expected_ =
-      nt::ecef2eciDcm<Eigen::Matrix3d>(dt_) *
+      nt::ecef2eciDcm(dt_) *
       (a_ecef_expected_ + 2.0 * nt::OMEGA_ECEF<double>.cross(v_ecef_expected_) +
        nt::OMEGA_ECEF<double>.cross(nt::OMEGA_ECEF<double>.cross(r_ecef_expected_)));
   ;

@@ -18,10 +18,10 @@ class AngularVelocityTest : public ::testing::Test {
   const Eigen::Vector3d lla0_ = {0.594, -2.063, 0.0};
 
   Eigen::Vector3d w_ecef_expected_ = {1.0, -0.2, 0.03};
-  Eigen::Vector3d w_ned_expected_ = nt::ecef2nedDcm<Eigen::Matrix3d>(lla0_) * w_ecef_expected_;
-  Eigen::Vector3d w_enu_expected_ = nt::ecef2enuDcm<Eigen::Matrix3d>(lla0_) * w_ecef_expected_;
+  Eigen::Vector3d w_ned_expected_ = nt::ecef2nedDcm(lla0_) * w_ecef_expected_;
+  Eigen::Vector3d w_enu_expected_ = nt::ecef2enuDcm(lla0_) * w_ecef_expected_;
   Eigen::Vector3d w_eci_expected_ =
-      nt::ecef2eciDcm<Eigen::Matrix3d>(dt_) * (w_ecef_expected_ + nt::OMEGA_ECEF<double>);
+      nt::ecef2eciDcm(dt_) * (w_ecef_expected_ + nt::OMEGA_ECEF<double>);
 };
 
 // Test for ecef2eciw
