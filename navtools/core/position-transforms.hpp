@@ -130,8 +130,8 @@ inline void ecef2ned(
   ASSERT_EIGEN_TYPE(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
-  Eigen::Matrix<Scalar, 3, 3> C_e_n;
-  Derived1 xyz0;
+  Eigen::Matrix3<Scalar> C_e_n;
+  Eigen::Vector3<Scalar> xyz0;
   ecef2nedDcm(lla0, C_e_n);
   lla2ecef(lla0, xyz0);
   ned.derived() = C_e_n * (xyz.derived() - xyz0);
@@ -173,8 +173,8 @@ inline void ecef2enu(
   ASSERT_EIGEN_TYPE(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
-  Eigen::Matrix<Scalar, 3, 3> C_e_n;
-  Derived1 xyz0;
+  Eigen::Matrix3<Scalar> C_e_n;
+  Eigen::Vector3<Scalar> xyz0;
   ecef2enuDcm(lla0, C_e_n);
   lla2ecef(lla0, xyz0);
   enu.derived() = C_e_n * (xyz.derived() - xyz0);
@@ -213,7 +213,7 @@ inline void ned2ecef(
   ASSERT_EIGEN_VEC_SIZE(Derived3, xyz, 3);
   ASSERT_EIGEN_TYPE(Derived1, Derived2);
   ASSERT_EIGEN_TYPE(Derived1, Derived3);
-  using Scalar = typename Derived2::Scalar;
+  using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix<Scalar, 3, 3> C_n_e;
   ned2ecefDcm(lla0, C_n_e);
