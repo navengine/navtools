@@ -3,7 +3,6 @@
 
 #include "navtools/core/macros.hpp"
 #include <Eigen/Dense>
-#include <cmath>
 #include <numbers>
 
 namespace nt {
@@ -17,7 +16,7 @@ NEW_FP_CONST(SQRT_HALF, num::sqrt2_v<T> / 2.0);     // sqrt(0.5)
 NEW_FP_CONST(PI, num::pi_v<T>);                     // pi
 NEW_FP_CONST(HALF_PI, 0.5 * num::pi_v<T>);          // pi/2
 NEW_FP_CONST(TWO_PI, 2.0 * num::pi_v<T>);           // 2*pi
-NEW_FP_CONST(PI_SQU, std::pow(num::pi_v<T>, 2));    // pi^2
+NEW_FP_CONST(PI_SQU, num::pi_v<T>* num::pi_v<T>);   // pi^2
 NEW_FP_CONST(SQRT_PI, 1.0 / num::inv_sqrtpi_v<T>);  // sqrt(pi)
 NEW_FP_CONST(R2D, 180.0 * num::inv_pi_v<T>);        // radians to degrees
 NEW_FP_CONST(D2R, num::pi_v<T> / 180.0);            // degrees to radians
