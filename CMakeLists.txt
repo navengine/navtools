@@ -16,7 +16,7 @@ option(NAVTOOLS_BUILD_TESTS "Enable compilation of navtools tests (default is OF
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra -O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-ffast-math -DNDEBUG -march=native -03")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math -fno-math-errno -DNDEBUG -march=native")
 
 # --- Install path configuration ---
 include(GNUInstallDirs)
