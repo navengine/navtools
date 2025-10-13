@@ -48,14 +48,13 @@ target_include_directories (${PROJECT_NAME}
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
+        ${EIGEN3_INCLUDE_DIRS}
 )
-list(APPEND EXT_LIB "Eigen3::Eigen")
 if (BUILD_WITH_BLAS)
     find_package(BLAS REQUIRED)
-    list(APPEND EXT_LIB "${BLAS_LIBRARIES}")
+    target_link_libraries(${PROJECT_NAME} INTERFACE ${BLAS_LIBRARIES})
     target_compile_definitions(${PROJECT_NAME} INTERFACE EIGEN_USE_BLAS)
 endif()
-target_link_libraries(${PROJECT_NAME} INTERFACE ${EXT_LIB})
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # --- Install rules ---
