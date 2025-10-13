@@ -55,7 +55,7 @@ if (BUILD_WITH_BLAS)
     list(APPEND EXT_LIB "${BLAS_LIBRARIES}")
     target_compile_definitions(${PROJECT_NAME} INTERFACE EIGEN_USE_BLAS)
 endif()
-target_link_libraries(${PROJECT_NAME} INTERFACE Eigen3::Eigen)
+target_link_libraries(${PROJECT_NAME} INTERFACE ${EXT_LIB})
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # --- Install rules ---
