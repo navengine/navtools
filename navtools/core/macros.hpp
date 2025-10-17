@@ -3,7 +3,7 @@
 
 #include <Eigen/Dense>
 
-#define NEW_FP_CONST(name, value) \
+#define DEFINE_FP_CONSTANT(name, value) \
   template <typename T = double>  \
   inline constexpr T name = static_cast<T>(value)
 
@@ -47,13 +47,13 @@
   ASSERT_EIGEN_NUM_ROWS(Derived, obj, Rows)             \
   ASSERT_EIGEN_NUM_COLS(Derived, obj, Cols)
 
-#define ASSERT_EIGEN_TYPE(Derived1, Derived2)                               \
-  static_assert(                                                            \
-      std::is_same_v<typename Derived1::Scalar, typename Derived2::Scalar>, \
-      "Eigen scalar type constraint not upheld")
-
 #define ASSERT_EIGEN_SCALAR_TYPE(Derived, Scalar) \
   static_assert(                                  \
       std::is_same_v<typename Derived::Scalar, Scalar>, "Eigen scalar type constraint not upheld")
+
+#define ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2)                        \
+  static_assert(                                                            \
+      std::is_same_v<typename Derived1::Scalar, typename Derived2::Scalar>, \
+      "Eigen scalar type constraint not upheld")
 
 #endif

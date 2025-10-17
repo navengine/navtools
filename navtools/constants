@@ -1,0 +1,6 @@
+#ifndef NAVTOOLS_CONSTANTS_
+#define NAVTOOLS_CONSTANTS_
+
+#include "core/constants.hpp"
+
+#endif

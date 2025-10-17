@@ -1,5 +1,5 @@
-#ifndef NAVTOOLS_COORDINATES_HPP
-#define NAVTOOLS_COORDINATES_HPP
+#ifndef NAVTOOLS_COORDINATES_
+#define NAVTOOLS_COORDINATES_
 
 #include "navtools/core/acceleration-transforms.hpp"
 #include "navtools/core/angular-rate-transforms.hpp"

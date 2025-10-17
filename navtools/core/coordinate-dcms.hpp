@@ -16,7 +16,8 @@ namespace nt {
  * @param R  3x3 ECI->ECEF rotation matrix
  */
 template <typename Derived>
-inline void eci2ecefDcm(const typename Derived::Scalar dt, Eigen::DenseBase<Derived> &R) {
+inline void eci2ecefDcm(const typename Derived::Scalar& dt, Eigen::DenseBase<Derived> &R)
+{
   ASSERT_EIGEN_MAT_SIZE(Derived, R, 3, 3);
   using Scalar = typename Derived::Scalar;
 
@@ -38,7 +39,8 @@ inline void eci2ecefDcm(const typename Derived::Scalar dt, Eigen::DenseBase<Deri
  * @returns the 3x3 ECI->ECEF rotation matrix
  */
 template <typename Scalar = double>
-inline Eigen::Matrix3<Scalar> eci2ecefDcm(const Scalar dt) {
+inline Eigen::Matrix3<Scalar> eci2ecefDcm(const Scalar& dt)
+{
   Eigen::Matrix3<Scalar> R;
   eci2ecefDcm(dt, R);
   return R;
@@ -55,12 +57,13 @@ inline Eigen::Matrix3<Scalar> eci2ecefDcm(const Scalar dt) {
  */
 template <typename DerivedVec, typename DerivedMat>
 inline void eci2nedDcm(
-    const typename DerivedVec::Scalar dt,
+    const typename DerivedVec::Scalar& dt,
     const Eigen::DenseBase<DerivedVec> &lla0,
-    Eigen::DenseBase<DerivedMat> &R) {
+    Eigen::DenseBase<DerivedMat> &R)
+{
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, lla0, 3);
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, R, 3, 3);
-  ASSERT_EIGEN_TYPE(DerivedVec, DerivedMat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedMat);
   using Scalar = typename DerivedVec::Scalar;
 
   const auto &ref = lla0.derived();
@@ -86,7 +89,8 @@ inline void eci2nedDcm(
  */
 template <typename Derived>
 inline Eigen::Matrix3<typename Derived::Scalar> eci2nedDcm(
-    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &lla0) {
+    const typename Derived::Scalar& dt, const Eigen::DenseBase<Derived> &lla0)
+{
   Eigen::Matrix3<typename Derived::Scalar> R;
   eci2nedDcm(dt, lla0.derived(), R);
   return R;
@@ -103,12 +107,13 @@ inline Eigen::Matrix3<typename Derived::Scalar> eci2nedDcm(
  */
 template <typename DerivedVec, typename DerivedMat>
 inline void eci2enuDcm(
-    const typename DerivedVec::Scalar dt,
+    const typename DerivedVec::Scalar& dt,
     const Eigen::DenseBase<DerivedVec> &lla0,
-    Eigen::DenseBase<DerivedMat> &R) {
+    Eigen::DenseBase<DerivedMat> &R)
+{
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, lla0, 3);
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, R, 3, 3);
-  ASSERT_EIGEN_TYPE(DerivedVec, DerivedMat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedMat);
   using Scalar = typename DerivedVec::Scalar;
 
   const auto &ref = lla0.derived();
@@ -134,7 +139,8 @@ inline void eci2enuDcm(
  */
 template <typename Derived>
 inline Eigen::Matrix3<typename Derived::Scalar> eci2enuDcm(
-    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &lla0) {
+    const typename Derived::Scalar& dt, const Eigen::DenseBase<Derived> &lla0)
+{
   Eigen::Matrix3<typename Derived::Scalar> R;
   eci2enuDcm(dt, lla0.derived(), R);
   return R;
@@ -148,7 +154,8 @@ inline Eigen::Matrix3<typename Derived::Scalar> eci2enuDcm(
  * @param R  3x3 ECEF->ECI rotation matrix
  */
 template <typename Derived>
-inline void ecef2eciDcm(const typename Derived::Scalar dt, Eigen::DenseBase<Derived> &R) {
+inline void ecef2eciDcm(const typename Derived::Scalar& dt, Eigen::DenseBase<Derived> &R)
+{
   ASSERT_EIGEN_MAT_SIZE(Derived, R, 3, 3);
   using Scalar = typename Derived::Scalar;
 
@@ -170,7 +177,8 @@ inline void ecef2eciDcm(const typename Derived::Scalar dt, Eigen::DenseBase<Deri
  * @returns the 3x3 ECEF->ECI rotation matrix
  */
 template <typename Scalar = double>
-inline Eigen::Matrix3<Scalar> ecef2eciDcm(const Scalar dt) {
+inline Eigen::Matrix3<Scalar> ecef2eciDcm(const Scalar& dt)
+{
   Eigen::Matrix3<Scalar> R;
   ecef2eciDcm(dt, R);
   return R;
@@ -185,10 +193,11 @@ inline Eigen::Matrix3<Scalar> ecef2eciDcm(const Scalar dt) {
  * @param R    3x3 ECEF->NED rotation matrix
  */
 template <typename DerivedVec, typename DerivedMat>
-inline void ecef2nedDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBase<DerivedMat> &R) {
+inline void ecef2nedDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBase<DerivedMat> &R)
+{
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, lla0, 3);
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, R, 3, 3);
-  ASSERT_EIGEN_TYPE(DerivedVec, DerivedMat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedMat);
   using Scalar = typename DerivedVec::Scalar;
 
   const auto &ref = lla0.derived();
@@ -212,7 +221,8 @@ inline void ecef2nedDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBa
  * @returns the 3x3 ECEF->NED rotation matrix
  */
 template <typename Derived>
-inline Eigen::Matrix3<typename Derived::Scalar> ecef2nedDcm(const Eigen::DenseBase<Derived> &lla0) {
+inline Eigen::Matrix3<typename Derived::Scalar> ecef2nedDcm(const Eigen::DenseBase<Derived> &lla0)
+{
   Eigen::Matrix3<typename Derived::Scalar> R;
   ecef2nedDcm(lla0.derived(), R);
   return R;
@@ -227,10 +237,11 @@ inline Eigen::Matrix3<typename Derived::Scalar> ecef2nedDcm(const Eigen::DenseBa
  * @param R    3x3 ECEF->ENU rotation matrix
  */
 template <typename DerivedVec, typename DerivedMat>
-inline void ecef2enuDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBase<DerivedMat> &R) {
+inline void ecef2enuDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBase<DerivedMat> &R)
+{
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, lla0, 3);
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, R, 3, 3);
-  ASSERT_EIGEN_TYPE(DerivedVec, DerivedMat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedMat);
   using Scalar = typename DerivedVec::Scalar;
 
   const auto &ref = lla0.derived();
@@ -254,7 +265,8 @@ inline void ecef2enuDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBa
  * @param R    3x3 ECEF->ENU rotation matrix
  */
 template <typename Derived>
-inline Eigen::Matrix3<typename Derived::Scalar> ecef2enuDcm(const Eigen::DenseBase<Derived> &lla0) {
+inline Eigen::Matrix3<typename Derived::Scalar> ecef2enuDcm(const Eigen::DenseBase<Derived> &lla0)
+{
   Eigen::Matrix3<typename Derived::Scalar> R;
   ecef2enuDcm(lla0.derived(), R);
   return R;
@@ -271,12 +283,13 @@ inline Eigen::Matrix3<typename Derived::Scalar> ecef2enuDcm(const Eigen::DenseBa
  */
 template <typename DerivedVec, typename DerivedMat>
 inline void ned2eciDcm(
-    const typename DerivedVec::Scalar dt,
+    const typename DerivedVec::Scalar& dt,
     const Eigen::DenseBase<DerivedVec> &lla0,
-    Eigen::DenseBase<DerivedMat> &R) {
+    Eigen::DenseBase<DerivedMat> &R)
+{
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, lla0, 3);
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, R, 3, 3);
-  ASSERT_EIGEN_TYPE(DerivedVec, DerivedMat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedMat);
   using Scalar = typename DerivedVec::Scalar;
 
   const auto &ref = lla0.derived();
@@ -302,7 +315,8 @@ inline void ned2eciDcm(
  */
 template <typename Derived>
 inline Eigen::Matrix3<typename Derived::Scalar> ned2eciDcm(
-    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &lla0) {
+    const typename Derived::Scalar& dt, const Eigen::DenseBase<Derived> &lla0)
+{
   Eigen::Matrix3<typename Derived::Scalar> R;
   ned2eciDcm(dt, lla0.derived(), R);
   return R;
@@ -317,10 +331,11 @@ inline Eigen::Matrix3<typename Derived::Scalar> ned2eciDcm(
  * @param R    3x3 NED->ECEF rotation matrix
  */
 template <typename DerivedVec, typename DerivedMat>
-inline void ned2ecefDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBase<DerivedMat> &R) {
+inline void ned2ecefDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBase<DerivedMat> &R)
+{
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, R, 3, 3);
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, lla0, 3);
-  ASSERT_EIGEN_TYPE(DerivedVec, DerivedMat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedMat);
   using Scalar = typename DerivedVec::Scalar;
 
   const auto &ref = lla0.derived();
@@ -343,7 +358,8 @@ inline void ned2ecefDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBa
  * @returns the 3x3 NED->ECEF rotation matrix
  */
 template <typename Derived>
-inline Eigen::Matrix3<typename Derived::Scalar> ned2ecefDcm(const Eigen::DenseBase<Derived> &lla0) {
+inline Eigen::Matrix3<typename Derived::Scalar> ned2ecefDcm(const Eigen::DenseBase<Derived> &lla0)
+{
   Eigen::Matrix3<typename Derived::Scalar> R;
   ned2ecefDcm(lla0.derived(), R);
   return R;
@@ -356,7 +372,8 @@ inline Eigen::Matrix3<typename Derived::Scalar> ned2ecefDcm(const Eigen::DenseBa
  * @param R 3x3 NED->ENU rotation matrix
  */
 template <typename Derived>
-inline void ned2enuDcm(Eigen::DenseBase<Derived> &R) {
+inline void ned2enuDcm(Eigen::DenseBase<Derived> &R)
+{
   ASSERT_EIGEN_MAT_SIZE(Derived, R, 3, 3);
   R.derived() << 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0;
 }
@@ -368,7 +385,8 @@ inline void ned2enuDcm(Eigen::DenseBase<Derived> &R) {
  * @returns 3x3 NED->ENU rotation matrix
  */
 template <typename Scalar = double>
-inline Eigen::Matrix3<Scalar> ned2enuDcm() {
+inline Eigen::Matrix3<Scalar> ned2enuDcm()
+{
   Eigen::Matrix3<Scalar> R;
   ned2enuDcm(R);
   return R;
@@ -385,12 +403,13 @@ inline Eigen::Matrix3<Scalar> ned2enuDcm() {
  */
 template <typename DerivedVec, typename DerivedMat>
 inline void enu2eciDcm(
-    const typename DerivedVec::Scalar dt,
+    const typename DerivedVec::Scalar& dt,
     const Eigen::DenseBase<DerivedVec> &lla0,
-    Eigen::DenseBase<DerivedMat> &R) {
+    Eigen::DenseBase<DerivedMat> &R)
+{
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, lla0, 3);
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, R, 3, 3);
-  ASSERT_EIGEN_TYPE(DerivedVec, DerivedMat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedMat);
   using Scalar = typename DerivedVec::Scalar;
 
   const auto &ref = lla0.derived();
@@ -416,7 +435,8 @@ inline void enu2eciDcm(
  */
 template <typename Derived>
 inline Eigen::Matrix3<typename Derived::Scalar> enu2eciDcm(
-    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &lla0) {
+    const typename Derived::Scalar& dt, const Eigen::DenseBase<Derived> &lla0)
+{
   Eigen::Matrix3<typename Derived::Scalar> R;
   enud2eciDcm(dt, lla0.derived(), R);
   return R;
@@ -431,10 +451,11 @@ inline Eigen::Matrix3<typename Derived::Scalar> enu2eciDcm(
  * @param R    3x3 ENU->ECEF rotation matrix
  */
 template <typename DerivedVec, typename DerivedMat>
-inline void enu2ecefDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBase<DerivedMat> &R) {
+inline void enu2ecefDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBase<DerivedMat> &R)
+{
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, R, 3, 3);
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, lla0, 3);
-  ASSERT_EIGEN_TYPE(DerivedVec, DerivedMat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedMat);
   using Scalar = typename DerivedVec::Scalar;
 
   const auto &ref = lla0.derived();
@@ -457,7 +478,8 @@ inline void enu2ecefDcm(const Eigen::DenseBase<DerivedVec> &lla0, Eigen::DenseBa
  * @returns the 3x3 ENU->ECEF rotation matrix
  */
 template <typename Derived>
-inline Eigen::Matrix3<typename Derived::Scalar> enu2ecefDcm(const Eigen::DenseBase<Derived> &lla0) {
+inline Eigen::Matrix3<typename Derived::Scalar> enu2ecefDcm(const Eigen::DenseBase<Derived> &lla0)
+{
   Eigen::Matrix3<typename Derived::Scalar> R;
   enu2ecefDcm(lla0.derived(), R);
   return R;
@@ -470,7 +492,8 @@ inline Eigen::Matrix3<typename Derived::Scalar> enu2ecefDcm(const Eigen::DenseBa
  * @param R 3x3 ENU->NED rotation matrix
  */
 template <typename Derived>
-inline void enu2nedDcm(Eigen::DenseBase<Derived> &R) {
+inline void enu2nedDcm(Eigen::DenseBase<Derived> &R)
+{
   ASSERT_EIGEN_MAT_SIZE(Derived, R, 3, 3);
   R.derived() << 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0;
 }
@@ -482,7 +505,8 @@ inline void enu2nedDcm(Eigen::DenseBase<Derived> &R) {
  * @returns 3x3 ENU->NED rotation matrix
  */
 template <typename Scalar = double>
-inline Eigen::Matrix3<Scalar> enu2nedDcm() {
+inline Eigen::Matrix3<Scalar> enu2nedDcm()
+{
   Eigen::Matrix3<Scalar> R;
   ned2enuDcm(R);
   return R;

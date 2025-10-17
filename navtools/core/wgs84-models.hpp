@@ -123,7 +123,7 @@ inline auto TransportRate(
     const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<Derived2> &v_nb_e) {
   ASSERT_EIGEN_VEC_SIZE(Derived1, lla, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, v_nb_e, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
   using Scalar = typename Derived1::Scalar;
 
   const Scalar phi = lla.derived()(0), h = lla.derived()(2);
@@ -154,7 +154,7 @@ inline auto CoriolisRate(
     const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<Derived2> &v_nb_e) {
   ASSERT_EIGEN_VEC_SIZE(Derived1, lla, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, v_nb_e, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> w_ie_n = EarthRate<isNed>(lla.derived()(0));

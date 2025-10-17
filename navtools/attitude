@@ -1,5 +1,5 @@
-#ifndef NAVTOOLS_ATTITUDE_HPP
-#define NAVTOOLS_ATTITUDE_HPP
+#ifndef NAVTOOLS_ATTITUDE_
+#define NAVTOOLS_ATTITUDE_
 
 #include "navtools/core/attitude-transforms.hpp"
 #include "navtools/core/constants.hpp"

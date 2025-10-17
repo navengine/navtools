@@ -12,78 +12,82 @@ namespace nt {
 /**
  * *=== ecef2nedv ===*
  * @brief Converts ECEF velocity to NED velocity
- * @param v_xyz Velocity vector in the ECEF frame (m/s)
+ * @param v_ecef Velocity vector in the ECEF frame (m/s)
  * @param lla0  Reference point Latitude, Longitude, Altitude (rad,rad,m)
  * @param v_ned The velocity vector in the NED frame (m/s)
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline void ecef2nedv(
-    const Eigen::DenseBase<Derived1>& v_xyz,
+    const Eigen::DenseBase<Derived1>& v_ecef,
     const Eigen::DenseBase<Derived2>& lla0,
-    Eigen::DenseBase<Derived3>& v_ned) {
-  ASSERT_EIGEN_VEC_SIZE(Derived1, v_xyz, 3);
+    Eigen::DenseBase<Derived3>& v_ned)
+{
+  ASSERT_EIGEN_VEC_SIZE(Derived1, v_ecef, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, v_ned, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix3<Scalar> C_e_n;
   ecef2nedDcm(lla0, C_e_n);
-  v_ned.derived() = C_e_n * v_xyz.derived();
+  v_ned.derived() = C_e_n * v_ecef.derived();
 }
 
 /**
  * *=== ecef2nedv ===*
  * @brief Converts ECEF velocity to NED velocity
- * @param v_xyz Velocity vector in the ECEF frame (m/s)
+ * @param v_ecef Velocity vector in the ECEF frame (m/s)
  * @param lla0  Reference point Latitude, Longitude, Altitude (rad,rad,m)
  * @returns The velocity vector in the NED frame (m/s)
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> ecef2nedv(
-    const Eigen::DenseBase<Derived1>& v_xyz, const Eigen::DenseBase<Derived2>& lla0) {
+    const Eigen::DenseBase<Derived1>& v_ecef, const Eigen::DenseBase<Derived2>& lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> v_ned;
-  ecef2nedv(v_xyz, lla0, v_ned);
+  ecef2nedv(v_ecef, lla0, v_ned);
   return v_ned;
 }
 
 /**
  * *=== ecef2enuv ===*
  * @brief Converts ECEF velocity to ENU velocity
- * @param v_xyz Velocity vector in the ECEF frame (m/s)
+ * @param v_ecef Velocity vector in the ECEF frame (m/s)
  * @param lla0  Reference point Latitude, Longitude, Altitude (rad,rad,m)
  * @param v_enu The velocity vector in the ENU frame (m/s)
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline void ecef2enuv(
-    const Eigen::DenseBase<Derived1>& v_xyz,
+    const Eigen::DenseBase<Derived1>& v_ecef,
     const Eigen::DenseBase<Derived2>& lla0,
-    Eigen::DenseBase<Derived3>& v_enu) {
-  ASSERT_EIGEN_VEC_SIZE(Derived1, v_xyz, 3);
+    Eigen::DenseBase<Derived3>& v_enu)
+{
+  ASSERT_EIGEN_VEC_SIZE(Derived1, v_ecef, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, v_enu, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix3<Scalar> C_e_n;
   ecef2enuDcm(lla0, C_e_n);
-  v_enu.derived() = C_e_n * v_xyz.derived();
+  v_enu.derived() = C_e_n * v_ecef.derived();
 }
 
 /**
  * *=== ecef2enuv ===*
  * @brief Converts ECEF velocity to ENU velocity
- * @param v_xyz Velocity vector in the ECEF frame (m/s)
+ * @param v_ecef Velocity vector in the ECEF frame (m/s)
  * @param lla0  Reference point Latitude, Longitude, Altitude (rad,rad,m)
  * @returns The velocity vector in the ENU frame (m/s)
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> ecef2enuv(
-    const Eigen::DenseBase<Derived1>& v_xyz, const Eigen::DenseBase<Derived2>& lla0) {
+    const Eigen::DenseBase<Derived1>& v_ecef, const Eigen::DenseBase<Derived2>& lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> v_enu;
-  ecef2enuv(v_xyz, lla0, v_enu);
+  ecef2enuv(v_ecef, lla0, v_enu);
   return v_enu;
 }
 
@@ -92,23 +96,24 @@ inline Eigen::Vector3<typename Derived1::Scalar> ecef2enuv(
  * @brief Converts NED velocity to ECEF velocity.
  * @param v_ned The velocity vector in the NED frame (m/s)
  * @param lla0  Reference point Latitude, Longitude, Altitude (rad,rad,m)
- * @param v_xyz Velocity vector in the ECEF frame (m/s)
+ * @param v_ecef Velocity vector in the ECEF frame (m/s)
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline void ned2ecefv(
-    const Eigen::DenseBase<Derived1>& v_ned,
     const Eigen::DenseBase<Derived2>& lla0,
-    Eigen::DenseBase<Derived3>& v_xyz) {
+    const Eigen::DenseBase<Derived1>& v_ned,
+    Eigen::DenseBase<Derived3>& v_ecef)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, v_ned, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
-  ASSERT_EIGEN_VEC_SIZE(Derived3, v_xyz, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_VEC_SIZE(Derived3, v_ecef, 3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix3<Scalar> C_n_e;
   ned2ecefDcm(lla0, C_n_e);
-  v_xyz.derived() = C_n_e * v_ned.derived();
+  v_ecef.derived() = C_n_e * v_ned.derived();
 }
 
 /**
@@ -120,10 +125,11 @@ inline void ned2ecefv(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> ned2ecefv(
-    const Eigen::DenseBase<Derived1>& v_ned, const Eigen::DenseBase<Derived2>& lla0) {
-  Eigen::Vector3<typename Derived1::Scalar> v_xyz;
-  ned2ecefv(v_ned, lla0, v_xyz);
-  return v_xyz;
+    const Eigen::DenseBase<Derived2>& lla0, const Eigen::DenseBase<Derived1>& v_ned)
+{
+  Eigen::Vector3<typename Derived1::Scalar> v_ecef;
+  ned2ecefv(lla0, v_ned, v_ecef);
+  return v_ecef;
 }
 
 /**
@@ -131,23 +137,24 @@ inline Eigen::Vector3<typename Derived1::Scalar> ned2ecefv(
  * @brief Converts ENU velocity to ECEF velocity.
  * @param v_enu The velocity vector in the ENU frame (m/s)
  * @param lla0  Reference point Latitude, Longitude, Altitude (rad,rad,m)
- * @param v_xyz Velocity vector in the ECEF frame (m/s)
+ * @param v_ecef Velocity vector in the ECEF frame (m/s)
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline void enu2ecefv(
-    const Eigen::DenseBase<Derived1>& v_enu,
     const Eigen::DenseBase<Derived2>& lla0,
-    Eigen::DenseBase<Derived3>& v_xyz) {
+    const Eigen::DenseBase<Derived1>& v_enu,
+    Eigen::DenseBase<Derived3>& v_ecef)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, v_enu, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
-  ASSERT_EIGEN_VEC_SIZE(Derived3, v_xyz, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_VEC_SIZE(Derived3, v_ecef, 3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix3<Scalar> C_n_e;
   enu2ecefDcm(lla0, C_n_e);
-  v_xyz.derived() = C_n_e * v_enu.derived();
+  v_ecef.derived() = C_n_e * v_enu.derived();
 }
 
 /**
@@ -159,53 +166,56 @@ inline void enu2ecefv(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> enu2ecefv(
-    const Eigen::DenseBase<Derived1>& v_enu, const Eigen::DenseBase<Derived2>& lla0) {
-  Eigen::Vector3<typename Derived1::Scalar> v_xyz;
-  enu2ecefv(v_enu, lla0, v_xyz);
-  return v_xyz;
+    const Eigen::DenseBase<Derived2>& lla0, const Eigen::DenseBase<Derived1>& v_enu)
+{
+  Eigen::Vector3<typename Derived1::Scalar> v_ecef;
+  enu2ecefv(lla0, v_enu, v_ecef);
+  return v_ecef;
 }
 
 /**
  * *=== ecef2eciv ===*
  * @brief Converts ECEF velocity to ECI velocity
+ * @param r_ecef Position vector in the ECEF frame (m)
+ * @param v_ecef Velocity vector in the ECEF frame (m/s)
  * @param dt Elapsed time in seconds
- * @param v_xyz Velocity vector in the ECEF frame (m/s)
- * @param r_xyz Position vector in the ECEF frame (m)
  * @param v_eci The velocity vector in the ECI frame (m/s)
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline void ecef2eciv(
-    typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_xyz,
-    const Eigen::DenseBase<Derived2>& r_xyz,
-    Eigen::DenseBase<Derived3>& v_eci) {
-  ASSERT_EIGEN_VEC_SIZE(Derived1, v_xyz, 3);
-  ASSERT_EIGEN_VEC_SIZE(Derived2, r_xyz, 3);
+    const typename Derived1::Scalar& dt,
+    const Eigen::DenseBase<Derived2>& r_ecef,
+    const Eigen::DenseBase<Derived1>& v_ecef,
+    Eigen::DenseBase<Derived3>& v_eci)
+{
+  ASSERT_EIGEN_VEC_SIZE(Derived1, v_ecef, 3);
+  ASSERT_EIGEN_VEC_SIZE(Derived2, r_ecef, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, v_eci, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix3<Scalar> C_e_i;
   ecef2eciDcm(dt, C_e_i);
-  v_eci.derived() = C_e_i * (v_xyz.derived() + OMEGA_ECEF<Scalar>.cross(r_xyz.derived()));
+  v_eci.derived() = C_e_i * (v_ecef.derived() + OMEGA_ECEF<Scalar>.cross(r_ecef.derived()));
 }
 
 /**
  * *=== ecef2eciv ===*
  * @brief Converts ECEF velocity to ECI velocity
  * @param dt Elapsed time in seconds
- * @param v_xyz Velocity vector in the ECEF frame (m/s)
- * @param r_xyz Position vector in the ECEF frame (m)
+ * @param v_ecef Velocity vector in the ECEF frame (m/s)
+ * @param r_ecef Position vector in the ECEF frame (m)
  * @returns The velocity vector in the ECI frame (m/s)
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> ecef2eciv(
-    typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_xyz,
-    const Eigen::DenseBase<Derived2>& r_xyz) {
+    const typename Derived1::Scalar& dt,
+    const Eigen::DenseBase<Derived2>& r_ecef,
+    const Eigen::DenseBase<Derived1>& v_ecef)
+{
   Eigen::Vector3<typename Derived1::Scalar> v_eci;
-  ecef2eciv(dt, v_xyz, r_xyz, v_eci);
+  ecef2eciv(dt, r_ecef, v_ecef, v_eci);
   return v_eci;
 }
 
@@ -215,24 +225,25 @@ inline Eigen::Vector3<typename Derived1::Scalar> ecef2eciv(
  * @param dt Elapsed time in seconds
  * @param v_eci Velocity vector in the ECI frame (m/s)
  * @param r_eci Position vector in the ECI frame (m)
- * @param v_xyz The velocity vector in the ECEF frame (m/s)
+ * @param v_ecef The velocity vector in the ECEF frame (m/s)
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline void eci2ecefv(
-    typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_eci,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived2>& r_eci,
-    Eigen::DenseBase<Derived3>& v_xyz) {
+    const Eigen::DenseBase<Derived1>& v_eci,
+    Eigen::DenseBase<Derived3>& v_ecef)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, v_eci, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, r_eci, 3);
-  ASSERT_EIGEN_VEC_SIZE(Derived3, v_xyz, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_VEC_SIZE(Derived3, v_ecef, 3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix3<Scalar> C_i_e;
   eci2ecefDcm(dt, C_i_e);
-  v_xyz.derived() = C_i_e * (v_eci.derived() - OMEGA_ECEF<Scalar>.cross(r_eci.derived()));
+  v_ecef.derived() = C_i_e * (v_eci.derived() - OMEGA_ECEF<Scalar>.cross(r_eci.derived()));
 }
 
 /**
@@ -244,12 +255,13 @@ inline void eci2ecefv(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> eci2ecefv(
-    typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_eci,
-    const Eigen::DenseBase<Derived2>& r_eci) {
-  Eigen::Vector3<typename Derived1::Scalar> v_xyz;
-  eci2ecefv(dt, v_eci, r_eci, v_xyz);
-  return v_xyz;
+    const typename Derived1::Scalar& dt,
+    const Eigen::DenseBase<Derived2>& r_eci,
+    const Eigen::DenseBase<Derived1>& v_eci)
+{
+  Eigen::Vector3<typename Derived1::Scalar> v_ecef;
+  eci2ecefv(dt, r_eci, v_eci, v_ecef);
+  return v_ecef;
 }
 
 /**
@@ -263,23 +275,24 @@ inline Eigen::Vector3<typename Derived1::Scalar> eci2ecefv(
  */
 template <typename Derived1, typename Derived2, typename Derived3, typename Derived4>
 inline void eci2nedv(
-    typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_eci,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived2>& r_eci,
+    const Eigen::DenseBase<Derived1>& v_eci,
     const Eigen::DenseBase<Derived3>& lla0,
-    Eigen::DenseBase<Derived4>& v_ned) {
+    Eigen::DenseBase<Derived4>& v_ned)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, v_eci, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived1, r_eci, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived4, v_ned, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived4);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived4);
   using Scalar = typename Derived1::Scalar;
 
-  Eigen::Vector3<Scalar> v_xyz;
-  eci2ecefv(dt, v_eci, r_eci, v_xyz);
-  ecef2nedv(v_xyz, lla0, v_ned);
+  Eigen::Vector3<Scalar> v_ecef;
+  eci2ecefv(dt, r_eci, v_eci, v_ecef);
+  ecef2nedv(v_ecef, lla0, v_ned);
 }
 
 /**
@@ -293,12 +306,13 @@ inline void eci2nedv(
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline Eigen::Vector3<typename Derived1::Scalar> eci2nedv(
-    typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_eci,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived2>& r_eci,
-    const Eigen::DenseBase<Derived3>& lla0) {
+    const Eigen::DenseBase<Derived1>& v_eci,
+    const Eigen::DenseBase<Derived3>& lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> v_ned;
-  eci2nedv(dt, v_eci, r_eci, lla0, v_ned);
+  eci2nedv(dt, r_eci, v_eci, lla0, v_ned);
   return v_ned;
 }
 
@@ -313,23 +327,24 @@ inline Eigen::Vector3<typename Derived1::Scalar> eci2nedv(
  */
 template <typename Derived1, typename Derived2, typename Derived3, typename Derived4>
 inline void eci2enuv(
-    typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_eci,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived2>& r_eci,
+    const Eigen::DenseBase<Derived1>& v_eci,
     const Eigen::DenseBase<Derived3>& lla0,
-    Eigen::DenseBase<Derived4>& v_enu) {
+    Eigen::DenseBase<Derived4>& v_enu)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, v_eci, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived1, r_eci, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived4, v_enu, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived4);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived4);
   using Scalar = typename Derived1::Scalar;
 
-  Eigen::Vector3<Scalar> v_xyz;
-  eci2ecefv(dt, v_eci, r_eci, v_xyz);
-  ecef2enuv(v_xyz, lla0, v_enu);
+  Eigen::Vector3<Scalar> v_ecef;
+  eci2ecefv(dt, r_eci, v_eci, v_ecef);
+  ecef2enuv(v_ecef, lla0, v_enu);
 }
 
 /**
@@ -343,12 +358,13 @@ inline void eci2enuv(
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline Eigen::Vector3<typename Derived1::Scalar> eci2enuv(
-    typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_eci,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived2>& r_eci,
-    const Eigen::DenseBase<Derived3>& lla0) {
+    const Eigen::DenseBase<Derived1>& v_eci,
+    const Eigen::DenseBase<Derived3>& lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> v_enu;
-  eci2enuv(dt, v_eci, r_eci, lla0, v_enu);
+  eci2enuv(dt, r_eci, v_eci, lla0, v_enu);
   return v_enu;
 }
 
@@ -363,18 +379,19 @@ inline Eigen::Vector3<typename Derived1::Scalar> eci2enuv(
  */
 template <typename Derived1, typename Derived2, typename Derived3, typename Derived4>
 inline void ned2eciv(
-    const typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_ned,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived2>& r_ned,
+    const Eigen::DenseBase<Derived1>& v_ned,
     const Eigen::DenseBase<Derived3>& lla0,
-    Eigen::DenseBase<Derived4>& v_eci) {
+    Eigen::DenseBase<Derived4>& v_eci)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, v_ned, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, r_ned, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived4, v_eci, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived4);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived4);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix3<Scalar> C_n_e;
@@ -382,7 +399,7 @@ inline void ned2eciv(
   Eigen::Vector3<Scalar> v_xyz = C_n_e * v_ned.derived();
   Eigen::Vector3<Scalar> r_xyz0 = lla2ecef(lla0);
   Eigen::Vector3<Scalar> r_xyz = r_xyz0 + C_n_e * r_ned.derived();
-  ecef2eciv(dt, v_xyz, r_xyz, v_eci);
+  ecef2eciv(dt, r_xyz, v_xyz, v_eci);
 }
 
 /**
@@ -396,12 +413,13 @@ inline void ned2eciv(
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline Eigen::Vector3<typename Derived1::Scalar> ned2eciv(
-    const typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_ned,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived2>& r_ned,
-    const Eigen::DenseBase<Derived3>& lla0) {
+    const Eigen::DenseBase<Derived1>& v_ned,
+    const Eigen::DenseBase<Derived3>& lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> v_eci;
-  ned2eciv(dt, v_ned, r_ned, lla0, v_eci);
+  ned2eciv(dt, r_ned, v_ned, lla0, v_eci);
   return v_eci;
 }
 
@@ -416,18 +434,19 @@ inline Eigen::Vector3<typename Derived1::Scalar> ned2eciv(
  */
 template <typename Derived1, typename Derived2, typename Derived3, typename Derived4>
 inline void enu2eciv(
-    const typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_enu,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived2>& r_enu,
+    const Eigen::DenseBase<Derived1>& v_enu,
     const Eigen::DenseBase<Derived3>& lla0,
-    Eigen::DenseBase<Derived4>& v_eci) {
+    Eigen::DenseBase<Derived4>& v_eci)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, v_enu, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, r_enu, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived4, v_eci, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived4);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived4);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix3<Scalar> C_n_e;
@@ -435,7 +454,7 @@ inline void enu2eciv(
   Eigen::Vector3<Scalar> v_xyz = C_n_e * v_enu.derived();
   Eigen::Vector3<Scalar> r_xyz0 = lla2ecef(lla0);
   Eigen::Vector3<Scalar> r_xyz = r_xyz0 + C_n_e * r_enu.derived();
-  ecef2eciv(dt, v_xyz, r_xyz, v_eci);
+  ecef2eciv(dt, r_xyz, v_xyz, v_eci);
 }
 
 /**
@@ -449,12 +468,13 @@ inline void enu2eciv(
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline Eigen::Vector3<typename Derived1::Scalar> enu2eciv(
-    const typename Derived1::Scalar dt,
-    const Eigen::DenseBase<Derived1>& v_enu,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived2>& r_enu,
-    const Eigen::DenseBase<Derived3>& lla0) {
+    const Eigen::DenseBase<Derived1>& v_enu,
+    const Eigen::DenseBase<Derived3>& lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> v_eci;
-  enu2eciv(dt, v_enu, r_enu, lla0, v_eci);
+  enu2eciv(dt, r_enu, v_enu, lla0, v_eci);
   return v_eci;
 }
 

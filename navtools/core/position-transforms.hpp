@@ -18,10 +18,11 @@ namespace nt {
  * @param lla 3d vector of ellipsoidal LLA position (rad,rad,m)
  */
 template <typename Derived1, typename Derived2>
-inline void ecef2lla(const Eigen::DenseBase<Derived1> &xyz, Eigen::DenseBase<Derived2> &lla) {
+inline void ecef2lla(const Eigen::DenseBase<Derived1> &xyz, Eigen::DenseBase<Derived2> &lla)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, xyz, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
   using Scalar = typename Derived1::Scalar;
 
   const auto &in = xyz.derived();
@@ -60,7 +61,8 @@ inline void ecef2lla(const Eigen::DenseBase<Derived1> &xyz, Eigen::DenseBase<Der
  * @returns the 3d vector of ellipsoidal LLA position (rad,rad,m)
  */
 template <typename Derived>
-inline Eigen::Vector3<typename Derived::Scalar> ecef2lla(const Eigen::DenseBase<Derived> &xyz) {
+inline Eigen::Vector3<typename Derived::Scalar> ecef2lla(const Eigen::DenseBase<Derived> &xyz)
+{
   Eigen::Vector3<typename Derived::Scalar> lla;
   ecef2lla(xyz, lla);
   return lla;
@@ -74,10 +76,11 @@ inline Eigen::Vector3<typename Derived::Scalar> ecef2lla(const Eigen::DenseBase<
  * @param xyz 3d vector of cartesian ECEF position (m,m,m)
  */
 template <typename Derived1, typename Derived2>
-inline void lla2ecef(const Eigen::DenseBase<Derived1> &lla, Eigen::DenseBase<Derived2> &xyz) {
+inline void lla2ecef(const Eigen::DenseBase<Derived1> &lla, Eigen::DenseBase<Derived2> &xyz)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, lla, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, xyz, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
   using Scalar = typename Derived1::Scalar;
 
   const auto &in = lla.derived();
@@ -102,7 +105,8 @@ inline void lla2ecef(const Eigen::DenseBase<Derived1> &lla, Eigen::DenseBase<Der
  * @returns the 3d vector of cartesian ECEF position (m,m,m)
  */
 template <typename Derived>
-inline Eigen::Vector3<typename Derived::Scalar> lla2ecef(const Eigen::DenseBase<Derived> &lla) {
+inline Eigen::Vector3<typename Derived::Scalar> lla2ecef(const Eigen::DenseBase<Derived> &lla)
+{
   Eigen::Vector3<typename Derived::Scalar> xyz;
   lla2ecef(lla, xyz);
   return xyz;
@@ -122,12 +126,13 @@ template <typename Derived1, typename Derived2, typename Derived3>
 inline void ecef2ned(
     const Eigen::DenseBase<Derived1> &xyz,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &ned) {
+    Eigen::DenseBase<Derived3> &ned)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, xyz, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, ned, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, lla0, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix3<Scalar> C_e_n;
@@ -147,7 +152,8 @@ inline void ecef2ned(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> ecef2ned(
-    const Eigen::DenseBase<Derived1> &xyz, const Eigen::DenseBase<Derived2> &lla0) {
+    const Eigen::DenseBase<Derived1> &xyz, const Eigen::DenseBase<Derived2> &lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> ned;
   ecef2ned(xyz, lla0, ned);
   return ned;
@@ -165,12 +171,13 @@ template <typename Derived1, typename Derived2, typename Derived3>
 inline void ecef2enu(
     const Eigen::DenseBase<Derived1> &xyz,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &enu) {
+    Eigen::DenseBase<Derived3> &enu)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, xyz, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, enu, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, lla0, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix3<Scalar> C_e_n;
@@ -190,7 +197,8 @@ inline void ecef2enu(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> ecef2enu(
-    const Eigen::DenseBase<Derived1> &xyz, const Eigen::DenseBase<Derived2> &lla0) {
+    const Eigen::DenseBase<Derived1> &xyz, const Eigen::DenseBase<Derived2> &lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> enu;
   ecef2enu(xyz, lla0, enu);
   return enu;
@@ -207,12 +215,13 @@ template <typename Derived1, typename Derived2, typename Derived3>
 inline void ned2ecef(
     const Eigen::DenseBase<Derived1> &ned,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &xyz) {
+    Eigen::DenseBase<Derived3> &xyz)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, ned, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, xyz, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix<Scalar, 3, 3> C_n_e;
@@ -230,7 +239,8 @@ inline void ned2ecef(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> ned2ecef(
-    const Eigen::DenseBase<Derived1> &ned, const Eigen::DenseBase<Derived2> &lla0) {
+    const Eigen::DenseBase<Derived1> &ned, const Eigen::DenseBase<Derived2> &lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> xyz;
   ned2ecef(ned, lla0, xyz);
   return xyz;
@@ -247,12 +257,13 @@ template <typename Derived1, typename Derived2, typename Derived3>
 inline void enu2ecef(
     const Eigen::DenseBase<Derived1> &enu,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &xyz) {
+    Eigen::DenseBase<Derived3> &xyz)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, enu, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, xyz, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix<Scalar, 3, 3> C_n_e;
@@ -270,7 +281,8 @@ inline void enu2ecef(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> enu2ecef(
-    const Eigen::DenseBase<Derived1> &enu, const Eigen::DenseBase<Derived2> &lla0) {
+    const Eigen::DenseBase<Derived1> &enu, const Eigen::DenseBase<Derived2> &lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> xyz;
   enu2ecef(enu, lla0, xyz);
   return xyz;
@@ -288,12 +300,13 @@ inline Eigen::Vector3<typename Derived1::Scalar> enu2ecef(
  */
 template <typename Derived1, typename Derived2>
 inline void ecef2eci(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &xyz,
-    Eigen::DenseBase<Derived2> &eci) {
+    Eigen::DenseBase<Derived2> &eci)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, xyz, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, eci, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix<Scalar, 3, 3> C_e_i;
@@ -311,7 +324,9 @@ inline void ecef2eci(
  */
 template <typename Derived>
 inline Eigen::Vector3<typename Derived::Scalar> ecef2eci(
-    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &xyz) {
+    const typename Derived::Scalar& dt,
+    const Eigen::DenseBase<Derived> &xyz)
+{
   Eigen::Vector3<typename Derived::Scalar> eci;
   ecef2eci(dt, xyz, eci);
   return eci;
@@ -327,12 +342,12 @@ inline Eigen::Vector3<typename Derived::Scalar> ecef2eci(
  */
 template <typename Derived1, typename Derived2>
 inline void eci2ecef(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &eci,
     Eigen::DenseBase<Derived2> &xyz) {
   ASSERT_EIGEN_VEC_SIZE(Derived1, eci, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, xyz, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix<Scalar, 3, 3> C_i_e;
@@ -350,7 +365,7 @@ inline void eci2ecef(
  */
 template <typename Derived>
 inline Eigen::Vector3<typename Derived::Scalar> eci2ecef(
-    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &eci) {
+    const typename Derived::Scalar& dt, const Eigen::DenseBase<Derived> &eci) {
   Eigen::Vector3<typename Derived::Scalar> xyz;
   eci2ecef(dt, eci, xyz);
   return xyz;
@@ -370,10 +385,11 @@ template <typename Derived1, typename Derived2, typename Derived3>
 inline void lla2ned(
     const Eigen::DenseBase<Derived1> &lla,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &ned) {
+    Eigen::DenseBase<Derived3> &ned)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, ned, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -391,7 +407,8 @@ inline void lla2ned(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> lla2ned(
-    const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<Derived2> &lla0) {
+    const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<Derived2> &lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> ned;
   lla2ned(lla, lla0, ned);
   return ned;
@@ -409,10 +426,11 @@ template <typename Derived1, typename Derived2, typename Derived3>
 inline void lla2enu(
     const Eigen::DenseBase<Derived1> &lla,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &enu) {
+    Eigen::DenseBase<Derived3> &enu)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, enu, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -430,7 +448,8 @@ inline void lla2enu(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> lla2enu(
-    const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<Derived2> &lla0) {
+    const Eigen::DenseBase<Derived1> &lla, const Eigen::DenseBase<Derived2> &lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> enu;
   lla2enu(lla, lla0, enu);
   return enu;
@@ -448,12 +467,13 @@ template <typename Derived1, typename Derived2, typename Derived3>
 inline void ned2lla(
     const Eigen::DenseBase<Derived1> &ned,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &lla) {
+    Eigen::DenseBase<Derived3> &lla)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, ned, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, lla, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -471,7 +491,8 @@ inline void ned2lla(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> ned2lla(
-    const Eigen::DenseBase<Derived1> &ned, const Eigen::DenseBase<Derived2> &lla0) {
+    const Eigen::DenseBase<Derived1> &ned, const Eigen::DenseBase<Derived2> &lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> lla;
   ned2lla(ned, lla0, lla);
   return lla;
@@ -489,12 +510,13 @@ template <typename Derived1, typename Derived2, typename Derived3>
 inline void enu2lla(
     const Eigen::DenseBase<Derived1> &enu,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &lla) {
+    Eigen::DenseBase<Derived3> &lla)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, enu, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, lla, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -512,7 +534,8 @@ inline void enu2lla(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> enu2lla(
-    const Eigen::DenseBase<Derived1> &enu, const Eigen::DenseBase<Derived2> &lla0) {
+    const Eigen::DenseBase<Derived1> &enu, const Eigen::DenseBase<Derived2> &lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> lla;
   enu2lla(enu, lla0, lla);
   return lla;
@@ -530,12 +553,12 @@ inline Eigen::Vector3<typename Derived1::Scalar> enu2lla(
  */
 template <typename Derived1, typename Derived2>
 inline void lla2eci(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &lla,
     Eigen::DenseBase<Derived2> &eci) {
   ASSERT_EIGEN_VEC_SIZE(Derived1, lla, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, eci, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -555,7 +578,7 @@ inline void lla2eci(
  */
 template <typename Derived>
 inline Eigen::Vector3<typename Derived::Scalar> lla2eci(
-    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &lla) {
+    const typename Derived::Scalar& dt, const Eigen::DenseBase<Derived> &lla) {
   Eigen::Vector3<typename Derived::Scalar> eci;
   lla2eci(dt, lla, eci);
   return eci;
@@ -571,12 +594,12 @@ inline Eigen::Vector3<typename Derived::Scalar> lla2eci(
  */
 template <typename Derived1, typename Derived2>
 inline void eci2lla(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &eci,
     Eigen::DenseBase<Derived2> &lla) {
   ASSERT_EIGEN_VEC_SIZE(Derived1, eci, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived1, lla, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -594,7 +617,7 @@ inline void eci2lla(
  */
 template <typename Derived>
 inline Eigen::Vector3<typename Derived::Scalar> eci2lla(
-    const typename Derived::Scalar dt, const Eigen::DenseBase<Derived> &eci) {
+    const typename Derived::Scalar& dt, const Eigen::DenseBase<Derived> &eci) {
   Eigen::Vector3<typename Derived::Scalar> lla;
   eci2lla(dt, eci, lla);
   return lla;
@@ -611,15 +634,16 @@ inline Eigen::Vector3<typename Derived::Scalar> eci2lla(
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline void eci2ned(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &eci,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &ned) {
+    Eigen::DenseBase<Derived3> &ned)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, eci, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, ned, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -638,7 +662,7 @@ inline void eci2ned(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> eci2ned(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &eci,
     const Eigen::DenseBase<Derived2> &lla0) {
   Eigen::Vector3<typename Derived1::Scalar> ned;
@@ -656,15 +680,16 @@ inline Eigen::Vector3<typename Derived1::Scalar> eci2ned(
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline void ned2eci(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &ned,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &eci) {
+    Eigen::DenseBase<Derived3> &eci)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, ned, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, eci, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -684,9 +709,10 @@ inline void ned2eci(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> ned2eci(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &ned,
-    const Eigen::DenseBase<Derived2> &lla0) {
+    const Eigen::DenseBase<Derived2> &lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> eci;
   ned2eci(dt, ned, lla0, eci);
   return eci;
@@ -703,15 +729,16 @@ inline Eigen::Vector3<typename Derived1::Scalar> ned2eci(
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline void eci2enu(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &eci,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &enu) {
+    Eigen::DenseBase<Derived3> &enu)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, eci, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, enu, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -730,9 +757,10 @@ inline void eci2enu(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> eci2enu(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &eci,
-    const Eigen::DenseBase<Derived2> &lla0) {
+    const Eigen::DenseBase<Derived2> &lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> enu;
   eci2enu(dt, eci, lla0, enu);
   return enu;
@@ -748,15 +776,16 @@ inline Eigen::Vector3<typename Derived1::Scalar> eci2enu(
  */
 template <typename Derived1, typename Derived2, typename Derived3>
 inline void enu2eci(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &enu,
     const Eigen::DenseBase<Derived2> &lla0,
-    Eigen::DenseBase<Derived3> &eci) {
+    Eigen::DenseBase<Derived3> &eci)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, enu, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, lla0, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived3, eci, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
-  ASSERT_EIGEN_TYPE(Derived1, Derived3);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived3);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Vector3<Scalar> xyz;
@@ -776,9 +805,10 @@ inline void enu2eci(
  */
 template <typename Derived1, typename Derived2>
 inline Eigen::Vector3<typename Derived1::Scalar> enu2eci(
-    const typename Derived1::Scalar dt,
+    const typename Derived1::Scalar& dt,
     const Eigen::DenseBase<Derived1> &enu,
-    const Eigen::DenseBase<Derived2> &lla0) {
+    const Eigen::DenseBase<Derived2> &lla0)
+{
   Eigen::Vector3<typename Derived1::Scalar> eci;
   enu2eci(dt, enu, lla0, eci);
   return eci;
@@ -793,10 +823,11 @@ inline Eigen::Vector3<typename Derived1::Scalar> enu2eci(
  * @param enu  3x1 ENU position [m]
  */
 template <typename Derived1, typename Derived2>
-inline void ned2enu(const Eigen::DenseBase<Derived1> &ned, Eigen::DenseBase<Derived2> &enu) {
+inline void ned2enu(const Eigen::DenseBase<Derived1> &ned, Eigen::DenseBase<Derived2> &enu)
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, ned, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, enu, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix<Scalar, 3, 3> R;
@@ -811,7 +842,8 @@ inline void ned2enu(const Eigen::DenseBase<Derived1> &ned, Eigen::DenseBase<Deri
  * @param enu  3x1 ENU position [m]
  */
 template <typename Derived>
-inline Eigen::Vector3<typename Derived::Scalar> ned2enu(const Eigen::DenseBase<Derived> &ned) {
+inline Eigen::Vector3<typename Derived::Scalar> ned2enu(const Eigen::DenseBase<Derived> &ned)
+{
   Eigen::Vector3<typename Derived::Scalar> enu;
   ned2enu(ned, enu);
   return enu;
@@ -824,10 +856,11 @@ inline Eigen::Vector3<typename Derived::Scalar> ned2enu(const Eigen::DenseBase<D
  * @param ned  3x1 ENU position [m]
  */
 template <typename Derived1, typename Derived2>
-inline void enu2ned(const Eigen::DenseBase<Derived1> &enu, Eigen::DenseBase<Derived2> &ned) {
+inline void enu2ned(const Eigen::DenseBase<Derived1> &enu, Eigen::DenseBase<Derived2> &ned) 
+{
   ASSERT_EIGEN_VEC_SIZE(Derived1, ned, 3);
   ASSERT_EIGEN_VEC_SIZE(Derived2, enu, 3);
-  ASSERT_EIGEN_TYPE(Derived1, Derived2);
+  ASSERT_EIGEN_SAME_SCALAR(Derived1, Derived2);
   using Scalar = typename Derived1::Scalar;
 
   Eigen::Matrix<Scalar, 3, 3> R;
@@ -842,7 +875,8 @@ inline void enu2ned(const Eigen::DenseBase<Derived1> &enu, Eigen::DenseBase<Deri
  * @param ned  3x1 NED position [m]
  */
 template <typename Derived>
-inline Eigen::Vector3<typename Derived::Scalar> enu2ned(const Eigen::DenseBase<Derived> &enu) {
+inline Eigen::Vector3<typename Derived::Scalar> enu2ned(const Eigen::DenseBase<Derived> &enu)
+{
   Eigen::Vector3<typename Derived::Scalar> ned;
   enu2ned(enu, ned);
   return ned;

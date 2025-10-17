@@ -1,7 +1,7 @@
-#ifndef NAVTOOLS_CORE_UTILS_HPP
-#define NAVTOOLS_CORE_UTILS_HPP
+#ifndef NAVTOOLS_CORE_MATH_HPP
+#define NAVTOOLS_CORE_MATH_HPP
 
-#include "navtools/core/macros.hpp"
+#include "macros.hpp"
 #include <Eigen/Dense>
 
 namespace nt {
@@ -29,9 +29,9 @@ inline constexpr T CircMod(T x, const T y) {
  */
 template <typename DerivedVec, typename DerivedMat>
 inline void Skew(const Eigen::DenseBase<DerivedVec>& v, Eigen::DenseBase<DerivedMat>& M) {
-  ASSERT_EIGEN_VEC_SIZE(DerivedVec, v, 3);
+  ASSERT_EIGEN_MAT_SIZE(DerivedVec, v, 3, 1);
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, M, 3, 3);
-  ASSERT_EIGEN_SCALAR_TYPE(DerivedVec, DerivedMat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedMat);
 
   const auto& vec = v.derived();
   // clang-format off
@@ -49,9 +49,10 @@ inline void Skew(const Eigen::DenseBase<DerivedVec>& v, Eigen::DenseBase<Derived
  * @param v The 3-component input vector. It can be a column vector, row vector, etc
  * @return A 3x3 skew-symmetric matrix of the same scalar type as the input
  */
-template <typename DerivedMat, typename DerivedVec>
-inline DerivedMat Skew(const Eigen::DenseBase<DerivedVec>& v) {
-  DerivedMat M;
+template <typename DerivedVec>
+inline auto Skew(const Eigen::DenseBase<DerivedVec>& v) {
+  ASSERT_EIGEN_MAT_SIZE(DerivedVec, v, 3, 1);
+  Eigen::Matrix<typename DerivedVec::Scalar,3,3> M;
   Skew(v, M);
   return M;
 }
@@ -68,7 +69,7 @@ template <typename DerivedMat, typename DerivedVec>
 inline void Deskew(const Eigen::DenseBase<DerivedMat>& M, Eigen::DenseBase<DerivedVec>& v) {
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, v, 3);
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, M, 3, 3);
-  ASSERT_EIGEN_SCALAR_TYPE(DerivedVec, DerivedMat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedMat);
 
   const auto& Mat = M.derived();
   v << (Mat(2, 1) - Mat(1, 2)) / 2.0, (Mat(0, 2) - Mat(2, 0)) / 2.0, (Mat(1, 0) - Mat(0, 1)) / 2.0;

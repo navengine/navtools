@@ -430,7 +430,7 @@ inline DerivedMat euler2dcm(const Eigen::DenseBase<DerivedVec> &e) {
 template <RotationOrder order, typename DerivedVec, typename DerivedMat>
 inline void euler2dcm(const Eigen::DenseBase<DerivedVec> &e, Eigen::DenseBase<DerivedMat> &R) {
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, e, 3);
-  ASSERT_EIGEN_TYPE(DerivedMat, DerivedVec);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedMat, DerivedVec);
 
   const auto &eul = e.derived();
   angles2dcm<order>(eul(0), eul(1), eul(2), R);
@@ -466,7 +466,7 @@ template <RotationOrder order, typename DerivedVec, typename DerivedQuat>
 inline void euler2quat(const Eigen::DenseBase<DerivedVec> &e, Eigen::DenseBase<DerivedQuat> &q) {
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, e, 3);
   ASSERT_EIGEN_VEC_SIZE(DerivedQuat, q, 4);
-  ASSERT_EIGEN_TYPE(DerivedVec, DerivedQuat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedQuat);
 
   auto &eul = e.derived();
   angles2quat<order>(eul(0), eul(1), eul(2), q);
@@ -576,7 +576,7 @@ inline std::tuple<typename Derived::Scalar> dcm2angles(const Eigen::DenseBase<De
 template <RotationOrder order, typename DerivedVec, typename DerivedMat>
 inline void dcm2euler(const Eigen::DenseBase<DerivedMat> &R, Eigen::DenseBase<DerivedVec> &e) {
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, e, 3);
-  ASSERT_EIGEN_TYPE(DerivedMat, DerivedVec);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedMat, DerivedVec);
   auto &eul = e.derived();
   dcm2angles<order>(R, eul(0), eul(1), eul(2));
 }
@@ -609,7 +609,7 @@ template <typename DerivedMat, typename DerivedQuat>
 inline void dcm2quat(const Eigen::DenseBase<DerivedMat> &R, Eigen::DenseBase<DerivedQuat> &q) {
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, R, 3, 3);
   ASSERT_EIGEN_VEC_SIZE(DerivedQuat, q, 4);
-  ASSERT_EIGEN_TYPE(DerivedMat, DerivedQuat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedMat, DerivedQuat);
   using Scalar = typename DerivedMat::Scalar;
 
   const auto C = R.derived();
@@ -764,7 +764,7 @@ inline std::tuple<typename Derived::Scalar> quat2angles(const Eigen::DenseBase<D
 template <RotationOrder order, typename DerivedQuat, typename DerivedVec>
 inline void quat2euler(const Eigen::DenseBase<DerivedQuat> &q, Eigen::DenseBase<DerivedVec> &e) {
   ASSERT_EIGEN_VEC_SIZE(DerivedVec, e, 3);
-  ASSERT_EIGEN_TYPE(DerivedVec, DerivedQuat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedVec, DerivedQuat);
 
   auto &eul = e.derived();
   quat2angles<order>(q, eul(0), eul(1), eul(2));
@@ -797,7 +797,7 @@ template <typename DerivedQuat, typename DerivedMat>
 inline void quat2dcm(const Eigen::DenseBase<DerivedQuat> &q, Eigen::DenseBase<DerivedMat> &R) {
   ASSERT_EIGEN_VEC_SIZE(DerivedQuat, q, 4);
   ASSERT_EIGEN_MAT_SIZE(DerivedMat, R, 3, 3);
-  ASSERT_EIGEN_TYPE(DerivedQuat, DerivedMat);
+  ASSERT_EIGEN_SAME_SCALAR(DerivedQuat, DerivedMat);
   using Scalar = typename DerivedMat::Scalar;
 
   const auto &quat = q.derived() / q.derived().norm();
