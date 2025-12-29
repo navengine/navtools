@@ -40,7 +40,9 @@ foreach(var INCLUDE_INSTALL_DIR CMAKEPACKAGE_INSTALL_DIR PKGCONFIG_INSTALL_DIR)
 endforeach()
 
 # --- Create the navtools C++ Library ---
-find_package(Eigen3 REQUIRED)
+if (NOT TARGET Eigen3::Eigen)
+    find_package(Eigen3 REQUIRED)
+endif()
 
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(navtools::navtools ALIAS ${PROJECT_NAME})
